@@ -232,7 +232,7 @@ import api from '@/utils/axios';
 import { useTable } from '@/composables/useTable';
 import TablePagination from '@/components/TablePagination.vue';
 
-const API_URL = 'v1.0/administration/groups/';
+const API_URL = 'administration/groups/';
 
 // ===== Tabla (paginación + búsqueda + ordenamiento) =====
 const {

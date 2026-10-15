@@ -665,9 +665,9 @@ import { useTable } from "@/composables/useTable";
 import TablePagination from "@/components/TablePagination.vue";
 import DarkSelect from "@/components/DarkSelect.vue";
 
-const API_URL = "v1.0/administration/users/";
+const API_URL = "administration/users/";
 const PROVINCES_URL = "configuration/provinces/enabled/";
-const GROUPS_URL = "v1.0/administration/groups/";
+const GROUPS_URL = "administration/groups/";
 
 // ===== Opciones para selects =====
 const provinceOptions = ref([]);
@@ -1012,7 +1012,7 @@ const resetPassword = async () => {
   resettingPassword.value = true;
   try {
     await api.post(
-      `v1.0/administration/initialize-password/${userToReset.value.id}/`,
+      `administration/initialize-password/${userToReset.value.id}/`,
       {
         new_password: resetForm.value.new_password,
         confirm_password: resetForm.value.confirm_password,
