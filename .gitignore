@@ -25,3 +25,6 @@ coverage
 *.sw?
 
 *.tsbuildinfo
+*.yml
+*.lock
+*.gz
