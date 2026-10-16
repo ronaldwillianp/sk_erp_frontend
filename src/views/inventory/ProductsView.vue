@@ -15,22 +15,28 @@
             Actualizar
           </button>
 
-          <!-- Botón de etiquetas (visible cuando hay selección) -->
-          <button
-            v-if="selectedProductIds.length > 0"
-            class="btn-primary"
-            @click="generateLabels"
-            :disabled="generatingLabels"
-          >
-            <v-progress-circular
-              v-if="generatingLabels"
-              indeterminate
-              size="16"
-              class="mr-2"
-            />
-            <v-icon v-else size="18" class="mr-2">mdi-barcode-scan</v-icon>
-            Generar etiquetas ({{ selectedProductIds.length }})
-          </button>
+          <!-- Botones de selección / etiquetas (solo visibles si hay selección) -->
+          <template v-if="selectedProductIds.length > 0">
+            <button class="btn-secondary" @click="clearSelection">
+              <v-icon size="18" class="mr-2">mdi-close-circle-outline</v-icon>
+              Limpiar selección ({{ selectedProductIds.length }})
+            </button>
+
+            <button
+              class="btn-primary"
+              @click="generateLabels"
+              :disabled="generatingLabels"
+            >
+              <v-progress-circular
+                v-if="generatingLabels"
+                indeterminate
+                size="16"
+                class="mr-2"
+              />
+              <v-icon v-else size="18" class="mr-2">mdi-barcode-scan</v-icon>
+              Generar etiquetas ({{ selectedProductIds.length }})
+            </button>
+          </template>
 
           <button
             class="btn-danger"
@@ -46,6 +52,7 @@
             <v-icon v-else size="18" class="mr-2">mdi-delete-sweep</v-icon>
             {{ purgeButtonText }}
           </button>
+          
           <button class="btn-primary" @click="openDialog()">
             <v-icon size="18" class="mr-2">mdi-plus</v-icon>
             Nuevo producto
@@ -104,9 +111,7 @@
           <v-icon size="32" color="zinc-600">mdi-package-variant</v-icon>
         </div>
         <div class="empty-state-title">
-          {{
-            hasActiveFilters ? "Sin resultados" : "Sin productos registrados"
-          }}
+          {{ hasActiveFilters ? "Sin resultados" : "Sin productos registrados" }}
         </div>
         <div class="empty-state-text">
           {{
@@ -134,11 +139,12 @@
           <table class="custom-table">
             <thead>
               <tr>
-                <!-- Checkbox para seleccionar todos -->
+                <!-- Checkbox para seleccionar todos los de la página actual -->
                 <th class="w-12">
                   <input
                     type="checkbox"
                     :checked="allSelected"
+                    :indeterminate.prop="someSelected && !allSelected"
                     @change="toggleSelectAll"
                     class="cursor-pointer"
                   />
@@ -203,8 +209,7 @@
                         }}
                       </v-icon>
                     </div>
-                    <span
-                      class="text-sm font-mono font-semibold text-zinc-200"
+                    <span class="text-sm font-mono font-semibold text-zinc-200"
                       >{{ item.sku }}</span
                     >
                   </div>
@@ -292,10 +297,13 @@
           </table>
         </div>
 
+        <!-- Paginación actualizada con eventos -->
         <TablePagination
-          v-model:page="page"
-          :total="total"
+          :page="page"
           :page-size="pageSize"
+          :total="total"
+          @update:page="changePage"
+          @update:page-size="changePageSize"
         />
       </template>
     </div>
@@ -723,15 +731,14 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onUnmounted } from "vue";
+import { ref, computed, onMounted, onUnmounted, watch } from "vue";
 import api from "@/utils/axios";
 import { useTable } from "@/composables/useTable";
 import TablePagination from "@/components/TablePagination.vue";
 import DarkSelect from "@/components/DarkSelect.vue";
 
 const API_URL = "inventory/products/";
-const CATEGORIES_URL =
-  "configuration/categories/enabled/?category_type=PRODUCT";
+const CATEGORIES_URL = "configuration/categories/enabled/?category_type=PRODUCT";
 const UNITS_URL = "configuration/measure-units/enabled/";
 
 // ===== Opciones de filtros =====
@@ -757,6 +764,8 @@ const {
   onSearch,
   clearSearch,
   clearFilters,
+  changePage,
+  changePageSize,
 } = useTable({
   apiUrl: API_URL,
   defaultOrdering: "name",
@@ -767,11 +776,7 @@ const {
 const tabs = [
   { id: "general", label: "General", icon: "mdi-package-variant-outline" },
   { id: "pricing", label: "Precios y opciones", icon: "mdi-cash-multiple" },
-  {
-    id: "presentations",
-    label: "Presentaciones",
-    icon: "mdi-format-list-bulleted-type",
-  },
+  { id: "presentations", label: "Presentaciones", icon: "mdi-format-list-bulleted-type" },
 ];
 const activeTab = ref("general");
 
@@ -811,6 +816,61 @@ const form = ref(emptyForm());
 const formErrors = ref({});
 const snackbar = ref({ show: false, message: "", color: "success" });
 
+// ===== Selección múltiple para etiquetas (solo página actual) =====
+const selectedProductIds = ref([]);
+const generatingLabels = ref(false);
+
+const allSelected = computed(() => {
+  return (
+    items.value.length > 0 &&
+    items.value.every((item) => selectedProductIds.value.includes(item.id))
+  );
+});
+
+const someSelected = computed(() => {
+  return items.value.some((item) => selectedProductIds.value.includes(item.id));
+});
+
+// Limpiar selección cuando cambia la paginación, búsqueda, orden o filtros
+watch(
+  [
+    page,
+    pageSize,
+    search,
+    ordering,
+    () => filters.value.category,
+    () => filters.value.enabled,
+  ],
+  () => {
+    selectedProductIds.value = [];
+  }
+);
+
+const toggleSelectAll = () => {
+  if (allSelected.value) {
+    selectedProductIds.value = [];
+  } else {
+    selectedProductIds.value = items.value.map((item) => item.id);
+  }
+};
+
+const toggleProductSelection = (productId) => {
+  const index = selectedProductIds.value.indexOf(productId);
+  if (index === -1) {
+    selectedProductIds.value.push(productId);
+  } else {
+    selectedProductIds.value.splice(index, 1);
+  }
+};
+
+const isProductSelected = (productId) => {
+  return selectedProductIds.value.includes(productId);
+};
+
+const clearSelection = () => {
+  selectedProductIds.value = [];
+};
+
 // ===== Computed =====
 const hasActiveFilters = computed(() => {
   return (
@@ -831,10 +891,10 @@ const purgeButtonText = computed(() => {
 });
 
 const generalHasErrors = computed(() =>
-  ["name", "sku", "category_id"].some((f) => formErrors.value[f]?.length),
+  ["name", "sku", "category_id"].some((f) => formErrors.value[f]?.length)
 );
 const pricingHasErrors = computed(() =>
-  ["cost_price", "sale_price"].some((f) => formErrors.value[f]?.length),
+  ["cost_price", "sale_price"].some((f) => formErrors.value[f]?.length)
 );
 
 const tabHasError = (tabId) => {
@@ -866,7 +926,8 @@ const formatPrice = (price) => {
 const loadCategories = async () => {
   try {
     const response = await api.get(CATEGORIES_URL);
-    categoryOptions.value = response.data.map((c) => ({
+    const data = response.data.results || response.data;
+    categoryOptions.value = (Array.isArray(data) ? data : []).map((c) => ({
       value: c.id,
       label: c.name,
     }));
@@ -878,7 +939,8 @@ const loadCategories = async () => {
 const loadUnits = async () => {
   try {
     const response = await api.get(UNITS_URL);
-    unitOptions.value = response.data.map((u) => ({
+    const data = response.data.results || response.data;
+    unitOptions.value = (Array.isArray(data) ? data : []).map((u) => ({
       value: u.id,
       label: `${u.name} (${u.short_name})`,
     }));
@@ -991,27 +1053,18 @@ const saveItem = async () => {
 
   if (!form.value.is_service) {
     if (form.value.presentations.length === 0) {
-      showSnackbar(
-        "Agrega al menos una presentación para el producto",
-        "error",
-      );
+      showSnackbar("Agrega al menos una presentación para el producto", "error");
       hasErrors = true;
       activeTab.value = "presentations";
     } else {
       for (const pres of form.value.presentations) {
         if (!pres.measure_unit_id) {
-          showSnackbar(
-            "Todas las presentaciones deben tener una unidad de medida",
-            "error",
-          );
+          showSnackbar("Todas las presentaciones deben tener una unidad de medida", "error");
           hasErrors = true;
           activeTab.value = "presentations";
           break;
         }
-        if (
-          !pres.conversion_factor ||
-          parseFloat(pres.conversion_factor) <= 0
-        ) {
+        if (!pres.conversion_factor || parseFloat(pres.conversion_factor) <= 0) {
           showSnackbar("El factor de conversión debe ser mayor a 0", "error");
           hasErrors = true;
           activeTab.value = "presentations";
@@ -1065,10 +1118,16 @@ const confirmDelete = (item) => {
 
 const deleteItem = async () => {
   deleting.value = true;
+  const deletedId = itemToDelete.value?.id;
+
   try {
-    await api.delete(`${API_URL}${itemToDelete.value.id}/`);
+    await api.delete(`${API_URL}${deletedId}/`);
     showSnackbar("Producto eliminado correctamente");
     deleteDialogOpen.value = false;
+
+    // Quitar de la selección si estaba seleccionado
+    selectedProductIds.value = selectedProductIds.value.filter((id) => id !== deletedId);
+    itemToDelete.value = null;
 
     if (items.value.length === 1 && page.value > 1) {
       page.value--;
@@ -1109,10 +1168,12 @@ const executePurge = async () => {
   purging.value = true;
   try {
     const response = await api.delete(`${API_URL}purge/`);
-    showSnackbar(
-      response.data.message || "Todos los productos eliminados correctamente",
-    );
+    showSnackbar(response.data.message || "Todos los productos eliminados correctamente");
     purgeDialogOpen.value = false;
+    
+    // Limpiar selección porque ya no existen productos
+    selectedProductIds.value = [];
+    
     page.value = 1;
     await loadData();
   } catch (error) {
@@ -1139,7 +1200,7 @@ const handleApiError = (error) => {
             ? data[field]
             : [data[field]];
         }
-      },
+      }
     );
 
     formErrors.value = fieldErrors;
@@ -1167,49 +1228,7 @@ const showSnackbar = (message, color = "success") => {
   snackbar.value = { show: true, message, color };
 };
 
-// ===== Lifecycle =====
-onMounted(() => {
-  loadCategories();
-  loadUnits();
-  loadData();
-});
-
-onUnmounted(() => {
-  if (purgeTimer) clearInterval(purgeTimer);
-});
-
-// ===== Selección múltiple para etiquetas =====
-const selectedProductIds = ref([]);
-const generatingLabels = ref(false);
-
-const allSelected = computed(() => {
-  return (
-    items.value.length > 0 &&
-    selectedProductIds.value.length === items.value.length
-  );
-});
-
-const toggleSelectAll = () => {
-  if (allSelected.value) {
-    selectedProductIds.value = [];
-  } else {
-    selectedProductIds.value = items.value.map((p) => p.id);
-  }
-};
-
-const toggleProductSelection = (productId) => {
-  const index = selectedProductIds.value.indexOf(productId);
-  if (index === -1) {
-    selectedProductIds.value.push(productId);
-  } else {
-    selectedProductIds.value.splice(index, 1);
-  }
-};
-
-const isProductSelected = (productId) => {
-  return selectedProductIds.value.includes(productId);
-};
-
+// ===== Generar etiquetas =====
 const generateLabels = async () => {
   if (selectedProductIds.value.length === 0) {
     showSnackbar("Selecciona al menos un producto", "warning");
@@ -1221,39 +1240,58 @@ const generateLabels = async () => {
     const response = await api.post(
       `${API_URL}generate-labels/`,
       { product_ids: selectedProductIds.value },
-      { responseType: "blob" },
+      { responseType: "blob" }
     );
 
-    // Crear URL del blob y descargar
-    const url = window.URL.createObjectURL(
-      new Blob([response.data], { type: "application/pdf" }),
-    );
+    const blob = new Blob([response.data], { type: "application/pdf" });
+    const url = window.URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.href = url;
-    link.setAttribute("download", "etiquetas_productos.pdf");
+    
+    const date = new Date().toISOString().slice(0, 10);
+    link.setAttribute("download", `etiquetas_productos_${selectedProductIds.value.length}_${date}.pdf`);
+    
     document.body.appendChild(link);
     link.click();
     link.remove();
     window.URL.revokeObjectURL(url);
 
-    showSnackbar(
-      `${selectedProductIds.value.length} etiquetas generadas correctamente`,
-    );
+    showSnackbar(`${selectedProductIds.value.length} etiquetas generadas correctamente`);
   } catch (error) {
     let msg = "Error al generar etiquetas";
-    if (error.response) {
+    const data = error.response?.data;
+
+    // Cuando responseType es blob, los errores JSON vienen como Blob
+    if (data instanceof Blob) {
       try {
-        const errorData = await error.response.json();
-        msg = errorData.error || msg;
+        const text = await data.text();
+        const json = JSON.parse(text);
+        msg = json.error || json.detail || msg;
       } catch (e) {
-        // Si no es JSON, usar mensaje por defecto
+        // Si no se puede parsear, mantenemos mensaje por defecto
       }
+    } else if (data?.error) {
+      msg = data.error;
+    } else if (data?.detail) {
+      msg = data.detail;
     }
+
     showSnackbar(msg, "error");
   } finally {
     generatingLabels.value = false;
   }
 };
+
+// ===== Lifecycle =====
+onMounted(() => {
+  loadCategories();
+  loadUnits();
+  // No llamamos loadData aquí porque useTable ya hace carga inicial con watch immediate
+});
+
+onUnmounted(() => {
+  if (purgeTimer) clearInterval(purgeTimer);
+});
 </script>
 
 <style scoped>

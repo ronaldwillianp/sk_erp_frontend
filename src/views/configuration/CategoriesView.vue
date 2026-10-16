@@ -149,7 +149,7 @@
           </table>
         </div>
 
-        <TablePagination v-model:page="page" :total="total" :page-size="pageSize" />
+        <TablePagination v-model:page="page" :total="total" :page-size="pageSize" @update:page="changePage" @update:page-size="changePageSize" />
       </template>
     </div>
 
@@ -308,6 +308,7 @@ const {
   search, ordering, filters,
   loadData, toggleOrdering, getOrderingIcon,
   onSearch, clearSearch, clearFilters,
+  changePageSize, changePage
 } = useTable({
   apiUrl: API_URL,
   defaultOrdering: 'name',

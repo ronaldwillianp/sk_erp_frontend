@@ -22,7 +22,17 @@ export function useTable({ apiUrl, defaultOrdering = 'name', pageSize: initialPa
   const loadData = async () => {
     loading.value = true;
     try {
-      const params = { page: page.value };
+      const params = {};
+
+      // Manejo de paginación:
+      // - pageSize === -1  → cargar todos los registros (page_size muy grande, sin página)
+      // - pageSize > 0     → paginación normal con page y page_size
+      if (pageSize.value === -1) {
+        params.page_size = 10000; // Suficiente para "todos" en un ERP ligero
+      } else {
+        params.page = page.value;
+        params.page_size = pageSize.value;
+      }
 
       if (search.value.trim()) params.search = search.value.trim();
       if (ordering.value) params.ordering = ordering.value;
@@ -49,6 +59,23 @@ export function useTable({ apiUrl, defaultOrdering = 'name', pageSize: initialPa
     } finally {
       loading.value = false;
     }
+  };
+
+  // ===== Paginación =====
+  const changePage = (newPage) => {
+    if (newPage === page.value) return;
+    page.value = newPage;
+    // El watch de page dispara loadData automáticamente
+  };
+
+  const changePageSize = (newSize) => {
+    const size = typeof newSize === 'string' ? parseInt(newSize, 10) : newSize;
+    if (size === pageSize.value) return;
+    pageSize.value = size;
+    page.value = 1; // Reset a la primera página al cambiar tamaño
+    // El watch de page dispara loadData automáticamente (porque page cambió a 1)
+    // Pero si page ya era 1, forzamos manualmente
+    if (page.value === 1) loadData();
   };
 
   // ===== Búsqueda con debounce =====
@@ -121,5 +148,6 @@ export function useTable({ apiUrl, defaultOrdering = 'name', pageSize: initialPa
     items, loading, total, page, pageSize, search, ordering, filters,
     loadData, toggleOrdering, getOrderingIcon,
     onSearch, clearSearch, clearFilters,
+    changePage, changePageSize,
   };
 }
