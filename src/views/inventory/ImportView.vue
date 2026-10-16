@@ -134,7 +134,7 @@
       </div>
 
       <!-- Stats -->
-      <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
+      <div class="grid grid-cols-2 md:grid-cols-5 gap-3 mb-6">
         <div class="stat-mini">
           <div class="stat-mini-label">Total filas</div>
           <div class="stat-mini-value">{{ result.total_rows }}</div>
@@ -146,6 +146,10 @@
         <div v-if="result.presentations_created !== undefined" class="stat-mini stat-mini-info">
           <div class="stat-mini-label">Presentaciones</div>
           <div class="stat-mini-value">{{ result.presentations_created }}</div>
+        </div>
+        <div v-if="result.stock_entries_created !== undefined" class="stat-mini stat-mini-info">
+          <div class="stat-mini-label">Entradas de stock</div>
+          <div class="stat-mini-value">{{ result.stock_entries_created }}</div>
         </div>
         <div class="stat-mini stat-mini-error">
           <div class="stat-mini-label">Errores</div>
@@ -241,10 +245,10 @@ const tabsConfig = {
     optionalColumns: ['contacto', 'email', 'telefono', 'direccion', 'provincia', 'notas'],
   },
   products: {
-    title: 'Importar productos con presentaciones',
-    description: 'Carga productos y sus presentaciones. Un producto con varias presentaciones debe aparecer en varias filas con el mismo SKU.',
+    title: 'Importar productos con presentaciones y stock inicial',
+    description: 'Carga productos, sus presentaciones y cantidades iniciales. Un producto con varias presentaciones debe aparecer en varias filas con el mismo SKU. Si una fila tiene cantidad mayor a cero, se genera una entrada de stock con referencia "Carga inicial por importación". Si algún producto falla, no se importa nada.',
     requiredColumns: ['sku', 'nombre', 'categoria', 'um_presentacion', 'factor', 'precio_venta'],
-    optionalColumns: ['codigo_barras', 'precio_costo', 'precio_venta_base', 'stock_minimo', 'es_servicio', 'descripcion', 'es_principal'],
+    optionalColumns: ['codigo_barras', 'precio_costo', 'precio_venta_base', 'stock_minimo', 'es_servicio', 'descripcion', 'es_principal', 'cantidad', 'almacen'],
   },
 };
 
@@ -327,11 +331,18 @@ const importFile = async () => {
       headers: { 'Content-Type': 'multipart/form-data' },
     });
     result.value = response.data;
+
     const count = response.data.products_created ?? response.data.created_count ?? 0;
+    const stockCount = response.data.stock_entries_created ?? 0;
+
     if (response.data.error_count > 0) {
       showSnackbar(`${count} registros creados, ${response.data.error_count} con errores`, 'warning');
     } else {
-      showSnackbar(`${count} registros importados correctamente`);
+      let msg = `${count} registros importados correctamente`;
+      if (stockCount > 0) {
+        msg += ` (${stockCount} entradas de stock)`;
+      }
+      showSnackbar(msg);
     }
   } catch (error) {
     const msg = error.response?.data?.error || 'Error al importar el archivo';

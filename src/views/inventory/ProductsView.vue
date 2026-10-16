@@ -5,15 +5,44 @@
       <div class="page-header-row">
         <div>
           <h1 class="page-title">Productos</h1>
-          <p class="page-subtitle">Gestiona tu catálogo de productos y servicios</p>
+          <p class="page-subtitle">
+            Gestiona tu catálogo de productos y servicios
+          </p>
         </div>
         <div class="flex gap-3 flex-wrap">
           <button class="btn-secondary" @click="loadData">
             <v-icon size="18" class="mr-2">mdi-refresh</v-icon>
             Actualizar
           </button>
-          <button class="btn-danger" @click="confirmPurge" :disabled="!items.length || purging">
-            <v-progress-circular v-if="purging" indeterminate size="16" class="mr-2" />
+
+          <!-- Botón de etiquetas (visible cuando hay selección) -->
+          <button
+            v-if="selectedProductIds.length > 0"
+            class="btn-primary"
+            @click="generateLabels"
+            :disabled="generatingLabels"
+          >
+            <v-progress-circular
+              v-if="generatingLabels"
+              indeterminate
+              size="16"
+              class="mr-2"
+            />
+            <v-icon v-else size="18" class="mr-2">mdi-barcode-scan</v-icon>
+            Generar etiquetas ({{ selectedProductIds.length }})
+          </button>
+
+          <button
+            class="btn-danger"
+            @click="confirmPurge"
+            :disabled="!items.length || purging"
+          >
+            <v-progress-circular
+              v-if="purging"
+              indeterminate
+              size="16"
+              class="mr-2"
+            />
             <v-icon v-else size="18" class="mr-2">mdi-delete-sweep</v-icon>
             {{ purgeButtonText }}
           </button>
@@ -36,7 +65,12 @@
             placeholder="Buscar por nombre, SKU o código de barras..."
             @keyup.enter="onSearch"
           />
-          <button v-if="search" class="icon-btn !w-6 !h-6" @click="clearSearch" title="Limpiar">
+          <button
+            v-if="search"
+            class="icon-btn !w-6 !h-6"
+            @click="clearSearch"
+            title="Limpiar"
+          >
             <v-icon size="14">mdi-close</v-icon>
           </button>
         </div>
@@ -49,7 +83,11 @@
             search-placeholder="Buscar categoría..."
             @change="onSearch"
           />
-          <DarkSelect v-model="filters.enabled" :options="statusOptions" @change="onSearch" />
+          <DarkSelect
+            v-model="filters.enabled"
+            :options="statusOptions"
+            @change="onSearch"
+          />
         </div>
       </div>
     </div>
@@ -66,15 +104,22 @@
           <v-icon size="32" color="zinc-600">mdi-package-variant</v-icon>
         </div>
         <div class="empty-state-title">
-          {{ hasActiveFilters ? 'Sin resultados' : 'Sin productos registrados' }}
-        </div>
-        <div class="empty-state-text">
-          {{ hasActiveFilters
-            ? 'No se encontraron productos con los filtros aplicados.'
-            : 'Aún no hay productos. Crea el primero para comenzar.'
+          {{
+            hasActiveFilters ? "Sin resultados" : "Sin productos registrados"
           }}
         </div>
-        <button v-if="!hasActiveFilters" class="btn-primary mt-6" @click="openDialog()">
+        <div class="empty-state-text">
+          {{
+            hasActiveFilters
+              ? "No se encontraron productos con los filtros aplicados."
+              : "Aún no hay productos. Crea el primero para comenzar."
+          }}
+        </div>
+        <button
+          v-if="!hasActiveFilters"
+          class="btn-primary mt-6"
+          @click="openDialog()"
+        >
           <v-icon size="18" class="mr-2">mdi-plus</v-icon>
           Crear producto
         </button>
@@ -89,16 +134,29 @@
           <table class="custom-table">
             <thead>
               <tr>
+                <!-- Checkbox para seleccionar todos -->
+                <th class="w-12">
+                  <input
+                    type="checkbox"
+                    :checked="allSelected"
+                    @change="toggleSelectAll"
+                    class="cursor-pointer"
+                  />
+                </th>
                 <th @click="toggleOrdering('sku')" class="sortable-th">
                   <span class="inline-flex items-center">
                     SKU
-                    <v-icon size="14" class="ml-1">{{ getOrderingIcon('sku') }}</v-icon>
+                    <v-icon size="14" class="ml-1">{{
+                      getOrderingIcon("sku")
+                    }}</v-icon>
                   </span>
                 </th>
                 <th @click="toggleOrdering('name')" class="sortable-th">
                   <span class="inline-flex items-center">
                     Nombre
-                    <v-icon size="14" class="ml-1">{{ getOrderingIcon('name') }}</v-icon>
+                    <v-icon size="14" class="ml-1">{{
+                      getOrderingIcon("name")
+                    }}</v-icon>
                   </span>
                 </th>
                 <th>Categoría</th>
@@ -106,14 +164,18 @@
                 <th @click="toggleOrdering('sale_price')" class="sortable-th">
                   <span class="inline-flex items-center">
                     Precio base
-                    <v-icon size="14" class="ml-1">{{ getOrderingIcon('sale_price') }}</v-icon>
+                    <v-icon size="14" class="ml-1">{{
+                      getOrderingIcon("sale_price")
+                    }}</v-icon>
                   </span>
                 </th>
                 <th>Tipo</th>
                 <th @click="toggleOrdering('enabled')" class="sortable-th">
                   <span class="inline-flex items-center">
                     Estado
-                    <v-icon size="14" class="ml-1">{{ getOrderingIcon('enabled') }}</v-icon>
+                    <v-icon size="14" class="ml-1">{{
+                      getOrderingIcon("enabled")
+                    }}</v-icon>
                   </span>
                 </th>
                 <th class="text-right">Acciones</th>
@@ -121,22 +183,44 @@
             </thead>
             <tbody>
               <tr v-for="item in items" :key="item.id">
+                <!-- Checkbox individual -->
+                <td>
+                  <input
+                    type="checkbox"
+                    :checked="isProductSelected(item.id)"
+                    @change="toggleProductSelection(item.id)"
+                    class="cursor-pointer"
+                  />
+                </td>
                 <td>
                   <div class="flex items-center gap-3">
                     <div class="table-avatar avatar-gradient">
                       <v-icon size="18" color="white">
-                        {{ item.is_service ? 'mdi-briefcase-outline' : 'mdi-package-variant' }}
+                        {{
+                          item.is_service
+                            ? "mdi-briefcase-outline"
+                            : "mdi-package-variant"
+                        }}
                       </v-icon>
                     </div>
-                    <span class="text-sm font-mono font-semibold text-zinc-200">{{ item.sku }}</span>
+                    <span
+                      class="text-sm font-mono font-semibold text-zinc-200"
+                      >{{ item.sku }}</span
+                    >
                   </div>
                 </td>
                 <td>
-                  <div class="text-sm font-medium text-zinc-200">{{ item.name }}</div>
-                  <div v-if="item.barcode" class="text-xs text-zinc-500">{{ item.barcode }}</div>
+                  <div class="text-sm font-medium text-zinc-200">
+                    {{ item.name }}
+                  </div>
+                  <div v-if="item.barcode" class="text-xs text-zinc-500">
+                    {{ item.barcode }}
+                  </div>
                 </td>
                 <td class="text-sm text-zinc-400">
-                  <span v-if="item.category" class="badge badge-info">{{ item.category.name }}</span>
+                  <span v-if="item.category" class="badge badge-info">{{
+                    item.category.name
+                  }}</span>
                   <span v-else class="text-zinc-600">—</span>
                 </td>
                 <td>
@@ -148,10 +232,16 @@
                     >
                       {{ pres.measure_unit.short_name }}
                     </span>
-                    <span v-if="item.presentations.length > 3" class="badge badge-neutral">
+                    <span
+                      v-if="item.presentations.length > 3"
+                      class="badge badge-neutral"
+                    >
                       +{{ item.presentations.length - 3 }}
                     </span>
-                    <span v-if="item.presentations.length === 0" class="text-zinc-600 text-xs">
+                    <span
+                      v-if="item.presentations.length === 0"
+                      class="text-zinc-600 text-xs"
+                    >
                       Sin presentaciones
                     </span>
                   </div>
@@ -160,21 +250,39 @@
                   {{ formatPrice(item.sale_price) }}
                 </td>
                 <td>
-                  <span :class="['badge', item.is_service ? 'badge-warning' : 'badge-neutral']">
-                    {{ item.is_service ? 'Servicio' : 'Producto' }}
+                  <span
+                    :class="[
+                      'badge',
+                      item.is_service ? 'badge-warning' : 'badge-neutral',
+                    ]"
+                  >
+                    {{ item.is_service ? "Servicio" : "Producto" }}
                   </span>
                 </td>
                 <td>
-                  <span :class="['badge', item.enabled ? 'badge-success' : 'badge-neutral']">
-                    {{ item.enabled ? 'Activo' : 'Inactivo' }}
+                  <span
+                    :class="[
+                      'badge',
+                      item.enabled ? 'badge-success' : 'badge-neutral',
+                    ]"
+                  >
+                    {{ item.enabled ? "Activo" : "Inactivo" }}
                   </span>
                 </td>
                 <td class="text-right">
                   <div class="flex items-center justify-end gap-1">
-                    <button class="icon-btn" title="Editar" @click="openDialog(item)">
+                    <button
+                      class="icon-btn"
+                      title="Editar"
+                      @click="openDialog(item)"
+                    >
                       <v-icon size="16">mdi-pencil-outline</v-icon>
                     </button>
-                    <button class="icon-btn !text-red-400 hover:!bg-red-500/10" title="Eliminar" @click="confirmDelete(item)">
+                    <button
+                      class="icon-btn !text-red-400 hover:!bg-red-500/10"
+                      title="Eliminar"
+                      @click="confirmDelete(item)"
+                    >
                       <v-icon size="16">mdi-delete-outline</v-icon>
                     </button>
                   </div>
@@ -184,22 +292,35 @@
           </table>
         </div>
 
-        <TablePagination v-model:page="page" :total="total" :page-size="pageSize" />
+        <TablePagination
+          v-model:page="page"
+          :total="total"
+          :page-size="pageSize"
+        />
       </template>
     </div>
 
     <!-- ============================================ -->
     <!-- Dialog: Crear / Editar (con TABS)            -->
     <!-- ============================================ -->
-    <v-dialog v-model="dialogOpen" max-width="800" class="dark-dialog product-form-dialog" persistent>
+    <v-dialog
+      v-model="dialogOpen"
+      max-width="800"
+      class="dark-dialog product-form-dialog"
+      persistent
+    >
       <div class="dialog-card">
         <div class="dialog-header">
           <div>
             <h3 class="text-lg font-semibold text-zinc-100">
-              {{ isEditing ? 'Editar producto' : 'Nuevo producto' }}
+              {{ isEditing ? "Editar producto" : "Nuevo producto" }}
             </h3>
             <p class="text-xs text-zinc-500 mt-1">
-              {{ isEditing ? `SKU: ${form.sku}` : 'Completa los datos para crear el producto' }}
+              {{
+                isEditing
+                  ? `SKU: ${form.sku}`
+                  : "Completa los datos para crear el producto"
+              }}
             </p>
           </div>
           <button class="icon-btn" @click="dialogOpen = false">
@@ -278,7 +399,9 @@
                 placeholder="Seleccionar"
                 class="full-width-select"
               />
-              <p v-if="formErrors.category_id?.length" class="field-error">{{ formErrors.category_id[0] }}</p>
+              <p v-if="formErrors.category_id?.length" class="field-error">
+                {{ formErrors.category_id[0] }}
+              </p>
             </div>
           </div>
 
@@ -360,15 +483,30 @@
           <div v-show="activeTab === 'presentations'">
             <template v-if="!form.is_service">
               <p class="text-xs text-zinc-500 mb-4">
-                Define las unidades de medida en las que se maneja este producto. El precio se calcula como <strong>factor × precio base</strong>, pero puedes ajustarlo manualmente.
+                Define las unidades de medida en las que se maneja este
+                producto. El precio se calcula como
+                <strong>factor × precio base</strong>, pero puedes ajustarlo
+                manualmente.
               </p>
 
-              <div v-if="form.presentations.length === 0" class="empty-presentations">
-                <v-icon size="32" class="text-zinc-600 mb-2">mdi-format-list-bulleted-type</v-icon>
-                <p class="text-sm text-zinc-500">No hay presentaciones. Agrega al menos una unidad de medida para este producto.</p>
+              <div
+                v-if="form.presentations.length === 0"
+                class="empty-presentations"
+              >
+                <v-icon size="32" class="text-zinc-600 mb-2"
+                  >mdi-format-list-bulleted-type</v-icon
+                >
+                <p class="text-sm text-zinc-500">
+                  No hay presentaciones. Agrega al menos una unidad de medida
+                  para este producto.
+                </p>
               </div>
 
-              <div v-for="(pres, index) in form.presentations" :key="index" class="presentation-row">
+              <div
+                v-for="(pres, index) in form.presentations"
+                :key="index"
+                class="presentation-row"
+              >
                 <div class="grid grid-cols-12 gap-3 items-start">
                   <div class="col-span-3">
                     <label class="input-label">Unidad de medida</label>
@@ -408,14 +546,24 @@
                     <button
                       class="icon-btn"
                       :class="{ 'star-active': pres.is_default }"
-                      :title="pres.is_default ? 'Presentación principal' : 'Marcar como principal'"
+                      :title="
+                        pres.is_default
+                          ? 'Presentación principal'
+                          : 'Marcar como principal'
+                      "
                       @click="setPresentationDefault(index)"
                     >
-                      <v-icon size="16">{{ pres.is_default ? 'mdi-star' : 'mdi-star-outline' }}</v-icon>
+                      <v-icon size="16">{{
+                        pres.is_default ? "mdi-star" : "mdi-star-outline"
+                      }}</v-icon>
                     </button>
                   </div>
                   <div class="col-span-2 flex items-center justify-center pt-6">
-                    <button class="icon-btn !text-red-400 hover:!bg-red-500/10" title="Eliminar presentación" @click="removePresentation(index)">
+                    <button
+                      class="icon-btn !text-red-400 hover:!bg-red-500/10"
+                      title="Eliminar presentación"
+                      @click="removePresentation(index)"
+                    >
                       <v-icon size="16">mdi-delete-outline</v-icon>
                     </button>
                   </div>
@@ -429,18 +577,33 @@
             </template>
 
             <div v-else class="empty-presentations">
-              <v-icon size="40" class="text-zinc-600 mb-3">mdi-briefcase-outline</v-icon>
-              <p class="text-sm text-zinc-500">Los servicios no manejan presentaciones de venta.</p>
-              <p class="text-xs text-zinc-600 mt-1">Desmarca la opción "Es un servicio" en la pestaña anterior para habilitar este apartado.</p>
+              <v-icon size="40" class="text-zinc-600 mb-3"
+                >mdi-briefcase-outline</v-icon
+              >
+              <p class="text-sm text-zinc-500">
+                Los servicios no manejan presentaciones de venta.
+              </p>
+              <p class="text-xs text-zinc-600 mt-1">
+                Desmarca la opción "Es un servicio" en la pestaña anterior para
+                habilitar este apartado.
+              </p>
             </div>
           </div>
         </div>
 
         <div class="dialog-footer">
-          <button class="btn-secondary" @click="dialogOpen = false">Cancelar</button>
+          <button class="btn-secondary" @click="dialogOpen = false">
+            Cancelar
+          </button>
           <button class="btn-primary" @click="saveItem" :disabled="saving">
-            <v-progress-circular v-if="saving" indeterminate size="16" color="white" class="mr-2" />
-            {{ isEditing ? 'Guardar cambios' : 'Crear' }}
+            <v-progress-circular
+              v-if="saving"
+              indeterminate
+              size="16"
+              color="white"
+              class="mr-2"
+            />
+            {{ isEditing ? "Guardar cambios" : "Crear" }}
           </button>
         </div>
       </div>
@@ -450,7 +613,9 @@
     <v-dialog v-model="deleteDialogOpen" max-width="400" class="dark-dialog">
       <div class="dialog-card">
         <div class="dialog-header">
-          <h3 class="text-lg font-semibold text-zinc-100">Confirmar eliminación</h3>
+          <h3 class="text-lg font-semibold text-zinc-100">
+            Confirmar eliminación
+          </h3>
           <button class="icon-btn" @click="deleteDialogOpen = false">
             <v-icon size="20">mdi-close</v-icon>
           </button>
@@ -458,18 +623,28 @@
         <div class="dialog-body">
           <div class="alert-warning mb-4">
             <v-icon size="18" class="mr-2 flex-shrink-0">mdi-alert</v-icon>
-            <span><strong>Advertencia:</strong> Se eliminarán también las presentaciones y el stock asociado a este producto.</span>
+            <span
+              ><strong>Advertencia:</strong> Se eliminarán también las
+              presentaciones y el stock asociado a este producto.</span
+            >
           </div>
           <p class="text-sm text-zinc-400">
             ¿Estás seguro de eliminar el producto
-            <strong class="text-zinc-200">{{ itemToDelete?.name }}</strong>?
-            Esta acción no se puede deshacer.
+            <strong class="text-zinc-200">{{ itemToDelete?.name }}</strong
+            >? Esta acción no se puede deshacer.
           </p>
         </div>
         <div class="dialog-footer">
-          <button class="btn-secondary" @click="deleteDialogOpen = false">Cancelar</button>
+          <button class="btn-secondary" @click="deleteDialogOpen = false">
+            Cancelar
+          </button>
           <button class="btn-danger" @click="deleteItem" :disabled="deleting">
-            <v-progress-circular v-if="deleting" indeterminate size="16" class="mr-2" />
+            <v-progress-circular
+              v-if="deleting"
+              indeterminate
+              size="16"
+              class="mr-2"
+            />
             Eliminar
           </button>
         </div>
@@ -483,7 +658,9 @@
       <div class="dialog-card">
         <div class="dialog-header">
           <h3 class="text-lg font-semibold text-red-400 flex items-center">
-            <v-icon size="20" class="mr-2 text-red-400">mdi-package-remove</v-icon>
+            <v-icon size="20" class="mr-2 text-red-400"
+              >mdi-package-remove</v-icon
+            >
             Eliminar todos los productos
           </h3>
           <button class="icon-btn" @click="cancelPurge">
@@ -492,14 +669,22 @@
         </div>
         <div class="dialog-body">
           <div class="alert-error mb-4">
-            <v-icon size="18" class="mr-2 flex-shrink-0">mdi-alert-octagon</v-icon>
-            <span><strong>Peligro extremo:</strong> Se eliminarán <strong>TODOS</strong> los productos, sus presentaciones, el stock asociado y los movimientos de inventario. Todo se perderá permanentemente.</span>
+            <v-icon size="18" class="mr-2 flex-shrink-0"
+              >mdi-alert-octagon</v-icon
+            >
+            <span
+              ><strong>Peligro extremo:</strong> Se eliminarán
+              <strong>TODOS</strong> los productos, sus presentaciones, el stock
+              asociado y los movimientos de inventario. Todo se perderá
+              permanentemente.</span
+            >
           </div>
           <p class="text-sm text-zinc-400 mb-2">
             Los IDs de productos y presentaciones se reiniciarán desde 1.
           </p>
           <p class="text-xs text-zinc-500">
-            Esta acción es irreversible. Asegúrate de haber exportado los datos si los necesitas.
+            Esta acción es irreversible. Asegúrate de haber exportado los datos
+            si los necesitas.
           </p>
         </div>
         <div class="dialog-footer">
@@ -509,57 +694,86 @@
             @click="executePurge"
             :disabled="purgeCountdown > 0 || purging"
           >
-            <v-progress-circular v-if="purging" indeterminate size="16" class="mr-2" />
-            {{ purgeCountdown > 0 ? `Espera ${purgeCountdown}s...` : 'Eliminar todo' }}
+            <v-progress-circular
+              v-if="purging"
+              indeterminate
+              size="16"
+              class="mr-2"
+            />
+            {{
+              purgeCountdown > 0
+                ? `Espera ${purgeCountdown}s...`
+                : "Eliminar todo"
+            }}
           </button>
         </div>
       </div>
     </v-dialog>
 
     <!-- Snackbar -->
-    <v-snackbar v-model="snackbar.show" :color="snackbar.color" location="top right" timeout="3000">
+    <v-snackbar
+      v-model="snackbar.show"
+      :color="snackbar.color"
+      location="top right"
+      timeout="3000"
+    >
       {{ snackbar.message }}
     </v-snackbar>
   </div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onUnmounted } from 'vue';
-import api from '@/utils/axios';
-import { useTable } from '@/composables/useTable';
-import TablePagination from '@/components/TablePagination.vue';
-import DarkSelect from '@/components/DarkSelect.vue';
+import { ref, computed, onMounted, onUnmounted } from "vue";
+import api from "@/utils/axios";
+import { useTable } from "@/composables/useTable";
+import TablePagination from "@/components/TablePagination.vue";
+import DarkSelect from "@/components/DarkSelect.vue";
 
-const API_URL = 'inventory/products/';
-const CATEGORIES_URL = 'configuration/categories/enabled/?category_type=PRODUCT';
-const UNITS_URL = 'configuration/measure-units/enabled/';
+const API_URL = "inventory/products/";
+const CATEGORIES_URL =
+  "configuration/categories/enabled/?category_type=PRODUCT";
+const UNITS_URL = "configuration/measure-units/enabled/";
 
 // ===== Opciones de filtros =====
 const statusOptions = [
-  { value: '', label: 'Todos los estados' },
-  { value: 'true', label: 'Activos' },
-  { value: 'false', label: 'Inactivos' },
+  { value: "", label: "Todos los estados" },
+  { value: "true", label: "Activos" },
+  { value: "false", label: "Inactivos" },
 ];
 
 // ===== Tabla =====
 const {
-  items, loading, total, page, pageSize,
-  search, ordering, filters,
-  loadData, toggleOrdering, getOrderingIcon,
-  onSearch, clearSearch, clearFilters,
+  items,
+  loading,
+  total,
+  page,
+  pageSize,
+  search,
+  ordering,
+  filters,
+  loadData,
+  toggleOrdering,
+  getOrderingIcon,
+  onSearch,
+  clearSearch,
+  clearFilters,
 } = useTable({
   apiUrl: API_URL,
-  defaultOrdering: 'name',
-  defaultFilters: { category: '', enabled: '' },
+  defaultOrdering: "name",
+  defaultFilters: { category: "", enabled: "" },
 });
 
 // ===== Tabs del formulario =====
 const tabs = [
-  { id: 'general', label: 'General', icon: 'mdi-package-variant-outline' },
-  { id: 'pricing', label: 'Precios y opciones', icon: 'mdi-cash-multiple' },
-  { id: 'presentations', label: 'Presentaciones', icon: 'mdi-format-list-bulleted-type' },
+  { id: "general", label: "General", icon: "mdi-package-variant-outline" },
+  { id: "pricing", label: "Precios y opciones", icon: "mdi-cash-multiple" },
+  {
+    id: "presentations",
+    label: "Presentaciones",
+    icon: "mdi-format-list-bulleted-type",
+  },
 ];
-const activeTab = ref('general');
+const activeTab = ref("general");
 
 // ===== Estado: Crear/Editar =====
 const dialogOpen = ref(false);
@@ -581,82 +795,104 @@ const categoryOptions = ref([]);
 const unitOptions = ref([]);
 
 const emptyForm = () => ({
-  name: '', sku: '', barcode: '', category_id: '',
-  cost_price: '', sale_price: '', min_stock: 0,
-  is_service: false, enabled: true,
+  name: "",
+  sku: "",
+  barcode: "",
+  category_id: "",
+  cost_price: "",
+  sale_price: "",
+  min_stock: 0,
+  is_service: false,
+  enabled: true,
   presentations: [],
 });
 
 const form = ref(emptyForm());
 const formErrors = ref({});
-const snackbar = ref({ show: false, message: '', color: 'success' });
+const snackbar = ref({ show: false, message: "", color: "success" });
 
 // ===== Computed =====
 const hasActiveFilters = computed(() => {
-  return search.value.trim() !== '' ||
-    filters.value.category !== '' ||
-    filters.value.enabled !== '';
+  return (
+    search.value.trim() !== "" ||
+    filters.value.category !== "" ||
+    filters.value.enabled !== ""
+  );
 });
 
 const categoryFilterOptions = computed(() => [
-  { value: '', label: 'Todas las categorías' },
+  { value: "", label: "Todas las categorías" },
   ...categoryOptions.value,
 ]);
 
 const purgeButtonText = computed(() => {
-  if (purging.value) return 'Eliminando...';
-  return 'Eliminar productos';
+  if (purging.value) return "Eliminando...";
+  return "Eliminar productos";
 });
 
 const generalHasErrors = computed(() =>
-  ['name', 'sku', 'category_id'].some(f => formErrors.value[f]?.length)
+  ["name", "sku", "category_id"].some((f) => formErrors.value[f]?.length),
 );
 const pricingHasErrors = computed(() =>
-  ['cost_price', 'sale_price'].some(f => formErrors.value[f]?.length)
+  ["cost_price", "sale_price"].some((f) => formErrors.value[f]?.length),
 );
 
 const tabHasError = (tabId) => {
-  if (tabId === 'general') return generalHasErrors.value;
-  if (tabId === 'pricing') return pricingHasErrors.value;
+  if (tabId === "general") return generalHasErrors.value;
+  if (tabId === "pricing") return pricingHasErrors.value;
   return false;
 };
 
 const goToFirstErrorTab = () => {
-  if (generalHasErrors.value) { activeTab.value = 'general'; return; }
-  if (pricingHasErrors.value) { activeTab.value = 'pricing'; return; }
+  if (generalHasErrors.value) {
+    activeTab.value = "general";
+    return;
+  }
+  if (pricingHasErrors.value) {
+    activeTab.value = "pricing";
+    return;
+  }
 };
 
 // ===== Helpers =====
 const formatPrice = (price) => {
   const num = parseFloat(price);
-  return isNaN(num) ? '—' : num.toLocaleString('es-CU', { minimumFractionDigits: 2 });
+  return isNaN(num)
+    ? "—"
+    : num.toLocaleString("es-CU", { minimumFractionDigits: 2 });
 };
 
 // ===== Cargar opciones =====
 const loadCategories = async () => {
   try {
     const response = await api.get(CATEGORIES_URL);
-    categoryOptions.value = response.data.map(c => ({ value: c.id, label: c.name }));
+    categoryOptions.value = response.data.map((c) => ({
+      value: c.id,
+      label: c.name,
+    }));
   } catch (error) {
-    console.error('Error cargando categorías:', error);
+    console.error("Error cargando categorías:", error);
   }
 };
 
 const loadUnits = async () => {
   try {
     const response = await api.get(UNITS_URL);
-    unitOptions.value = response.data.map(u => ({ value: u.id, label: `${u.name} (${u.short_name})` }));
+    unitOptions.value = response.data.map((u) => ({
+      value: u.id,
+      label: `${u.name} (${u.short_name})`,
+    }));
   } catch (error) {
-    console.error('Error cargando unidades:', error);
+    console.error("Error cargando unidades:", error);
   }
 };
 
 const availableUnitsFor = (index) => {
   const usedUnitIds = form.value.presentations
     .filter((_, i) => i !== index)
-    .map(p => p.measure_unit_id)
+    .map((p) => p.measure_unit_id)
     .filter(Boolean);
-  return unitOptions.value.filter(u => !usedUnitIds.includes(u.value));
+  return unitOptions.value.filter((u) => !usedUnitIds.includes(u.value));
 };
 
 // ===== Presentaciones =====
@@ -664,7 +900,7 @@ const addPresentation = () => {
   const factor = 1;
   const baseSalePrice = parseFloat(form.value.sale_price) || 0;
   form.value.presentations.push({
-    measure_unit_id: '',
+    measure_unit_id: "",
     conversion_factor: factor,
     sale_price: factor * baseSalePrice,
     is_default: form.value.presentations.length === 0,
@@ -690,13 +926,13 @@ const onPresentationFactorChange = (index) => {
 
 const onSkuInput = (value) => {
   form.value.sku = value.toUpperCase();
-  clearFieldError('sku');
+  clearFieldError("sku");
 };
 
 // ===== Dialog: Crear/Editar =====
 const openDialog = (item = null) => {
   formErrors.value = {};
-  activeTab.value = 'general';
+  activeTab.value = "general";
 
   if (item) {
     isEditing.value = true;
@@ -704,14 +940,14 @@ const openDialog = (item = null) => {
       id: item.id,
       name: item.name,
       sku: item.sku,
-      barcode: item.barcode || '',
-      category_id: item.category?.id || '',
+      barcode: item.barcode || "",
+      category_id: item.category?.id || "",
       cost_price: item.cost_price,
       sale_price: item.sale_price,
       min_stock: item.min_stock,
       is_service: item.is_service,
       enabled: item.enabled,
-      presentations: item.presentations.map(p => ({
+      presentations: item.presentations.map((p) => ({
         id: p.id,
         measure_unit_id: p.measure_unit.id,
         conversion_factor: p.conversion_factor,
@@ -733,43 +969,52 @@ const saveItem = async () => {
   let hasErrors = false;
 
   if (!form.value.name.trim()) {
-    formErrors.value.name = ['El nombre es requerido'];
+    formErrors.value.name = ["El nombre es requerido"];
     hasErrors = true;
   }
   if (!form.value.sku.trim()) {
-    formErrors.value.sku = ['El SKU es requerido'];
+    formErrors.value.sku = ["El SKU es requerido"];
     hasErrors = true;
   }
   if (!form.value.category_id) {
-    formErrors.value.category_id = ['La categoría es requerida'];
+    formErrors.value.category_id = ["La categoría es requerida"];
     hasErrors = true;
   }
-  if (form.value.cost_price === '' || parseFloat(form.value.cost_price) < 0) {
-    formErrors.value.cost_price = ['Precio de costo inválido'];
+  if (form.value.cost_price === "" || parseFloat(form.value.cost_price) < 0) {
+    formErrors.value.cost_price = ["Precio de costo inválido"];
     hasErrors = true;
   }
-  if (form.value.sale_price === '' || parseFloat(form.value.sale_price) < 0) {
-    formErrors.value.sale_price = ['Precio de venta inválido'];
+  if (form.value.sale_price === "" || parseFloat(form.value.sale_price) < 0) {
+    formErrors.value.sale_price = ["Precio de venta inválido"];
     hasErrors = true;
   }
 
   if (!form.value.is_service) {
     if (form.value.presentations.length === 0) {
-      showSnackbar('Agrega al menos una presentación para el producto', 'error');
+      showSnackbar(
+        "Agrega al menos una presentación para el producto",
+        "error",
+      );
       hasErrors = true;
-      activeTab.value = 'presentations';
+      activeTab.value = "presentations";
     } else {
       for (const pres of form.value.presentations) {
         if (!pres.measure_unit_id) {
-          showSnackbar('Todas las presentaciones deben tener una unidad de medida', 'error');
+          showSnackbar(
+            "Todas las presentaciones deben tener una unidad de medida",
+            "error",
+          );
           hasErrors = true;
-          activeTab.value = 'presentations';
+          activeTab.value = "presentations";
           break;
         }
-        if (!pres.conversion_factor || parseFloat(pres.conversion_factor) <= 0) {
-          showSnackbar('El factor de conversión debe ser mayor a 0', 'error');
+        if (
+          !pres.conversion_factor ||
+          parseFloat(pres.conversion_factor) <= 0
+        ) {
+          showSnackbar("El factor de conversión debe ser mayor a 0", "error");
           hasErrors = true;
-          activeTab.value = 'presentations';
+          activeTab.value = "presentations";
           break;
         }
       }
@@ -798,10 +1043,10 @@ const saveItem = async () => {
 
     if (isEditing.value) {
       await api.put(`${API_URL}${form.value.id}/`, payload);
-      showSnackbar('Producto actualizado correctamente');
+      showSnackbar("Producto actualizado correctamente");
     } else {
       await api.post(API_URL, payload);
-      showSnackbar('Producto creado correctamente');
+      showSnackbar("Producto creado correctamente");
     }
     dialogOpen.value = false;
     await loadData();
@@ -822,7 +1067,7 @@ const deleteItem = async () => {
   deleting.value = true;
   try {
     await api.delete(`${API_URL}${itemToDelete.value.id}/`);
-    showSnackbar('Producto eliminado correctamente');
+    showSnackbar("Producto eliminado correctamente");
     deleteDialogOpen.value = false;
 
     if (items.value.length === 1 && page.value > 1) {
@@ -864,13 +1109,18 @@ const executePurge = async () => {
   purging.value = true;
   try {
     const response = await api.delete(`${API_URL}purge/`);
-    showSnackbar(response.data.message || 'Todos los productos eliminados correctamente');
+    showSnackbar(
+      response.data.message || "Todos los productos eliminados correctamente",
+    );
     purgeDialogOpen.value = false;
     page.value = 1;
     await loadData();
   } catch (error) {
-    const msg = error.response?.data?.error || error.response?.data?.detail || 'Error al eliminar productos';
-    showSnackbar(msg, 'error');
+    const msg =
+      error.response?.data?.error ||
+      error.response?.data?.detail ||
+      "Error al eliminar productos";
+    showSnackbar(msg, "error");
   } finally {
     purging.value = false;
   }
@@ -882,21 +1132,25 @@ const handleApiError = (error) => {
     const data = error.response.data;
     const fieldErrors = {};
 
-    ['name', 'sku', 'category_id', 'cost_price', 'sale_price'].forEach(field => {
-      if (data[field]) {
-        fieldErrors[field] = Array.isArray(data[field]) ? data[field] : [data[field]];
-      }
-    });
+    ["name", "sku", "category_id", "cost_price", "sale_price"].forEach(
+      (field) => {
+        if (data[field]) {
+          fieldErrors[field] = Array.isArray(data[field])
+            ? data[field]
+            : [data[field]];
+        }
+      },
+    );
 
     formErrors.value = fieldErrors;
 
     if (Object.keys(fieldErrors).length > 0) {
       goToFirstErrorTab();
     } else {
-      showSnackbar(data.detail || 'Error al guardar', 'error');
+      showSnackbar(data.detail || "Error al guardar", "error");
     }
   } else {
-    showSnackbar('Error de conexión', 'error');
+    showSnackbar("Error de conexión", "error");
   }
 };
 
@@ -905,11 +1159,11 @@ const clearFieldError = (field) => {
 };
 
 const resetAll = () => {
-  search.value = '';
+  search.value = "";
   clearFilters();
 };
 
-const showSnackbar = (message, color = 'success') => {
+const showSnackbar = (message, color = "success") => {
   snackbar.value = { show: true, message, color };
 };
 
@@ -923,6 +1177,83 @@ onMounted(() => {
 onUnmounted(() => {
   if (purgeTimer) clearInterval(purgeTimer);
 });
+
+// ===== Selección múltiple para etiquetas =====
+const selectedProductIds = ref([]);
+const generatingLabels = ref(false);
+
+const allSelected = computed(() => {
+  return (
+    items.value.length > 0 &&
+    selectedProductIds.value.length === items.value.length
+  );
+});
+
+const toggleSelectAll = () => {
+  if (allSelected.value) {
+    selectedProductIds.value = [];
+  } else {
+    selectedProductIds.value = items.value.map((p) => p.id);
+  }
+};
+
+const toggleProductSelection = (productId) => {
+  const index = selectedProductIds.value.indexOf(productId);
+  if (index === -1) {
+    selectedProductIds.value.push(productId);
+  } else {
+    selectedProductIds.value.splice(index, 1);
+  }
+};
+
+const isProductSelected = (productId) => {
+  return selectedProductIds.value.includes(productId);
+};
+
+const generateLabels = async () => {
+  if (selectedProductIds.value.length === 0) {
+    showSnackbar("Selecciona al menos un producto", "warning");
+    return;
+  }
+
+  generatingLabels.value = true;
+  try {
+    const response = await api.post(
+      `${API_URL}generate-labels/`,
+      { product_ids: selectedProductIds.value },
+      { responseType: "blob" },
+    );
+
+    // Crear URL del blob y descargar
+    const url = window.URL.createObjectURL(
+      new Blob([response.data], { type: "application/pdf" }),
+    );
+    const link = document.createElement("a");
+    link.href = url;
+    link.setAttribute("download", "etiquetas_productos.pdf");
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    window.URL.revokeObjectURL(url);
+
+    showSnackbar(
+      `${selectedProductIds.value.length} etiquetas generadas correctamente`,
+    );
+  } catch (error) {
+    let msg = "Error al generar etiquetas";
+    if (error.response) {
+      try {
+        const errorData = await error.response.json();
+        msg = errorData.error || msg;
+      } catch (e) {
+        // Si no es JSON, usar mensaje por defecto
+      }
+    }
+    showSnackbar(msg, "error");
+  } finally {
+    generatingLabels.value = false;
+  }
+};
 </script>
 
 <style scoped>
@@ -1035,7 +1366,7 @@ onUnmounted(() => {
 
 .uppercase-input :deep(input) {
   text-transform: uppercase;
-  font-family: 'Courier New', monospace;
+  font-family: "Courier New", monospace;
   font-weight: 600;
   letter-spacing: 0.05em;
 }
