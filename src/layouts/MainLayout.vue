@@ -4,22 +4,14 @@
     <div class="glow glow-main"></div>
 
     <!-- Sidebar -->
-    <v-navigation-drawer
-      v-model="drawer"
-      :rail="rail"
-      permanent
-      class="sidebar"
-      elevation="0"
-    >
+    <v-navigation-drawer v-model="drawer" :rail="rail" permanent class="sidebar" elevation="0">
       <!-- Logo -->
       <div class="flex items-center gap-3 px-5 h-16 border-b border-white/5">
         <div class="sidebar-logo">
           <v-icon color="white" size="20">mdi-store-outline</v-icon>
         </div>
         <transition name="fade">
-          <span
-            v-if="!rail"
-            class="text-base font-semibold text-zinc-100 tracking-tight"
+          <span v-if="!rail" class="text-base font-semibold text-zinc-100 tracking-tight"
             >Mi Negocio</span
           >
         </transition>
@@ -27,11 +19,7 @@
 
       <!-- Menu -->
       <div class="px-3 py-5">
-        <v-list
-          density="compact"
-          nav
-          class="sidebar-menu !py-0 !bg-transparent"
-        >
+        <v-list density="compact" nav class="sidebar-menu !py-0 !bg-transparent">
           <!-- Dashboard -->
           <v-list-item
             prepend-icon="mdi-view-dashboard-outline"
@@ -64,11 +52,7 @@
           <div v-if="!rail" class="menu-section-label mt-5">Configuración</div>
           <v-list-group value="Configuración" v-if="!rail">
             <template v-slot:activator="{ props }">
-              <v-list-item
-                v-bind="props"
-                prepend-icon="mdi-cog-outline"
-                title="Configuración"
-              />
+              <v-list-item v-bind="props" prepend-icon="mdi-cog-outline" title="Configuración" />
             </template>
             <v-list-item
               v-for="item in configItems"
@@ -82,33 +66,29 @@
 
           <!-- Sección: Almacenes -->
           <div v-if="!rail" class="menu-section-label mt-5">Inventario</div>
-            <v-list-group value="Inventario" v-if="!rail">
-              <template v-slot:activator="{ props }">
-                <v-list-item
-                  v-bind="props"
-                  prepend-icon="mdi-account-group-outline"
-                  title="Inventario"
-                />
-              </template>
+          <v-list-group value="Inventario" v-if="!rail">
+            <template v-slot:activator="{ props }">
               <v-list-item
-                v-for="item in inventoryItems"
-                :key="item.to"
-                :prepend-icon="item.icon"
-                :title="item.title"
-                :to="item.to"
-                :active="currentPath === item.to"
+                v-bind="props"
+                prepend-icon="mdi-account-group-outline"
+                title="Inventario"
               />
+            </template>
+            <v-list-item
+              v-for="item in inventoryItems"
+              :key="item.to"
+              :prepend-icon="item.icon"
+              :title="item.title"
+              :to="item.to"
+              :active="currentPath === item.to"
+            />
           </v-list-group>
 
           <!-- Sección: Ventas -->
           <div v-if="!rail" class="menu-section-label mt-5">Ventas</div>
           <v-list-group value="Ventas" v-if="!rail">
             <template v-slot:activator="{ props }">
-              <v-list-item
-                v-bind="props"
-                prepend-icon="mdi-file-document-outline"
-                title="Ventas"
-              />
+              <v-list-item v-bind="props" prepend-icon="mdi-file-document-outline" title="Ventas" />
             </template>
             <v-list-item
               v-for="item in salesItems"
@@ -119,34 +99,20 @@
               :active="currentPath === item.to"
             />
           </v-list-group>
-
         </v-list>
       </div>
-
-      
-
-      
     </v-navigation-drawer>
 
     <!-- Topbar -->
     <v-app-bar color="transparent" elevation="0" class="topbar" height="64">
-      <v-btn
-        icon
-        variant="text"
-        @click="rail = !rail"
-        class="!rounded-lg toggle-btn"
-      >
-        <v-icon color="zinc-400">{{
-          rail ? "mdi-menu" : "mdi-menu-open"
-        }}</v-icon>
+      <v-btn icon variant="text" @click="rail = !rail" class="!rounded-lg toggle-btn">
+        <v-icon color="zinc-400">{{ rail ? 'mdi-menu' : 'mdi-menu-open' }}</v-icon>
       </v-btn>
 
       <div class="hidden sm:flex items-center gap-2 ml-2">
         <span class="text-xs text-zinc-500">Mi Negocio</span>
         <v-icon size="12" color="zinc-600">mdi-chevron-right</v-icon>
-        <span class="text-xs text-zinc-300 font-medium">{{
-          currentRoute
-        }}</span>
+        <span class="text-xs text-zinc-300 font-medium">{{ currentRoute }}</span>
       </div>
 
       <v-spacer />
@@ -170,15 +136,9 @@
       <!-- Profile -->
       <v-menu>
         <template v-slot:activator="{ props }">
-          <v-btn
-            v-bind="props"
-            variant="text"
-            class="profile-trigger !rounded-xl !px-2 ml-2"
-          >
+          <v-btn v-bind="props" variant="text" class="profile-trigger !rounded-xl !px-2 ml-2">
             <v-avatar size="32" class="avatar-gradient mr-2">
-              <span class="text-white text-xs font-semibold">{{
-                authStore.userInitials
-              }}</span>
+              <span class="text-white text-xs font-semibold">{{ authStore.userInitials }}</span>
             </v-avatar>
             <div class="hidden sm:block text-left">
               <div class="text-xs font-medium text-zinc-200">
@@ -186,9 +146,7 @@
               </div>
               <div class="text-[10px] text-zinc-500">{{ userRole }}</div>
             </div>
-            <v-icon size="14" class="ml-2 text-zinc-600"
-              >mdi-chevron-down</v-icon
-            >
+            <v-icon size="14" class="ml-2 text-zinc-600">mdi-chevron-down</v-icon>
           </v-btn>
         </template>
 
@@ -196,9 +154,7 @@
           <div class="p-4 border-b border-white/5">
             <div class="flex items-center gap-3">
               <v-avatar size="40" class="avatar-gradient">
-                <span class="text-white text-sm font-semibold">{{
-                  authStore.userInitials
-                }}</span>
+                <span class="text-white text-sm font-semibold">{{ authStore.userInitials }}</span>
               </v-avatar>
               <div>
                 <div class="text-sm font-medium text-zinc-200">
@@ -212,17 +168,12 @@
           </div>
           <div class="p-2">
             <router-link to="/profile" class="dropdown-item">
-              <v-icon size="18" class="mr-3 text-zinc-500"
-                >mdi-account-outline</v-icon
-              >
+              <v-icon size="18" class="mr-3 text-zinc-500">mdi-account-outline</v-icon>
               Mi Perfil
             </router-link>
           </div>
           <div class="p-2 border-t border-white/5">
-            <button
-              @click="handleLogout"
-              class="dropdown-item logout-item w-full text-left"
-            >
+            <button @click="handleLogout" class="dropdown-item logout-item w-full text-left">
               <v-icon size="18" class="mr-3">mdi-logout</v-icon>
               Cerrar Sesión
             </button>
@@ -241,103 +192,144 @@
 </template>
 
 <script setup>
-import { ref, computed } from "vue";
-import { useRouter, useRoute } from "vue-router";
-import { useAuthStore } from "@/stores/auth";
+import { ref, computed, onBeforeMount } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
+import { useAuthStore } from '@/stores/auth'
 
-const router = useRouter();
-const route = useRoute();
-const authStore = useAuthStore();
+const router = useRouter()
+const route = useRoute()
+const authStore = useAuthStore()
 
-const drawer = ref(true);
-const rail = ref(false);
-const searchQuery = ref("");
+const drawer = ref(true)
+const rail = ref(false)
+const searchQuery = ref('')
 
 // Menú: Administración (backend en inglés, UI en español)
 const adminItems = [
   {
-    title: "Usuarios",
-    icon: "mdi-account-outline",
-    to: "/administration/users",
+    title: 'Usuarios',
+    icon: 'mdi-account-outline',
+    to: '/administration/users'
   },
   {
-    title: "Grupos",
-    icon: "mdi-account-multiple-outline",
-    to: "/administration/groups",
-  },
-];
+    title: 'Grupos',
+    icon: 'mdi-account-multiple-outline',
+    to: '/administration/groups'
+  }
+]
 
 // Menú: Configuración
 const configItems = [
   {
-    title: "Empresa",
-    icon: "mdi-office-building-outline",
-    to: "/configuration/company",
+    title: 'Empresa',
+    icon: 'mdi-office-building-outline',
+    to: '/configuration/company'
   },
   {
-    title: "Provincias",
-    icon: "mdi-map-outline",
-    to: "/configuration/provinces",
+    title: 'Provincias',
+    icon: 'mdi-map-outline',
+    to: '/configuration/provinces'
   },
   {
-    title: "Municipios",
-    icon: "mdi-map-marker-outline",
-    to: "/configuration/municipalities",
+    title: 'Municipios',
+    icon: 'mdi-map-marker-outline',
+    to: '/configuration/municipalities'
   },
   {
-    title: "Categorías",
-    icon: "mdi-shape-outline",
-    to: "/configuration/categories",
+    title: 'Categorías',
+    icon: 'mdi-shape-outline',
+    to: '/configuration/categories'
   },
   {
-    title: "Unidades de medida",
-    icon: "mdi-ruler-square",
-    to: "/configuration/measure-units",
+    title: 'Unidades de medida',
+    icon: 'mdi-ruler-square',
+    to: '/configuration/measure-units'
   },
   {
-    title: "Monedas",
-    icon: "mdi-currency-usd",
-    to: "/configuration/currencies",
+    title: 'Monedas',
+    icon: 'mdi-currency-usd',
+    to: '/configuration/currencies'
   },
   {
-    title: "Métodos de pago",
-    icon: "mdi-credit-card-outline",
-    to: "/configuration/payment-methods",
-  },
-];
+    title: 'Métodos de pago',
+    icon: 'mdi-credit-card-outline',
+    to: '/configuration/payment-methods'
+  }
+]
 
 // Menú: Inventario
 const inventoryItems = [
   { title: 'Almacenes', icon: 'mdi-warehouse', to: '/inventory/warehouses' },
-  { title: 'Proveedores', icon: 'mdi-truck-delivery-outline', to: '/inventory/suppliers' },
-  { title: 'Productos', icon: 'mdi-package-variant', to: '/inventory/products' },
-  { title: 'Inventario', icon: 'mdi-clipboard-list-outline', to: '/inventory/stock' },
-  { title: 'Movimientos', icon: 'mdi-swap-horizontal', to: '/inventory/movements' },
-  { title: 'Vales', icon: 'mdi-file-document-multiple-outline', to: '/inventory/stock-documents' },
-  { title: 'Alertas de stock', icon: 'mdi-alert-circle-outline', to: '/inventory/alerts' },
-  { title: 'Importación masiva', icon: 'mdi-file-upload-outline', to: '/inventory/import' }
-];
+  {
+    title: 'Proveedores',
+    icon: 'mdi-truck-delivery-outline',
+    to: '/inventory/suppliers'
+  },
+  {
+    title: 'Productos',
+    icon: 'mdi-package-variant',
+    to: '/inventory/products'
+  },
+  {
+    title: 'Inventario',
+    icon: 'mdi-clipboard-list-outline',
+    to: '/inventory/stock'
+  },
+  {
+    title: 'Movimientos',
+    icon: 'mdi-swap-horizontal',
+    to: '/inventory/movements'
+  },
+  {
+    title: 'Vales',
+    icon: 'mdi-file-document-multiple-outline',
+    to: '/inventory/stock-documents'
+  },
+  {
+    title: 'Alertas de stock',
+    icon: 'mdi-alert-circle-outline',
+    to: '/inventory/alerts'
+  },
+  {
+    title: 'Importación masiva',
+    icon: 'mdi-file-upload-outline',
+    to: '/inventory/import'
+  }
+]
 
 // Sección: Ventas
 const salesItems = [
-  { title: 'Clientes', icon: 'mdi-account-group-outline', to: '/sales/customers' },
-  { title: 'Facturas', icon: 'mdi-file-document-outline', to: '/sales/invoices' },
+  {
+    title: 'Clientes',
+    icon: 'mdi-account-group-outline',
+    to: '/sales/customers'
+  },
+  {
+    title: 'Facturas',
+    icon: 'mdi-file-document-outline',
+    to: '/sales/invoices'
+  }
   // { title: 'Cotizaciones', icon: 'mdi-file-sign', to: '/sales/quotes' }, ← futuro
-];
+]
 
-const currentPath = computed(() => route.path);
-const currentRoute = computed(() => route.name || "Dashboard");
+// onBeforeMount(() => {
+//   if (!authStore.isAuthenticated) {
+//     router.push("/login");
+//   }
+// });
+const currentPath = computed(() => route.path)
+const currentRoute = computed(() => route.name || 'Dashboard')
 
 const userRole = computed(() => {
-  const groups = authStore.user?.groups || [];
-  if (groups.length > 0) return groups[0].name;
-  return authStore.user?.is_superuser ? "Administrador" : "Usuario";
-});
+  const groups = authStore.user?.groups || []
+  if (groups.length > 0) return groups[0].name
+  return authStore.user?.is_superuser ? 'Administrador' : 'Usuario'
+})
 
 const handleLogout = async () => {
-  await authStore.logout();
-  router.push("/login");
-};
+  await authStore.logout()
+  router.push('/login')
+}
 </script>
 
 <style scoped>
@@ -364,11 +356,7 @@ const handleLogout = async () => {
 .glow-sidebar {
   width: 400px;
   height: 400px;
-  background: radial-gradient(
-    circle,
-    rgba(99, 102, 241, 0.08),
-    transparent 70%
-  );
+  background: radial-gradient(circle, rgba(99, 102, 241, 0.08), transparent 70%);
   top: 0;
   left: -100px;
 }
@@ -376,11 +364,7 @@ const handleLogout = async () => {
 .glow-main {
   width: 500px;
   height: 500px;
-  background: radial-gradient(
-    circle,
-    rgba(139, 92, 246, 0.06),
-    transparent 70%
-  );
+  background: radial-gradient(circle, rgba(139, 92, 246, 0.06), transparent 70%);
   bottom: -100px;
   right: -100px;
 }
