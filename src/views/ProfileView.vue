@@ -162,7 +162,9 @@
                   :options="municipalityOptions"
                   :searchable="true"
                   search-placeholder="Buscar municipio..."
-                  :placeholder="form.province_id ? 'Seleccionar municipio' : 'Selecciona una provincia primero'"
+                  :placeholder="
+                    form.province_id ? 'Seleccionar municipio' : 'Selecciona una provincia primero'
+                  "
                   class="full-width-select"
                 />
               </div>
@@ -170,7 +172,13 @@
 
             <div class="flex justify-end">
               <button class="btn-primary" @click="saveProfile" :disabled="savingProfile">
-                <v-progress-circular v-if="savingProfile" indeterminate size="16" color="white" class="mr-2" />
+                <v-progress-circular
+                  v-if="savingProfile"
+                  indeterminate
+                  size="16"
+                  color="white"
+                  class="mr-2"
+                />
                 Guardar cambios
               </button>
             </div>
@@ -239,7 +247,13 @@
 
             <div class="flex justify-end">
               <button class="btn-primary" @click="changePassword" :disabled="savingPassword">
-                <v-progress-circular v-if="savingPassword" indeterminate size="16" color="white" class="mr-2" />
+                <v-progress-circular
+                  v-if="savingPassword"
+                  indeterminate
+                  size="16"
+                  color="white"
+                  class="mr-2"
+                />
                 Cambiar contraseña
               </button>
             </div>
@@ -256,53 +270,53 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue';
-import api from '@/utils/axios';
-import { useAuthStore } from '@/stores/auth';
-import DarkSelect from '@/components/DarkSelect.vue';
+import { ref, computed, onMounted } from 'vue'
+import api from '@/utils/axios'
+import { useAuthStore } from '@/stores/auth'
+import DarkSelect from '@/components/DarkSelect.vue'
 
-const authStore = useAuthStore();
+const authStore = useAuthStore()
 
-const ME_URL = 'v1.0/administration/users/me/';
-const CHANGE_PASSWORD_URL = 'v1.0/administration/change-password/';
-const PROVINCES_URL = 'configuration/provinces/enabled/';
+const ME_URL = 'administration/users/me/'
+const CHANGE_PASSWORD_URL = 'administration/change-password/'
+const PROVINCES_URL = 'configuration/provinces/enabled/'
 
 // ===== Estado =====
-const loadingProfile = ref(false);
-const savingProfile = ref(false);
-const savingPassword = ref(false);
-const showPasswords = ref(false);
+const loadingProfile = ref(false)
+const savingProfile = ref(false)
+const savingPassword = ref(false)
+const showPasswords = ref(false)
 
-const profile = ref({});
-const form = ref({});
-const formErrors = ref({});
-const passwordForm = ref({ current_password: '', new_password: '', confirm_password: '' });
-const passwordErrors = ref({});
+const profile = ref({})
+const form = ref({})
+const formErrors = ref({})
+const passwordForm = ref({ current_password: '', new_password: '', confirm_password: '' })
+const passwordErrors = ref({})
 
-const provinceOptions = ref([]);
-const municipalityOptions = ref([]);
+const provinceOptions = ref([])
+const municipalityOptions = ref([])
 
-const snackbar = ref({ show: false, message: '', color: 'success' });
+const snackbar = ref({ show: false, message: '', color: 'success' })
 
 // ===== Computed =====
 const userInitials = computed(() => {
-  const first = profile.value.first_name?.[0] || profile.value.username?.[0] || '';
-  const last = profile.value.last_name?.[0] || '';
-  return (first + last).toUpperCase() || '?';
-});
+  const first = profile.value.first_name?.[0] || profile.value.username?.[0] || ''
+  const last = profile.value.last_name?.[0] || ''
+  return (first + last).toUpperCase() || '?'
+})
 
 const userRole = computed(() => {
-  const groups = profile.value.groups || [];
-  if (groups.length > 0) return groups[0].name;
-  return profile.value.is_superuser ? 'Administrador' : 'Usuario';
-});
+  const groups = profile.value.groups || []
+  if (groups.length > 0) return groups[0].name
+  return profile.value.is_superuser ? 'Administrador' : 'Usuario'
+})
 
 // ===== Cargar datos =====
 const loadProfile = async () => {
-  loadingProfile.value = true;
+  loadingProfile.value = true
   try {
-    const response = await api.get(ME_URL);
-    profile.value = response.data;
+    const response = await api.get(ME_URL)
+    profile.value = response.data
 
     // Llenar el formulario con los datos del perfil
     form.value = {
@@ -313,195 +327,195 @@ const loadProfile = async () => {
       contact: response.data.contact || '',
       address: response.data.address || '',
       province_id: response.data.province?.id || '',
-      municipality_id: response.data.municipality?.id || '',
-    };
+      municipality_id: response.data.municipality?.id || ''
+    }
 
     // Cargar municipios de la provincia actual del usuario
     if (response.data.province?.id) {
-      await loadMunicipalities(response.data.province.id);
+      await loadMunicipalities(response.data.province.id)
     }
   } catch (error) {
-    console.error('Error cargando perfil:', error);
-    showSnackbar('Error al cargar tu perfil', 'error');
+    console.error('Error cargando perfil:', error)
+    showSnackbar('Error al cargar tu perfil', 'error')
   } finally {
-    loadingProfile.value = false;
+    loadingProfile.value = false
   }
-};
+}
 
 const loadProvinces = async () => {
   try {
-    const response = await api.get(PROVINCES_URL);
-    provinceOptions.value = response.data.map(p => ({ value: p.id, label: p.name }));
+    const response = await api.get(PROVINCES_URL)
+    provinceOptions.value = response.data.map(p => ({ value: p.id, label: p.name }))
   } catch (error) {
-    console.error('Error cargando provincias:', error);
+    console.error('Error cargando provincias:', error)
   }
-};
+}
 
-const loadMunicipalities = async (provinceId) => {
+const loadMunicipalities = async provinceId => {
   if (!provinceId) {
-    municipalityOptions.value = [];
-    return;
+    municipalityOptions.value = []
+    return
   }
   try {
-    const response = await api.get(`configuration/provinces/${provinceId}/municipalities/`);
-    municipalityOptions.value = response.data.map(m => ({ value: m.id, label: m.name }));
+    const response = await api.get(`configuration/provinces/${provinceId}/municipalities/`)
+    municipalityOptions.value = response.data.map(m => ({ value: m.id, label: m.name }))
   } catch (error) {
-    console.error('Error cargando municipios:', error);
-    municipalityOptions.value = [];
+    console.error('Error cargando municipios:', error)
+    municipalityOptions.value = []
   }
-};
+}
 
-const onProvinceChange = (provinceId) => {
-  form.value.municipality_id = '';
-  loadMunicipalities(provinceId);
-};
+const onProvinceChange = provinceId => {
+  form.value.municipality_id = ''
+  loadMunicipalities(provinceId)
+}
 
 // ===== Guardar información personal =====
 const saveProfile = async () => {
-  formErrors.value = {};
-  let hasErrors = false;
+  formErrors.value = {}
+  let hasErrors = false
 
   if (!form.value.first_name.trim()) {
-    formErrors.value.first_name = ['El nombre es requerido'];
-    hasErrors = true;
+    formErrors.value.first_name = ['El nombre es requerido']
+    hasErrors = true
   }
   if (!form.value.last_name.trim()) {
-    formErrors.value.last_name = ['Los apellidos son requeridos'];
-    hasErrors = true;
+    formErrors.value.last_name = ['Los apellidos son requeridos']
+    hasErrors = true
   }
   if (!form.value.email.trim()) {
-    formErrors.value.email = ['El email es requerido'];
-    hasErrors = true;
+    formErrors.value.email = ['El email es requerido']
+    hasErrors = true
   } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.value.email)) {
-    formErrors.value.email = ['Email inválido'];
-    hasErrors = true;
+    formErrors.value.email = ['Email inválido']
+    hasErrors = true
   }
   if (!form.value.ci.trim()) {
-    formErrors.value.ci = ['El CI es requerido'];
-    hasErrors = true;
+    formErrors.value.ci = ['El CI es requerido']
+    hasErrors = true
   }
 
-  if (hasErrors) return;
+  if (hasErrors) return
 
-  savingProfile.value = true;
+  savingProfile.value = true
   try {
     // ✅ CORREGIDO: Expandir form.value, no form
     const payload = {
       ...form.value,
       province_id: form.value.province_id || null,
-      municipality_id: form.value.municipality_id || null,
-    };
+      municipality_id: form.value.municipality_id || null
+    }
 
-    const response = await api.put(ME_URL, payload);
-    
+    const response = await api.put(ME_URL, payload)
+
     // Actualizar el perfil mostrado y el store de autenticación
-    profile.value = response.data;
-    authStore.updateUser(response.data);
+    profile.value = response.data
+    authStore.updateUser(response.data)
 
-    showSnackbar('Perfil actualizado correctamente');
+    showSnackbar('Perfil actualizado correctamente')
   } catch (error) {
-    console.error('Error guardando perfil:', error);
-    handleProfileError(error);
+    console.error('Error guardando perfil:', error)
+    handleProfileError(error)
   } finally {
-    savingProfile.value = false;
+    savingProfile.value = false
   }
-};
+}
 
 // ===== Cambiar contraseña =====
 const changePassword = async () => {
-  passwordErrors.value = {};
-  let hasErrors = false;
+  passwordErrors.value = {}
+  let hasErrors = false
 
   if (!passwordForm.value.current_password) {
-    passwordErrors.value.current_password = ['Ingresa tu contraseña actual'];
-    hasErrors = true;
+    passwordErrors.value.current_password = ['Ingresa tu contraseña actual']
+    hasErrors = true
   }
   if (!passwordForm.value.new_password) {
-    passwordErrors.value.new_password = ['La nueva contraseña es requerida'];
-    hasErrors = true;
+    passwordErrors.value.new_password = ['La nueva contraseña es requerida']
+    hasErrors = true
   } else if (passwordForm.value.new_password.length < 8) {
-    passwordErrors.value.new_password = ['Mínimo 8 caracteres'];
-    hasErrors = true;
+    passwordErrors.value.new_password = ['Mínimo 8 caracteres']
+    hasErrors = true
   }
   if (passwordForm.value.new_password !== passwordForm.value.confirm_password) {
-    passwordErrors.value.confirm_password = ['Las contraseñas no coinciden'];
-    hasErrors = true;
+    passwordErrors.value.confirm_password = ['Las contraseñas no coinciden']
+    hasErrors = true
   }
 
-  if (hasErrors) return;
+  if (hasErrors) return
 
-  savingPassword.value = true;
+  savingPassword.value = true
   try {
-    await api.post(CHANGE_PASSWORD_URL, passwordForm.value);
-    showSnackbar('Contraseña actualizada correctamente');
-    passwordForm.value = { current_password: '', new_password: '', confirm_password: '' };
+    await api.post(CHANGE_PASSWORD_URL, passwordForm.value)
+    showSnackbar('Contraseña actualizada correctamente')
+    passwordForm.value = { current_password: '', new_password: '', confirm_password: '' }
   } catch (error) {
-    console.error('Error cambiando contraseña:', error);
-    handlePasswordError(error);
+    console.error('Error cambiando contraseña:', error)
+    handlePasswordError(error)
   } finally {
-    savingPassword.value = false;
+    savingPassword.value = false
   }
-};
+}
 
 // ===== Manejo de errores =====
-const handleProfileError = (error) => {
+const handleProfileError = error => {
   if (error.response?.data) {
-    const data = error.response.data;
-    const fieldErrors = {};
+    const data = error.response.data
+    const fieldErrors = {}
 
-    ['first_name', 'last_name', 'email', 'ci'].forEach(field => {
+    ;['first_name', 'last_name', 'email', 'ci'].forEach(field => {
       if (data[field]) {
-        fieldErrors[field] = Array.isArray(data[field]) ? data[field] : [data[field]];
+        fieldErrors[field] = Array.isArray(data[field]) ? data[field] : [data[field]]
       }
-    });
+    })
 
-    formErrors.value = fieldErrors;
+    formErrors.value = fieldErrors
 
     if (Object.keys(fieldErrors).length === 0) {
-      showSnackbar(data.detail || 'Error al guardar', 'error');
+      showSnackbar(data.detail || 'Error al guardar', 'error')
     }
   } else {
-    showSnackbar('Error de conexión', 'error');
+    showSnackbar('Error de conexión', 'error')
   }
-};
+}
 
-const handlePasswordError = (error) => {
+const handlePasswordError = error => {
   if (error.response?.data) {
-    const data = error.response.data;
-    const fieldErrors = {};
+    const data = error.response.data
+    const fieldErrors = {}
 
-    ['current_password', 'new_password', 'confirm_password'].forEach(field => {
+    ;['current_password', 'new_password', 'confirm_password'].forEach(field => {
       if (data[field]) {
-        fieldErrors[field] = Array.isArray(data[field]) ? data[field] : [data[field]];
+        fieldErrors[field] = Array.isArray(data[field]) ? data[field] : [data[field]]
       }
-    });
+    })
 
-    passwordErrors.value = fieldErrors;
+    passwordErrors.value = fieldErrors
 
     if (Object.keys(fieldErrors).length === 0) {
-      showSnackbar(data.detail || 'Error al cambiar la contraseña', 'error');
+      showSnackbar(data.detail || 'Error al cambiar la contraseña', 'error')
     }
   } else {
-    showSnackbar('Error de conexión', 'error');
+    showSnackbar('Error de conexión', 'error')
   }
-};
+}
 
-const clearFieldError = (field) => {
-  if (formErrors.value[field]) formErrors.value[field] = [];
-};
+const clearFieldError = field => {
+  if (formErrors.value[field]) formErrors.value[field] = []
+}
 
-const clearPasswordError = (field) => {
-  if (passwordErrors.value[field]) passwordErrors.value[field] = [];
-};
+const clearPasswordError = field => {
+  if (passwordErrors.value[field]) passwordErrors.value[field] = []
+}
 
 const showSnackbar = (message, color = 'success') => {
-  snackbar.value = { show: true, message, color };
-};
+  snackbar.value = { show: true, message, color }
+}
 
 onMounted(() => {
-  loadProvinces();
-  loadProfile();
-});
+  loadProvinces()
+  loadProfile()
+})
 </script>
 
 <style scoped>
