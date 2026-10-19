@@ -35,9 +35,7 @@
           </div>
 
           <div class="dark-select-options">
-            <div v-if="filteredOptions.length === 0" class="dark-select-empty">
-              Sin resultados
-            </div>
+            <div v-if="filteredOptions.length === 0" class="dark-select-empty">Sin resultados</div>
             <button
               v-for="option in filteredOptions"
               :key="option.value"
@@ -57,46 +55,46 @@
 </template>
 
 <script setup>
-import { ref, computed, watch, nextTick, onMounted, onUnmounted } from 'vue';
+import { ref, computed, watch, nextTick, onMounted, onUnmounted } from 'vue'
 
 const props = defineProps({
   modelValue: { type: [String, Number, Boolean], default: '' },
   options: { type: Array, required: true },
   placeholder: { type: String, default: 'Seleccionar...' },
   searchable: { type: Boolean, default: false },
-  searchPlaceholder: { type: String, default: 'Buscar...' },
-});
+  searchPlaceholder: { type: String, default: 'Buscar...' }
+})
 
-const emit = defineEmits(['update:modelValue', 'change']);
+const emit = defineEmits(['update:modelValue', 'change'])
 
-const isOpen = ref(false);
-const searchQuery = ref('');
-const wrapperRef = ref(null);
-const dropdownRef = ref(null);
-const searchInputRef = ref(null);
-const dropdownStyle = ref({});
+const isOpen = ref(false)
+const searchQuery = ref('')
+const wrapperRef = ref(null)
+const dropdownRef = ref(null)
+const searchInputRef = ref(null)
+const dropdownStyle = ref({})
 
 const selectedLabel = computed(() => {
-  const opt = props.options.find(o => o.value === props.modelValue);
-  return opt ? opt.label : '';
-});
+  const opt = props.options.find(o => o.value === props.modelValue)
+  return opt ? opt.label : ''
+})
 
 const filteredOptions = computed(() => {
-  if (!props.searchable || !searchQuery.value.trim()) return props.options;
-  const q = searchQuery.value.toLowerCase();
-  return props.options.filter(o => o.label.toLowerCase().includes(q));
-});
+  if (!props.searchable || !searchQuery.value.trim()) return props.options
+  const q = searchQuery.value.toLowerCase()
+  return props.options.filter(o => o.label.toLowerCase().includes(q))
+})
 
 // ===== Posicionamiento dinámico =====
 const updatePosition = () => {
-  if (!wrapperRef.value || !isOpen.value) return;
+  if (!wrapperRef.value) return
 
-  const rect = wrapperRef.value.getBoundingClientRect();
-  const viewportHeight = window.innerHeight;
-  const estimatedDropdownHeight = 300; // max-height + padding
+  const rect = wrapperRef.value.getBoundingClientRect()
+  const viewportHeight = window.innerHeight
+  const estimatedDropdownHeight = 300 // max-height + padding
 
   // Si no hay espacio abajo, abrir hacia arriba
-  const openUpward = (rect.bottom + estimatedDropdownHeight) > viewportHeight;
+  const openUpward = rect.bottom + estimatedDropdownHeight > viewportHeight
 
   dropdownStyle.value = {
     position: 'fixed',
@@ -105,69 +103,74 @@ const updatePosition = () => {
     zIndex: 99999,
     ...(openUpward
       ? { bottom: `${viewportHeight - rect.top + 4}px` }
-      : { top: `${rect.bottom + 4}px` }
-    ),
-  };
-};
+      : { top: `${rect.bottom + 4}px` })
+  }
+}
 
 // ===== Toggle =====
 const toggleDropdown = () => {
-  isOpen.value = !isOpen.value;
-  if (isOpen.value) {
-    searchQuery.value = '';
+  if (!isOpen.value) {
+    updatePosition()
+
+    searchQuery.value = ''
+    isOpen.value = true
+
     nextTick(() => {
-      updatePosition();
-      searchInputRef.value?.focus();
-    });
+      searchInputRef.value?.focus()
+    })
+  } else {
+    isOpen.value = false
   }
-};
+}
 
 // ===== Select =====
-const selectOption = (option) => {
-  emit('update:modelValue', option.value);
-  emit('change', option.value);
-  isOpen.value = false;
-  searchQuery.value = '';
-};
+const selectOption = option => {
+  emit('update:modelValue', option.value)
+  emit('change', option.value)
+  isOpen.value = false
+  searchQuery.value = ''
+}
 
 // ===== Click outside =====
-const handleClickOutside = (e) => {
-  if (!isOpen.value) return;
+const handleClickOutside = e => {
+  if (!isOpen.value) return
   if (
-    wrapperRef.value && !wrapperRef.value.contains(e.target) &&
-    dropdownRef.value && !dropdownRef.value.contains(e.target)
+    wrapperRef.value &&
+    !wrapperRef.value.contains(e.target) &&
+    dropdownRef.value &&
+    !dropdownRef.value.contains(e.target)
   ) {
-    isOpen.value = false;
+    isOpen.value = false
   }
-};
+}
 
 // ===== Recalcular posición en scroll/resize =====
 const handleScrollOrResize = () => {
-  if (isOpen.value) updatePosition();
-};
+  if (isOpen.value) updatePosition()
+}
 
 // ===== Watchers =====
-watch(isOpen, async (val) => {
+watch(isOpen, async val => {
   if (val) {
-    await nextTick();
-    updatePosition();
+    await nextTick()
+    updatePosition()
   } else {
-    searchQuery.value = '';
+    searchQuery.value = ''
   }
-});
+})
 
 // ===== Lifecycle =====
 onMounted(() => {
-  document.addEventListener('click', handleClickOutside);
-  window.addEventListener('scroll', handleScrollOrResize, true);
-  window.addEventListener('resize', handleScrollOrResize);
-});
+  document.addEventListener('click', handleClickOutside)
+  window.addEventListener('scroll', handleScrollOrResize, true)
+  window.addEventListener('resize', handleScrollOrResize)
+})
 
 onUnmounted(() => {
-  document.removeEventListener('click', handleClickOutside);
-  window.removeEventListener('scroll', handleScrollOrResize, true);
-  window.removeEventListener('resize', handleScrollOrResize);
-});
+  document.removeEventListener('click', handleClickOutside)
+  window.removeEventListener('scroll', handleScrollOrResize, true)
+  window.removeEventListener('resize', handleScrollOrResize)
+})
 </script>
 
 <style scoped>
@@ -225,11 +228,33 @@ onUnmounted(() => {
   transform: rotate(180deg);
 }
 
-/* ===== Animación ===== */
-.dropdown-fade-enter-active { transition: all 0.15s ease; }
-.dropdown-fade-leave-active { transition: all 0.1s ease; }
-.dropdown-fade-enter-from { opacity: 0; transform: translateY(-4px); }
-.dropdown-fade-leave-to { opacity: 0; transform: translateY(-4px); }
+/* Reemplaza tu bloque de animación actual por este */
+.dropdown-fade-enter-active {
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.dropdown-fade-leave-active {
+  transition: all 0.15s ease-in;
+}
+
+/* Estado inicial al entrar: ligeramente más pequeño, desplazado 8px hacia arriba y transparente */
+.dropdown-fade-enter-from {
+  opacity: 0;
+  transform: scale(0.98) translateY(-8px);
+}
+.dropdown-fade-enter-to {
+  opacity: 1;
+  transform: scale(1) translateY(0);
+}
+
+/* Estado final al salir: vuelve a encogerse y desvanecerse */
+.dropdown-fade-leave-from {
+  opacity: 1;
+  transform: scale(1) translateY(0);
+}
+.dropdown-fade-leave-to {
+  opacity: 0;
+  transform: scale(0.98) translateY(-8px);
+}
 </style>
 
 <!-- Estilos globales para el dropdown teleportado -->
