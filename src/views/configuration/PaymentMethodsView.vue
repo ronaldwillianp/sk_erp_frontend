@@ -32,23 +32,14 @@
             placeholder="Buscar por nombre o descripción..."
             @keyup.enter="onSearch"
           />
-          <button
-            v-if="search"
-            class="icon-btn !w-6 !h-6"
-            @click="clearSearch"
-            title="Limpiar"
-          >
+          <button v-if="search" class="icon-btn !w-6 !h-6" @click="clearSearch" title="Limpiar">
             <v-icon size="14">mdi-close</v-icon>
           </button>
         </div>
 
         <div class="flex gap-3">
           <!-- Filtro: Estado -->
-          <DarkSelect
-            v-model="filters.enabled"
-            :options="statusOptions"
-            @change="onSearch"
-          />
+          <DarkSelect v-model="filters.enabled" :options="statusOptions" @change="onSearch" />
         </div>
       </div>
     </div>
@@ -70,9 +61,10 @@
           {{ hasActiveFilters ? 'Sin resultados' : 'Sin métodos de pago' }}
         </div>
         <div class="empty-state-text">
-          {{ hasActiveFilters
-            ? 'No se encontraron métodos con los filtros aplicados.'
-            : 'Aún no hay métodos de pago registrados. Crea el primero para comenzar.'
+          {{
+            hasActiveFilters
+              ? 'No se encontraron métodos con los filtros aplicados.'
+              : 'Aún no hay métodos de pago registrados. Crea el primero para comenzar.'
           }}
         </div>
         <button v-if="!hasActiveFilters" class="btn-primary mt-6" @click="openDialog()">
@@ -128,7 +120,11 @@
                     <button class="icon-btn" title="Editar" @click="openDialog(item)">
                       <v-icon size="16">mdi-pencil-outline</v-icon>
                     </button>
-                    <button class="icon-btn !text-red-400 hover:!bg-red-500/10" title="Eliminar" @click="confirmDelete(item)">
+                    <button
+                      class="icon-btn !text-red-400 hover:!bg-red-500/10"
+                      title="Eliminar"
+                      @click="confirmDelete(item)"
+                    >
                       <v-icon size="16">mdi-delete-outline</v-icon>
                     </button>
                   </div>
@@ -169,7 +165,6 @@
               placeholder="Ej: Efectivo"
               variant="outlined"
               density="comfortable"
-              hide-details
               :error-messages="formErrors.name"
               class="dark-input"
               @update:model-value="clearFieldError('name')"
@@ -183,7 +178,6 @@
               placeholder="Ej: Pago en efectivo al momento de la entrega"
               variant="outlined"
               density="comfortable"
-              hide-details
               :error-messages="formErrors.description"
               class="dark-input"
               @update:model-value="clearFieldError('description')"
@@ -196,7 +190,6 @@
               v-model="form.enabled"
               label="Activo"
               color="indigo"
-              hide-details
               density="compact"
               class="dark-switch"
             />
@@ -224,8 +217,8 @@
         </div>
         <div class="dialog-body">
           <p class="text-sm text-zinc-400">
-            ¿Estás seguro de eliminar <strong class="text-zinc-200">{{ itemToDelete?.name }}</strong>?
-            Esta acción no se puede deshacer.
+            ¿Estás seguro de eliminar <strong class="text-zinc-200">{{ itemToDelete?.name }}</strong
+            >? Esta acción no se puede deshacer.
           </p>
         </div>
         <div class="dialog-footer">
@@ -246,150 +239,164 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue';
-import api from '@/utils/axios';
-import { useTable } from '@/composables/useTable';
-import TablePagination from '@/components/TablePagination.vue';
-import DarkSelect from '@/components/DarkSelect.vue';
+import { ref, computed, onMounted } from 'vue'
+import api from '@/utils/axios'
+import { useTable } from '@/composables/useTable'
+import TablePagination from '@/components/TablePagination.vue'
+import DarkSelect from '@/components/DarkSelect.vue'
 
-const API_URL = 'configuration/payment-methods/';
+const API_URL = 'configuration/payment-methods/'
 
 // Opciones para el filtro de estado
 const statusOptions = [
   { value: '', label: 'Todos los estados' },
   { value: 'true', label: 'Activos' },
-  { value: 'false', label: 'Inactivos' },
-];
+  { value: 'false', label: 'Inactivos' }
+]
 
 // ===== Tabla (paginación + búsqueda + ordenamiento + filtros) =====
 const {
-  items, loading, total, page, pageSize,
-  search, ordering, filters,
-  loadData, toggleOrdering, getOrderingIcon,
-  onSearch, clearSearch, clearFilters,
-  changePageSize, changePage
+  items,
+  loading,
+  total,
+  page,
+  pageSize,
+  search,
+  ordering,
+  filters,
+  loadData,
+  toggleOrdering,
+  getOrderingIcon,
+  onSearch,
+  clearSearch,
+  clearFilters,
+  changePageSize,
+  changePage
 } = useTable({
   apiUrl: API_URL,
   defaultOrdering: 'name',
-  defaultFilters: { enabled: '' },
-});
+  defaultFilters: { enabled: '' }
+})
 
 // ===== Estado de dialogs =====
-const dialogOpen = ref(false);
-const deleteDialogOpen = ref(false);
-const isEditing = ref(false);
-const saving = ref(false);
-const deleting = ref(false);
-const itemToDelete = ref(null);
+const dialogOpen = ref(false)
+const deleteDialogOpen = ref(false)
+const isEditing = ref(false)
+const saving = ref(false)
+const deleting = ref(false)
+const itemToDelete = ref(null)
 
-const form = ref({ name: '', description: '', enabled: true });
-const formErrors = ref({ name: [], description: [] });
-const snackbar = ref({ show: false, message: '', color: 'success' });
+const form = ref({ name: '', description: '', enabled: true })
+const formErrors = ref({ name: [], description: [] })
+const snackbar = ref({ show: false, message: '', color: 'success' })
 
 // ===== Computed =====
 const hasActiveFilters = computed(() => {
-  return search.value.trim() !== '' || filters.value.enabled !== '';
-});
+  return search.value.trim() !== '' || filters.value.enabled !== ''
+})
 
 // ===== Métodos =====
 const resetAll = () => {
-  search.value = '';
-  clearFilters();
-};
+  search.value = ''
+  clearFilters()
+}
 
 const openDialog = (item = null) => {
   if (item) {
-    isEditing.value = true;
-    form.value = { ...item };
+    isEditing.value = true
+    form.value = { ...item }
   } else {
-    isEditing.value = false;
-    form.value = { name: '', description: '', enabled: true };
+    isEditing.value = false
+    form.value = { name: '', description: '', enabled: true }
   }
-  formErrors.value = { name: [], description: [] };
-  dialogOpen.value = true;
-};
+  formErrors.value = { name: [], description: [] }
+  dialogOpen.value = true
+}
 
 const saveItem = async () => {
-  let hasErrors = false;
-  formErrors.value = { name: [], description: [] };
+  let hasErrors = false
+  formErrors.value = { name: [], description: [] }
 
   if (!form.value.name.trim()) {
-    formErrors.value.name = ['El nombre es requerido'];
-    hasErrors = true;
+    formErrors.value.name = ['El nombre es requerido']
+    hasErrors = true
   }
   if (!form.value.description.trim()) {
-    formErrors.value.description = ['La descripción es requerida'];
-    hasErrors = true;
+    formErrors.value.description = ['La descripción es requerida']
+    hasErrors = true
   }
-  if (hasErrors) return;
+  if (hasErrors) return
 
-  saving.value = true;
+  saving.value = true
   try {
     if (isEditing.value) {
-      await api.put(`${API_URL}${form.value.id}/`, form.value);
-      showSnackbar('Método de pago actualizado correctamente');
+      await api.put(`${API_URL}${form.value.id}/`, form.value)
+      showSnackbar('Método de pago actualizado correctamente')
     } else {
-      await api.post(API_URL, form.value);
-      showSnackbar('Método de pago creado correctamente');
+      await api.post(API_URL, form.value)
+      showSnackbar('Método de pago creado correctamente')
     }
-    dialogOpen.value = false;
-    await loadData();
+    dialogOpen.value = false
+    await loadData()
   } catch (error) {
-    handleApiError(error);
+    handleApiError(error)
   } finally {
-    saving.value = false;
+    saving.value = false
   }
-};
+}
 
-const confirmDelete = (item) => {
-  itemToDelete.value = item;
-  deleteDialogOpen.value = true;
-};
+const confirmDelete = item => {
+  itemToDelete.value = item
+  deleteDialogOpen.value = true
+}
 
 const deleteItem = async () => {
-  deleting.value = true;
+  deleting.value = true
   try {
-    await api.delete(`${API_URL}${itemToDelete.value.id}/`);
-    showSnackbar('Método de pago eliminado correctamente');
-    deleteDialogOpen.value = false;
+    await api.delete(`${API_URL}${itemToDelete.value.id}/`)
+    showSnackbar('Método de pago eliminado correctamente')
+    deleteDialogOpen.value = false
 
     // Si eliminamos el último item de la página, volver a la anterior
     if (items.value.length === 1 && page.value > 1) {
-      page.value--;
+      page.value--
     } else {
-      await loadData();
+      await loadData()
     }
   } catch (error) {
-    handleApiError(error);
+    handleApiError(error)
   } finally {
-    deleting.value = false;
+    deleting.value = false
   }
-};
+}
 
-const handleApiError = (error) => {
+const handleApiError = error => {
   if (error.response?.data) {
-    const data = error.response.data;
-    if (data.name) formErrors.value.name = Array.isArray(data.name) ? data.name : [data.name];
-    if (data.description) formErrors.value.description = Array.isArray(data.description) ? data.description : [data.description];
+    const data = error.response.data
+    if (data.name) formErrors.value.name = Array.isArray(data.name) ? data.name : [data.name]
+    if (data.description)
+      formErrors.value.description = Array.isArray(data.description)
+        ? data.description
+        : [data.description]
 
-    const detail = data.detail || data.non_field_errors?.[0];
+    const detail = data.detail || data.non_field_errors?.[0]
     if (!data.name && !data.description) {
-      showSnackbar(detail || 'Error al guardar', 'error');
+      showSnackbar(detail || 'Error al guardar', 'error')
     }
   } else {
-    showSnackbar('Error de conexión', 'error');
+    showSnackbar('Error de conexión', 'error')
   }
-};
+}
 
-const clearFieldError = (field) => {
-  if (form.value[field]?.trim()) formErrors.value[field] = [];
-};
+const clearFieldError = field => {
+  if (form.value[field]?.trim()) formErrors.value[field] = []
+}
 
 const showSnackbar = (message, color = 'success') => {
-  snackbar.value = { show: true, message, color };
-};
+  snackbar.value = { show: true, message, color }
+}
 
-onMounted(loadData);
+onMounted(loadData)
 </script>
 
 <style scoped>

@@ -5,9 +5,7 @@
       <div class="page-header-row">
         <div>
           <h1 class="page-title">Vales de inventario</h1>
-          <p class="page-subtitle">
-            Entradas, salidas, traslados y ajustes multi-producto
-          </p>
+          <p class="page-subtitle">Entradas, salidas, traslados y ajustes multi-producto</p>
         </div>
         <div class="flex gap-3">
           <button class="btn-secondary" @click="loadData">
@@ -33,12 +31,7 @@
             placeholder="Buscar por número, referencia o notas..."
             @keyup.enter="onSearch"
           />
-          <button
-            v-if="search"
-            class="icon-btn !w-6 !h-6"
-            @click="clearSearch"
-            title="Limpiar"
-          >
+          <button v-if="search" class="icon-btn !w-6 !h-6" @click="clearSearch" title="Limpiar">
             <v-icon size="14">mdi-close</v-icon>
           </button>
         </div>
@@ -67,25 +60,19 @@
 
       <div v-else-if="!items.length" class="empty-state">
         <div class="empty-state-icon">
-          <v-icon size="32" color="zinc-600"
-            >mdi-file-document-multiple-outline</v-icon
-          >
+          <v-icon size="32" color="zinc-600">mdi-file-document-multiple-outline</v-icon>
         </div>
         <div class="empty-state-title">
-          {{ hasActiveFilters ? "Sin resultados" : "Sin vales registrados" }}
+          {{ hasActiveFilters ? 'Sin resultados' : 'Sin vales registrados' }}
         </div>
         <div class="empty-state-text">
           {{
             hasActiveFilters
-              ? "No se encontraron vales con los filtros aplicados."
-              : "Aún no hay vales. Crea el primero para comenzar."
+              ? 'No se encontraron vales con los filtros aplicados.'
+              : 'Aún no hay vales. Crea el primero para comenzar.'
           }}
         </div>
-        <button
-          v-if="!hasActiveFilters"
-          class="btn-primary mt-6"
-          @click="openDialog()"
-        >
+        <button v-if="!hasActiveFilters" class="btn-primary mt-6" @click="openDialog()">
           <v-icon size="18" class="mr-2">mdi-plus</v-icon>
           Crear vale
         </button>
@@ -116,19 +103,17 @@
                 </td>
                 <td>
                   <span :class="['badge', getTypeBadge(item.document_type)]">
-                    <v-icon size="12" class="mr-1">{{
-                      getTypeIcon(item.document_type)
-                    }}</v-icon>
+                    <v-icon size="12" class="mr-1">{{ getTypeIcon(item.document_type) }}</v-icon>
                     {{ getTypeLabel(item.document_type) }}
                   </span>
                 </td>
                 <td class="text-sm text-zinc-400">
-                  {{ item.warehouse_detail?.name || "—" }}
+                  {{ item.warehouse_detail?.name || '—' }}
                 </td>
                 <td class="text-sm text-zinc-400">
                   <template v-if="item.document_type === 'TRANSFER'">
                     <v-icon size="12" class="mr-1">mdi-arrow-right</v-icon>
-                    {{ item.destination_warehouse_detail?.name || "—" }}
+                    {{ item.destination_warehouse_detail?.name || '—' }}
                   </template>
                   <template v-else-if="item.supplier_detail">
                     {{ item.supplier_detail.name }}
@@ -136,12 +121,10 @@
                   <template v-else>—</template>
                 </td>
                 <td class="text-right">
-                  <span class="badge badge-neutral">{{
-                    item.lines?.length || 0
-                  }}</span>
+                  <span class="badge badge-neutral">{{ item.lines?.length || 0 }}</span>
                 </td>
                 <td class="text-sm text-zinc-500">
-                  {{ item.reference || "—" }}
+                  {{ item.reference || '—' }}
                 </td>
                 <td class="text-sm text-zinc-400 whitespace-nowrap">
                   {{ formatDate(item.created_at) }}
@@ -151,11 +134,7 @@
                 </td>
                 <td class="text-right">
                   <div class="flex items-center justify-end gap-1">
-                    <button
-                      class="icon-btn"
-                      title="Ver detalle"
-                      @click="viewDocument(item)"
-                    >
+                    <button class="icon-btn" title="Ver detalle" @click="viewDocument(item)">
                       <v-icon size="16">mdi-eye-outline</v-icon>
                     </button>
                   </div>
@@ -178,17 +157,10 @@
     <!-- ============================================ -->
     <!-- Dialog: Nuevo vale (con tipo dinámico)       -->
     <!-- ============================================ -->
-    <v-dialog
-      v-model="dialogOpen"
-      max-width="1100"
-      class="dark-dialog"
-      persistent
-    >
+    <v-dialog v-model="dialogOpen" max-width="1100" class="dark-dialog" persistent>
       <div class="dialog-card dialog-card-scrollable">
         <div class="dialog-header">
-          <h3 class="text-lg font-semibold text-zinc-100">
-            Nuevo vale de inventario
-          </h3>
+          <h3 class="text-lg font-semibold text-zinc-100">Nuevo vale de inventario</h3>
           <button class="icon-btn" @click="dialogOpen = false">
             <v-icon size="20">mdi-close</v-icon>
           </button>
@@ -202,10 +174,7 @@
               <button
                 v-for="opt in documentTypeOptions"
                 :key="opt.value"
-                :class="[
-                  'movement-type-btn',
-                  { active: form.document_type === opt.value },
-                ]"
+                :class="['movement-type-btn', { active: form.document_type === opt.value }]"
                 @click="changeDocumentType(opt.value)"
                 type="button"
               >
@@ -219,21 +188,18 @@
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-5">
             <div>
               <label class="input-label">
-                {{
-                  form.document_type === "TRANSFER"
-                    ? "Almacén origen"
-                    : "Almacén"
-                }}
+                {{ form.document_type === 'TRANSFER' ? 'Almacén origen' : 'Almacén' }}
               </label>
               <DarkSelect
                 v-model="form.warehouse_id"
                 :options="warehouseOptions"
                 placeholder="Seleccionar"
                 class="full-width-select"
+                :error-messages="formErrors.warehouse_id"
               />
-              <p v-if="formErrors.warehouse_id" class="field-error">
+              <!-- <p v-if="formErrors.warehouse_id" class="field-error">
                 {{ formErrors.warehouse_id }}
-              </p>
+              </p> -->
             </div>
             <div v-if="form.document_type === 'TRANSFER'">
               <label class="input-label">Almacén destino</label>
@@ -242,10 +208,8 @@
                 :options="destinationWarehouseOptions"
                 placeholder="Seleccionar"
                 class="full-width-select"
+                :error-messages="formErrors.destination_warehouse_id"
               />
-              <p v-if="formErrors.destination_warehouse_id" class="field-error">
-                {{ formErrors.destination_warehouse_id }}
-              </p>
             </div>
             <div v-else-if="form.document_type === 'ENTRY'">
               <label class="input-label">Proveedor (opcional)</label>
@@ -291,29 +255,20 @@
           <div class="mb-5">
             <div class="flex items-center justify-between mb-3">
               <label class="input-label !mb-0">Líneas del vale</label>
-              <button
-                class="btn-secondary !px-3 !py-1.5 !text-xs"
-                @click="addLine"
-              >
+              <button class="btn-secondary !px-3 !py-1.5 !text-xs" @click="addLine">
                 <v-icon size="14" class="mr-1">mdi-plus</v-icon>
                 Agregar línea
               </button>
             </div>
 
             <div v-if="form.items.length === 0" class="empty-lines">
-              <v-icon size="32" class="text-zinc-600 mb-2"
-                >mdi-format-list-bulleted-type</v-icon
-              >
+              <v-icon size="32" class="text-zinc-600 mb-2">mdi-format-list-bulleted-type</v-icon>
               <p class="text-sm text-zinc-500">
                 No hay líneas. Agrega al menos un producto al vale.
               </p>
             </div>
 
-            <div
-              v-for="(line, index) in form.items"
-              :key="index"
-              class="document-line"
-            >
+            <div v-for="(line, index) in form.items" :key="index" class="document-line">
               <div class="grid grid-cols-12 gap-3 items-start">
                 <!-- Producto -->
                 <div class="col-span-4">
@@ -379,7 +334,7 @@
                 <div
                   :class="[
                     'flex items-center justify-center pt-6',
-                    showUnitCost ? 'col-span-1' : 'col-span-4',
+                    showUnitCost ? 'col-span-1' : 'col-span-4'
                   ]"
                 >
                   <button
@@ -398,29 +353,16 @@
           </div>
 
           <!-- Ayuda según tipo -->
-          <div
-            class="form-hint-box"
-            :class="`form-hint-${form.document_type.toLowerCase()}`"
-          >
-            <v-icon size="16" class="mr-2 flex-shrink-0"
-              >mdi-information-outline</v-icon
-            >
+          <div class="form-hint-box" :class="`form-hint-${form.document_type.toLowerCase()}`">
+            <v-icon size="16" class="mr-2 flex-shrink-0">mdi-information-outline</v-icon>
             <span>{{ getTypeHint(form.document_type) }}</span>
           </div>
         </div>
 
         <div class="dialog-footer">
-          <button class="btn-secondary" @click="dialogOpen = false">
-            Cancelar
-          </button>
+          <button class="btn-secondary" @click="dialogOpen = false">Cancelar</button>
           <button class="btn-primary" @click="saveDocument" :disabled="saving">
-            <v-progress-circular
-              v-if="saving"
-              indeterminate
-              size="16"
-              color="white"
-              class="mr-2"
-            />
+            <v-progress-circular v-if="saving" indeterminate size="16" color="white" class="mr-2" />
             Confirmar vale
           </button>
         </div>
@@ -434,9 +376,7 @@
       <div class="dialog-card dialog-card-scrollable" v-if="selectedDocument">
         <div class="dialog-header">
           <div>
-            <h3 class="text-lg font-semibold text-zinc-100">
-              Vale {{ selectedDocument.number }}
-            </h3>
+            <h3 class="text-lg font-semibold text-zinc-100">Vale {{ selectedDocument.number }}</h3>
             <p class="text-xs text-zinc-500 mt-1">
               {{ getTypeLabel(selectedDocument.document_type) }} ·
               {{ formatDate(selectedDocument.created_at) }}
@@ -452,34 +392,26 @@
           <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-5">
             <div>
               <div class="text-xs text-zinc-500 mb-1">Tipo</div>
-              <span
-                :class="['badge', getTypeBadge(selectedDocument.document_type)]"
-              >
+              <span :class="['badge', getTypeBadge(selectedDocument.document_type)]">
                 {{ getTypeLabel(selectedDocument.document_type) }}
               </span>
             </div>
             <div>
               <div class="text-xs text-zinc-500 mb-1">Almacén</div>
               <div class="text-sm text-zinc-200">
-                {{ selectedDocument.warehouse_detail?.name || "—" }}
+                {{ selectedDocument.warehouse_detail?.name || '—' }}
               </div>
             </div>
             <div>
               <div class="text-xs text-zinc-500 mb-1">
-                {{
-                  selectedDocument.document_type === "TRANSFER"
-                    ? "Destino"
-                    : "Proveedor"
-                }}
+                {{ selectedDocument.document_type === 'TRANSFER' ? 'Destino' : 'Proveedor' }}
               </div>
               <div class="text-sm text-zinc-200">
                 <template v-if="selectedDocument.document_type === 'TRANSFER'">
-                  {{
-                    selectedDocument.destination_warehouse_detail?.name || "—"
-                  }}
+                  {{ selectedDocument.destination_warehouse_detail?.name || '—' }}
                 </template>
                 <template v-else>
-                  {{ selectedDocument.supplier_detail?.name || "—" }}
+                  {{ selectedDocument.supplier_detail?.name || '—' }}
                 </template>
               </div>
             </div>
@@ -498,10 +430,7 @@
             </div>
           </div>
 
-          <div
-            v-if="selectedDocument.notes"
-            class="mb-5 p-3 bg-zinc-900/50 rounded-lg"
-          >
+          <div v-if="selectedDocument.notes" class="mb-5 p-3 bg-zinc-900/50 rounded-lg">
             <div class="text-xs text-zinc-500 mb-1">Notas</div>
             <div class="text-sm text-zinc-300">
               {{ selectedDocument.notes }}
@@ -509,9 +438,7 @@
           </div>
 
           <!-- Tabla de líneas -->
-          <div class="text-sm font-semibold text-zinc-200 mb-2">
-            Líneas del vale
-          </div>
+          <div class="text-sm font-semibold text-zinc-200 mb-2">Líneas del vale</div>
           <table class="custom-table">
             <thead>
               <tr>
@@ -558,49 +485,42 @@
         </div>
 
         <div class="dialog-footer">
-          <button class="btn-secondary" @click="detailDialogOpen = false">
-            Cerrar
-          </button>
+          <button class="btn-secondary" @click="detailDialogOpen = false">Cerrar</button>
         </div>
       </div>
     </v-dialog>
 
     <!-- Snackbar -->
-    <v-snackbar
-      v-model="snackbar.show"
-      :color="snackbar.color"
-      location="top right"
-      timeout="3000"
-    >
+    <v-snackbar v-model="snackbar.show" :color="snackbar.color" location="top right" timeout="3000">
       {{ snackbar.message }}
     </v-snackbar>
   </div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from "vue";
-import api from "@/utils/axios";
-import { useTable } from "@/composables/useTable";
-import TablePagination from "@/components/TablePagination.vue";
-import DarkSelect from "@/components/DarkSelect.vue";
+import { ref, computed, onMounted } from 'vue'
+import api from '@/utils/axios'
+import { useTable } from '@/composables/useTable'
+import TablePagination from '@/components/TablePagination.vue'
+import DarkSelect from '@/components/DarkSelect.vue'
 
-const API_URL = "inventory/stock-documents/";
-const PRODUCTS_URL = "inventory/products/enabled/?is_service=false";
-const WAREHOUSES_URL = "inventory/warehouses/enabled/";
-const SUPPLIERS_URL = "inventory/suppliers/enabled/";
+const API_URL = 'inventory/stock-documents/'
+const PRODUCTS_URL = 'inventory/products/enabled/?is_service=false'
+const WAREHOUSES_URL = 'inventory/warehouses/enabled/'
+const SUPPLIERS_URL = 'inventory/suppliers/enabled/'
 
 // ===== Opciones de tipo =====
 const documentTypeOptions = [
-  { value: "ENTRY", label: "Entrada", icon: "mdi-package-down" },
-  { value: "EXIT", label: "Salida", icon: "mdi-package-up" },
-  { value: "TRANSFER", label: "Traslado", icon: "mdi-swap-horizontal" },
-  { value: "ADJUSTMENT", label: "Ajuste", icon: "mdi-tune-vertical" },
-];
+  { value: 'ENTRY', label: 'Entrada', icon: 'mdi-package-down' },
+  { value: 'EXIT', label: 'Salida', icon: 'mdi-package-up' },
+  { value: 'TRANSFER', label: 'Traslado', icon: 'mdi-swap-horizontal' },
+  { value: 'ADJUSTMENT', label: 'Ajuste', icon: 'mdi-tune-vertical' }
+]
 
 const typeFilterOptions = [
-  { value: "", label: "Todos los tipos" },
-  ...documentTypeOptions.map((o) => ({ value: o.value, label: o.label })),
-];
+  { value: '', label: 'Todos los tipos' },
+  ...documentTypeOptions.map(o => ({ value: o.value, label: o.label }))
+]
 
 // ===== Tabla =====
 const {
@@ -615,327 +535,306 @@ const {
   onSearch,
   clearSearch,
   changePage,
-  changePageSize,
+  changePageSize
 } = useTable({
   apiUrl: API_URL,
-  defaultOrdering: "-created_at",
-  defaultFilters: { document_type: "", warehouse: "" },
-});
+  defaultOrdering: '-created_at',
+  defaultFilters: { document_type: '', warehouse: '' }
+})
 
 // ===== Estado =====
-const dialogOpen = ref(false);
-const saving = ref(false);
-const detailDialogOpen = ref(false);
-const selectedDocument = ref(null);
+const dialogOpen = ref(false)
+const saving = ref(false)
+const detailDialogOpen = ref(false)
+const selectedDocument = ref(null)
 
-const productOptions = ref([]);
-const warehouseOptions = ref([]);
-const supplierOptions = ref([]);
+const productOptions = ref([])
+const warehouseOptions = ref([])
+const supplierOptions = ref([])
 
 const emptyForm = () => ({
-  document_type: "ENTRY",
-  warehouse_id: "",
-  destination_warehouse_id: "",
-  supplier_id: "",
-  reference: "",
-  notes: "",
-  items: [],
-});
+  document_type: 'ENTRY',
+  warehouse_id: '',
+  destination_warehouse_id: '',
+  supplier_id: '',
+  reference: '',
+  notes: '',
+  items: []
+})
 
-const form = ref(emptyForm());
-const formErrors = ref({});
-const snackbar = ref({ show: false, message: "", color: "success" });
+const form = ref(emptyForm())
+const formErrors = ref({})
+const snackbar = ref({ show: false, message: '', color: 'success' })
 
 // ===== Computed =====
 const hasActiveFilters = computed(() => {
   return (
-    search.value.trim() !== "" ||
-    filters.value.document_type !== "" ||
-    filters.value.warehouse !== ""
-  );
-});
+    search.value.trim() !== '' ||
+    filters.value.document_type !== '' ||
+    filters.value.warehouse !== ''
+  )
+})
 
 const warehouseFilterOptions = computed(() => [
-  { value: "", label: "Todos los almacenes" },
-  ...warehouseOptions.value,
-]);
+  { value: '', label: 'Todos los almacenes' },
+  ...warehouseOptions.value
+])
 
 const destinationWarehouseOptions = computed(() => {
-  return warehouseOptions.value.filter(
-    (w) => w.value !== form.value.warehouse_id,
-  );
-});
+  return warehouseOptions.value.filter(w => w.value !== form.value.warehouse_id)
+})
 
 const showUnitCost = computed(() => {
-  return (
-    form.value.document_type === "ENTRY" ||
-    form.value.document_type === "ADJUSTMENT"
-  );
-});
+  return form.value.document_type === 'ENTRY' || form.value.document_type === 'ADJUSTMENT'
+})
 
 // ===== Helpers =====
-const getTypeLabel = (type) => {
+const getTypeLabel = type => {
   const map = {
-    ENTRY: "Entrada",
-    EXIT: "Salida",
-    TRANSFER: "Traslado",
-    ADJUSTMENT: "Ajuste",
-  };
-  return map[type] || type;
-};
+    ENTRY: 'Entrada',
+    EXIT: 'Salida',
+    TRANSFER: 'Traslado',
+    ADJUSTMENT: 'Ajuste'
+  }
+  return map[type] || type
+}
 
-const getTypeBadge = (type) => {
+const getTypeBadge = type => {
   const map = {
-    ENTRY: "badge-success",
-    EXIT: "badge-warning",
-    TRANSFER: "badge-info",
-    ADJUSTMENT: "badge-neutral",
-  };
-  return map[type] || "badge-neutral";
-};
+    ENTRY: 'badge-success',
+    EXIT: 'badge-warning',
+    TRANSFER: 'badge-info',
+    ADJUSTMENT: 'badge-neutral'
+  }
+  return map[type] || 'badge-neutral'
+}
 
-const getTypeIcon = (type) => {
+const getTypeIcon = type => {
   const map = {
-    ENTRY: "mdi-package-down",
-    EXIT: "mdi-package-up",
-    TRANSFER: "mdi-swap-horizontal",
-    ADJUSTMENT: "mdi-tune-vertical",
-  };
-  return map[type] || "mdi-help-circle-outline";
-};
+    ENTRY: 'mdi-package-down',
+    EXIT: 'mdi-package-up',
+    TRANSFER: 'mdi-swap-horizontal',
+    ADJUSTMENT: 'mdi-tune-vertical'
+  }
+  return map[type] || 'mdi-help-circle-outline'
+}
 
-const getTypeHint = (type) => {
+const getTypeHint = type => {
   const hints = {
-    ENTRY:
-      "Se sumará la cantidad al stock del almacén y se calculará el costo promedio.",
-    EXIT: "Se descontará la cantidad del stock. Verifica disponibilidad antes de confirmar.",
-    TRANSFER:
-      "Se moverá el stock del almacén origen al destino. El costo se mantiene.",
-    ADJUSTMENT:
-      "Usa valores positivos para sumar y negativos para restar stock (ej: 5 o -3).",
-  };
-  return hints[type] || "";
-};
+    ENTRY: 'Se sumará la cantidad al stock del almacén y se calculará el costo promedio.',
+    EXIT: 'Se descontará la cantidad del stock. Verifica disponibilidad antes de confirmar.',
+    TRANSFER: 'Se moverá el stock del almacén origen al destino. El costo se mantiene.',
+    ADJUSTMENT: 'Usa valores positivos para sumar y negativos para restar stock (ej: 5 o -3).'
+  }
+  return hints[type] || ''
+}
 
-const formatDate = (dateStr) => {
-  if (!dateStr) return "—";
-  const d = new Date(dateStr);
-  return d.toLocaleDateString("es-CU", {
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
-};
+const formatDate = dateStr => {
+  if (!dateStr) return '—'
+  const d = new Date(dateStr)
+  return d.toLocaleDateString('es-CU', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit'
+  })
+}
 
-const formatPrice = (price) => {
-  const num = parseFloat(price);
-  return isNaN(num)
-    ? "—"
-    : num.toLocaleString("es-CU", { minimumFractionDigits: 2 });
-};
+const formatPrice = price => {
+  const num = parseFloat(price)
+  return isNaN(num) ? '—' : num.toLocaleString('es-CU', { minimumFractionDigits: 2 })
+}
 
 // ===== Cargar opciones =====
 const loadProducts = async () => {
   try {
     const response = await api.get(PRODUCTS_URL, {
-      params: { page_size: 1000 },
-    });
-    const data = Array.isArray(response.data)
-      ? response.data
-      : response.data.results || [];
-    productOptions.value = data.map((p) => ({
+      params: { page_size: 1000 }
+    })
+    const data = Array.isArray(response.data) ? response.data : response.data.results || []
+    productOptions.value = data.map(p => ({
       value: p.id,
-      label: `${p.sku} - ${p.name}`,
-    }));
+      label: `${p.sku} - ${p.name}`
+    }))
   } catch (error) {
-    console.error("Error cargando productos:", error);
+    console.error('Error cargando productos:', error)
   }
-};
+}
 
 const loadWarehouses = async () => {
   try {
-    const response = await api.get(WAREHOUSES_URL);
-    const data = Array.isArray(response.data)
-      ? response.data
-      : response.data.results || [];
-    warehouseOptions.value = data.map((w) => ({ value: w.id, label: w.name }));
+    const response = await api.get(WAREHOUSES_URL)
+    const data = Array.isArray(response.data) ? response.data : response.data.results || []
+    warehouseOptions.value = data.map(w => ({ value: w.id, label: w.name }))
   } catch (error) {
-    console.error("Error cargando almacenes:", error);
+    console.error('Error cargando almacenes:', error)
   }
-};
+}
 
 const loadSuppliers = async () => {
   try {
-    const response = await api.get(SUPPLIERS_URL);
-    const data = Array.isArray(response.data)
-      ? response.data
-      : response.data.results || [];
-    supplierOptions.value = data.map((s) => ({ value: s.id, label: s.name }));
+    const response = await api.get(SUPPLIERS_URL)
+    const data = Array.isArray(response.data) ? response.data : response.data.results || []
+    supplierOptions.value = data.map(s => ({ value: s.id, label: s.name }))
   } catch (error) {
-    console.error("Error cargando proveedores:", error);
+    console.error('Error cargando proveedores:', error)
   }
-};
+}
 
 // ===== Líneas =====
 const addLine = () => {
   form.value.items.push({
-    product_id: "",
-    presentation_id: "",
-    quantity: "",
-    unit_cost: "",
-    presentationOptions: [],
-  });
-};
+    product_id: '',
+    presentation_id: '',
+    quantity: '',
+    unit_cost: '',
+    presentationOptions: []
+  })
+}
 
-const removeLine = (index) => {
-  form.value.items.splice(index, 1);
-};
+const removeLine = index => {
+  form.value.items.splice(index, 1)
+}
 
-const onLineProductChange = async (index) => {
-  const line = form.value.items[index];
-  line.presentation_id = "";
-  line.presentationOptions = [];
+const onLineProductChange = async index => {
+  const line = form.value.items[index]
+  line.presentation_id = ''
+  line.presentationOptions = []
 
-  if (!line.product_id) return;
+  if (!line.product_id) return
 
   try {
-    const response = await api.get(`inventory/products/${line.product_id}/`);
-    line.presentationOptions = response.data.presentations.map((p) => ({
+    const response = await api.get(`inventory/products/${line.product_id}/`)
+    line.presentationOptions = response.data.presentations.map(p => ({
       value: p.id,
-      label: `${p.measure_unit.name} (x${p.conversion_factor})`,
-    }));
+      label: `${p.measure_unit.name} (x${p.conversion_factor})`
+    }))
 
     if (line.presentationOptions.length === 1) {
-      line.presentation_id = line.presentationOptions[0].value;
+      line.presentation_id = line.presentationOptions[0].value
     }
   } catch (error) {
-    console.error("Error cargando presentaciones:", error);
+    console.error('Error cargando presentaciones:', error)
   }
-};
+}
 
-const changeDocumentType = (newType) => {
-  form.value.document_type = newType;
-  formErrors.value = {};
-};
+const changeDocumentType = newType => {
+  form.value.document_type = newType
+  formErrors.value = {}
+}
 
 // ===== Dialog =====
 const openDialog = () => {
-  formErrors.value = {};
-  form.value = emptyForm();
-  addLine();
-  dialogOpen.value = true;
-};
+  formErrors.value = {}
+  form.value = emptyForm()
+  addLine()
+  dialogOpen.value = true
+}
 
-const viewDocument = (doc) => {
-  selectedDocument.value = doc;
-  detailDialogOpen.value = true;
-};
+const viewDocument = doc => {
+  selectedDocument.value = doc
+  detailDialogOpen.value = true
+}
 
 // ===== Guardar =====
 const saveDocument = async () => {
-  formErrors.value = {};
-  let hasErrors = false;
+  formErrors.value = {}
+  let hasErrors = false
 
   if (!form.value.warehouse_id) {
-    formErrors.value.warehouse_id = "Selecciona un almacén";
-    hasErrors = true;
+    formErrors.value.warehouse_id = 'Selecciona un almacén'
+    hasErrors = true
   }
-  if (
-    form.value.document_type === "TRANSFER" &&
-    !form.value.destination_warehouse_id
-  ) {
-    formErrors.value.destination_warehouse_id = "Selecciona un almacén destino";
-    hasErrors = true;
+  if (form.value.document_type === 'TRANSFER' && !form.value.destination_warehouse_id) {
+    formErrors.value.destination_warehouse_id = 'Selecciona un almacén destino'
+    hasErrors = true
   }
   if (form.value.items.length === 0) {
-    formErrors.value.items = "Agrega al menos una línea al vale";
-    hasErrors = true;
+    formErrors.value.items = 'Agrega al menos una línea al vale'
+    hasErrors = true
   }
 
   for (let i = 0; i < form.value.items.length; i++) {
-    const line = form.value.items[i];
+    const line = form.value.items[i]
     if (!line.product_id || !line.presentation_id) {
-      formErrors.value.items = `Línea ${i + 1}: completa producto y presentación`;
-      hasErrors = true;
-      break;
+      formErrors.value.items = `Línea ${i + 1}: completa producto y presentación`
+      hasErrors = true
+      break
     }
-    const qty = parseFloat(line.quantity);
+    const qty = parseFloat(line.quantity)
     if (!line.quantity || qty === 0) {
-      formErrors.value.items = `Línea ${i + 1}: la cantidad no puede ser 0 ni estar vacía`;
-      hasErrors = true;
-      break;
+      formErrors.value.items = `Línea ${i + 1}: la cantidad no puede ser 0 ni estar vacía`
+      hasErrors = true
+      break
     }
-    if (form.value.document_type !== "ADJUSTMENT" && qty < 0) {
-      formErrors.value.items = `Línea ${i + 1}: la cantidad no puede ser negativa para ${getTypeLabel(form.value.document_type)}`;
-      hasErrors = true;
-      break;
+    if (form.value.document_type !== 'ADJUSTMENT' && qty < 0) {
+      formErrors.value.items = `Línea ${i + 1}: la cantidad no puede ser negativa para ${getTypeLabel(form.value.document_type)}`
+      hasErrors = true
+      break
     }
-    if (form.value.document_type === "ENTRY") {
-      const cost = parseFloat(line.unit_cost);
+    if (form.value.document_type === 'ENTRY') {
+      const cost = parseFloat(line.unit_cost)
       if (!line.unit_cost || cost < 0) {
-        formErrors.value.items = `Línea ${i + 1}: el costo unitario es requerido para entradas`;
-        hasErrors = true;
-        break;
+        formErrors.value.items = `Línea ${i + 1}: el costo unitario es requerido para entradas`
+        hasErrors = true
+        break
       }
     }
   }
 
-  if (hasErrors) return;
+  if (hasErrors) return
 
-  saving.value = true;
+  saving.value = true
   try {
     const payload = {
       document_type: form.value.document_type,
       warehouse_id: parseInt(form.value.warehouse_id),
       reference: form.value.reference,
       notes: form.value.notes,
-      items: form.value.items.map((line) => ({
+      items: form.value.items.map(line => ({
         product_id: parseInt(line.product_id),
         presentation_id: parseInt(line.presentation_id),
         quantity: parseFloat(line.quantity),
-        unit_cost: showUnitCost.value ? parseFloat(line.unit_cost) || 0 : 0,
-      })),
-    };
-
-    if (form.value.document_type === "TRANSFER") {
-      payload.destination_warehouse_id = parseInt(
-        form.value.destination_warehouse_id,
-      );
-    }
-    if (form.value.document_type === "ENTRY" && form.value.supplier_id) {
-      payload.supplier_id = parseInt(form.value.supplier_id);
+        unit_cost: showUnitCost.value ? parseFloat(line.unit_cost) || 0 : 0
+      }))
     }
 
-    await api.post(`${API_URL}create-with-lines/`, payload);
+    if (form.value.document_type === 'TRANSFER') {
+      payload.destination_warehouse_id = parseInt(form.value.destination_warehouse_id)
+    }
+    if (form.value.document_type === 'ENTRY' && form.value.supplier_id) {
+      payload.supplier_id = parseInt(form.value.supplier_id)
+    }
+
+    await api.post(`${API_URL}create-with-lines/`, payload)
     showSnackbar(
-      `Vale ${form.value.document_type === "ENTRY" ? "de entrada" : form.value.document_type === "EXIT" ? "de salida" : form.value.document_type === "TRANSFER" ? "de traslado" : "de ajuste"} creado correctamente`,
-    );
-    dialogOpen.value = false;
-    await loadData();
+      `Vale ${form.value.document_type === 'ENTRY' ? 'de entrada' : form.value.document_type === 'EXIT' ? 'de salida' : form.value.document_type === 'TRANSFER' ? 'de traslado' : 'de ajuste'} creado correctamente`
+    )
+    dialogOpen.value = false
+    await loadData()
   } catch (error) {
     const msg =
       error.response?.data?.error ||
       error.response?.data?.detail ||
       error.response?.data?.items ||
-      "Error al crear el vale";
-    showSnackbar(Array.isArray(msg) ? msg[0] : msg, "error");
+      'Error al crear el vale'
+    showSnackbar(Array.isArray(msg) ? msg[0] : msg, 'error')
   } finally {
-    saving.value = false;
+    saving.value = false
   }
-};
+}
 
-const showSnackbar = (message, color = "success") => {
-  snackbar.value = { show: true, message, color };
-};
+const showSnackbar = (message, color = 'success') => {
+  snackbar.value = { show: true, message, color }
+}
 
 onMounted(() => {
-  loadData();
-  loadProducts();
-  loadWarehouses();
-  loadSuppliers();
-});
+  loadData()
+  loadProducts()
+  loadWarehouses()
+  loadSuppliers()
+})
 </script>
 
 <style scoped>

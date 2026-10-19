@@ -2,7 +2,10 @@
   <div class="dark-select-wrapper" ref="wrapperRef">
     <button
       class="dark-select-trigger"
-      :class="{ 'dark-select-trigger-focus': isOpen }"
+      :class="{
+        'dark-select-trigger-focus': isOpen,
+        'dark-select-trigger-error': hasError
+      }"
       @click="toggleDropdown"
       type="button"
     >
@@ -12,6 +15,13 @@
         mdi-chevron-down
       </v-icon>
     </button>
+
+    <!-- Mensajes de error animados -->
+    <TransitionGroup name="vuetify-error" tag="div" class="error-messages-container">
+      <p v-for="(msg, index) in displayErrors" :key="`error-${index}-${msg}`" class="field-error">
+        {{ msg }}
+      </p>
+    </TransitionGroup>
 
     <!-- Dropdown teleportado al body para evitar conflictos de stacking context -->
     <Teleport to="body">
@@ -35,9 +45,7 @@
           </div>
 
           <div class="dark-select-options">
-            <div v-if="filteredOptions.length === 0" class="dark-select-empty">
-              Sin resultados
-            </div>
+            <div v-if="filteredOptions.length === 0" class="dark-select-empty">Sin resultados</div>
             <button
               v-for="option in filteredOptions"
               :key="option.value"
@@ -57,7 +65,7 @@
 </template>
 
 <script setup>
-import { ref, computed, watch, nextTick, onMounted, onUnmounted } from 'vue';
+import { ref, computed, watch, nextTick, onMounted, onUnmounted } from 'vue'
 
 const props = defineProps({
   modelValue: { type: [String, Number, Boolean], default: '' },
@@ -65,38 +73,54 @@ const props = defineProps({
   placeholder: { type: String, default: 'Seleccionar...' },
   searchable: { type: Boolean, default: false },
   searchPlaceholder: { type: String, default: 'Buscar...' },
-});
+  // NUEVO: Recibe un array de errores (estilo Vuetify)
+  errorMessages: { type: [Array, String], default: () => [] }
+})
 
-const emit = defineEmits(['update:modelValue', 'change']);
+const emit = defineEmits(['update:modelValue', 'change'])
 
-const isOpen = ref(false);
-const searchQuery = ref('');
-const wrapperRef = ref(null);
-const dropdownRef = ref(null);
-const searchInputRef = ref(null);
-const dropdownStyle = ref({});
+const isOpen = ref(false)
+const searchQuery = ref('')
+const wrapperRef = ref(null)
+const dropdownRef = ref(null)
+const searchInputRef = ref(null)
+const dropdownStyle = ref({})
+
+// NUEVO: Normalizamos el error a array siempre
+const normalizedErrors = computed(() => {
+  const errors = props.errorMessages
+  if (!errors) return []
+  if (Array.isArray(errors)) return errors
+  if (typeof errors === 'string') {
+    return errors.trim() ? [errors] : []
+  }
+  return []
+})
+
+// Computed: detecta si hay errores
+const hasError = computed(() => normalizedErrors.value.length > 0)
+const displayErrors = computed(() => normalizedErrors.value)
 
 const selectedLabel = computed(() => {
-  const opt = props.options.find(o => o.value === props.modelValue);
-  return opt ? opt.label : '';
-});
+  const opt = props.options.find(o => o.value === props.modelValue)
+  return opt ? opt.label : ''
+})
 
 const filteredOptions = computed(() => {
-  if (!props.searchable || !searchQuery.value.trim()) return props.options;
-  const q = searchQuery.value.toLowerCase();
-  return props.options.filter(o => o.label.toLowerCase().includes(q));
-});
+  if (!props.searchable || !searchQuery.value.trim()) return props.options
+  const q = searchQuery.value.toLowerCase()
+  return props.options.filter(o => o.label.toLowerCase().includes(q))
+})
 
 // ===== Posicionamiento dinámico =====
 const updatePosition = () => {
-  if (!wrapperRef.value || !isOpen.value) return;
+  if (!wrapperRef.value) return
 
-  const rect = wrapperRef.value.getBoundingClientRect();
-  const viewportHeight = window.innerHeight;
-  const estimatedDropdownHeight = 300; // max-height + padding
+  const rect = wrapperRef.value.getBoundingClientRect()
+  const viewportHeight = window.innerHeight
+  const estimatedDropdownHeight = 300
 
-  // Si no hay espacio abajo, abrir hacia arriba
-  const openUpward = (rect.bottom + estimatedDropdownHeight) > viewportHeight;
+  const openUpward = rect.bottom + estimatedDropdownHeight > viewportHeight
 
   dropdownStyle.value = {
     position: 'fixed',
@@ -105,69 +129,72 @@ const updatePosition = () => {
     zIndex: 99999,
     ...(openUpward
       ? { bottom: `${viewportHeight - rect.top + 4}px` }
-      : { top: `${rect.bottom + 4}px` }
-    ),
-  };
-};
+      : { top: `${rect.bottom + 4}px` })
+  }
+}
 
 // ===== Toggle =====
 const toggleDropdown = () => {
-  isOpen.value = !isOpen.value;
-  if (isOpen.value) {
-    searchQuery.value = '';
+  if (!isOpen.value) {
+    updatePosition()
+    searchQuery.value = ''
+    isOpen.value = true
     nextTick(() => {
-      updatePosition();
-      searchInputRef.value?.focus();
-    });
+      searchInputRef.value?.focus()
+    })
+  } else {
+    isOpen.value = false
   }
-};
+}
 
 // ===== Select =====
-const selectOption = (option) => {
-  emit('update:modelValue', option.value);
-  emit('change', option.value);
-  isOpen.value = false;
-  searchQuery.value = '';
-};
+const selectOption = option => {
+  emit('update:modelValue', option.value)
+  emit('change', option.value)
+  isOpen.value = false
+  searchQuery.value = ''
+}
 
 // ===== Click outside =====
-const handleClickOutside = (e) => {
-  if (!isOpen.value) return;
+const handleClickOutside = e => {
+  if (!isOpen.value) return
   if (
-    wrapperRef.value && !wrapperRef.value.contains(e.target) &&
-    dropdownRef.value && !dropdownRef.value.contains(e.target)
+    wrapperRef.value &&
+    !wrapperRef.value.contains(e.target) &&
+    dropdownRef.value &&
+    !dropdownRef.value.contains(e.target)
   ) {
-    isOpen.value = false;
+    isOpen.value = false
   }
-};
+}
 
 // ===== Recalcular posición en scroll/resize =====
 const handleScrollOrResize = () => {
-  if (isOpen.value) updatePosition();
-};
+  if (isOpen.value) updatePosition()
+}
 
 // ===== Watchers =====
-watch(isOpen, async (val) => {
+watch(isOpen, async val => {
   if (val) {
-    await nextTick();
-    updatePosition();
+    await nextTick()
+    updatePosition()
   } else {
-    searchQuery.value = '';
+    searchQuery.value = ''
   }
-});
+})
 
 // ===== Lifecycle =====
 onMounted(() => {
-  document.addEventListener('click', handleClickOutside);
-  window.addEventListener('scroll', handleScrollOrResize, true);
-  window.addEventListener('resize', handleScrollOrResize);
-});
+  document.addEventListener('click', handleClickOutside)
+  window.addEventListener('scroll', handleScrollOrResize, true)
+  window.addEventListener('resize', handleScrollOrResize)
+})
 
 onUnmounted(() => {
-  document.removeEventListener('click', handleClickOutside);
-  window.removeEventListener('scroll', handleScrollOrResize, true);
-  window.removeEventListener('resize', handleScrollOrResize);
-});
+  document.removeEventListener('click', handleClickOutside)
+  window.removeEventListener('scroll', handleScrollOrResize, true)
+  window.removeEventListener('resize', handleScrollOrResize)
+})
 </script>
 
 <style scoped>
@@ -189,7 +216,12 @@ onUnmounted(() => {
   color: var(--text-secondary);
   font-size: 13px;
   cursor: pointer;
-  transition: all 0.2s ease;
+  /* Transición suave estilo Vuetify */
+  transition:
+    border-color 0.3s cubic-bezier(0.25, 0.8, 0.25, 1),
+    box-shadow 0.3s cubic-bezier(0.25, 0.8, 0.25, 1),
+    background 0.2s ease,
+    color 0.3s ease;
   text-align: left;
   gap: 8px;
 }
@@ -201,6 +233,16 @@ onUnmounted(() => {
 .dark-select-trigger-focus {
   border-color: var(--accent-start);
   box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.15);
+}
+
+/* NUEVO: Estado de error */
+.dark-select-trigger-error {
+  border-color: var(--error) !important;
+  box-shadow: 0 0 0 1px rgba(255, 82, 82, 0.2);
+}
+
+.dark-select-trigger-error .dark-select-chevron {
+  color: var(--error);
 }
 
 .dark-select-value {
@@ -217,7 +259,9 @@ onUnmounted(() => {
 
 .dark-select-chevron {
   color: var(--text-dim);
-  transition: transform 0.2s ease;
+  transition:
+    transform 0.2s ease,
+    color 0.3s ease;
   flex-shrink: 0;
 }
 
@@ -225,15 +269,61 @@ onUnmounted(() => {
   transform: rotate(180deg);
 }
 
-/* ===== Animación ===== */
-.dropdown-fade-enter-active { transition: all 0.15s ease; }
-.dropdown-fade-leave-active { transition: all 0.1s ease; }
-.dropdown-fade-enter-from { opacity: 0; transform: translateY(-4px); }
-.dropdown-fade-leave-to { opacity: 0; transform: translateY(-4px); }
+/* ===== Contenedor de errores ===== */
+.error-messages-container {
+  min-height: 0;
+}
+
+.field-error {
+  color: var(--error);
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 1.5;
+  margin: 8px 0 0 14px;
+  padding: 0;
+}
+
+/* ===== Animación Dropdown ===== */
+.dropdown-fade-enter-active {
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.dropdown-fade-leave-active {
+  transition: all 0.15s ease-in;
+}
+.dropdown-fade-enter-from,
+.dropdown-fade-leave-to {
+  opacity: 0;
+  transform: scale(0.98) translateY(-8px);
+}
 </style>
 
-<!-- Estilos globales para el dropdown teleportado -->
+<!-- Estilos GLOBALES para la animación de error y el dropdown teleportado -->
 <style>
+/* ===== Animación de errores (estilo Vuetify) ===== */
+.vuetify-error-enter-active,
+.vuetify-error-leave-active {
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+  overflow: hidden;
+}
+
+.vuetify-error-enter-from,
+.vuetify-error-leave-to {
+  opacity: 0;
+  transform: translateY(-8px);
+  max-height: 0;
+  margin-top: 0;
+  margin-bottom: 0;
+}
+
+.vuetify-error-enter-to,
+.vuetify-error-leave-from {
+  opacity: 1;
+  transform: translateY(0);
+  max-height: 40px;
+  margin-top: 4px;
+  margin-bottom: 0;
+}
+
 /* ===== Dropdown teleportado ===== */
 .dark-select-dropdown-teleported {
   background: rgba(24, 24, 27, 0.98);
@@ -245,7 +335,6 @@ onUnmounted(() => {
   overflow: hidden;
 }
 
-/* ===== Search ===== */
 .dark-select-search {
   display: flex;
   align-items: center;
@@ -266,7 +355,6 @@ onUnmounted(() => {
   color: var(--text-faint);
 }
 
-/* ===== Options ===== */
 .dark-select-options {
   max-height: 240px;
   overflow-y: auto;

@@ -54,7 +54,9 @@
                   <v-icon size="16" class="mr-2">mdi-upload-outline</v-icon>
                   Seleccionar imagen
                 </button>
-                <p class="text-xs text-zinc-500 mt-2">PNG o JPG, máximo 2MB. Se recomienda fondo transparente.</p>
+                <p class="text-xs text-zinc-500 mt-2">
+                  PNG o JPG, máximo 2MB. Se recomienda fondo transparente.
+                </p>
                 <button
                   v-if="logoFile || company.logo"
                   class="text-xs text-red-400 hover:text-red-300 mt-2"
@@ -77,7 +79,6 @@
                 placeholder="Ej: Mi Negocio S.A."
                 variant="outlined"
                 density="comfortable"
-                hide-details
                 :error-messages="formErrors.name"
                 class="dark-input"
                 prepend-inner-icon="mdi-office-building-outline"
@@ -91,7 +92,6 @@
                 placeholder="Ej: Calidad al mejor precio"
                 variant="outlined"
                 density="comfortable"
-                hide-details
                 :error-messages="formErrors.slogan"
                 class="dark-input"
                 prepend-inner-icon="mdi-tagline"
@@ -108,7 +108,6 @@
                 placeholder="contacto@minegocio.com"
                 variant="outlined"
                 density="comfortable"
-                hide-details
                 :error-messages="formErrors.email"
                 class="dark-input"
                 prepend-inner-icon="mdi-email-outline"
@@ -122,7 +121,6 @@
                 placeholder="Ej: +53 55551234"
                 variant="outlined"
                 density="comfortable"
-                hide-details
                 :error-messages="formErrors.phone"
                 class="dark-input"
                 prepend-inner-icon="mdi-phone-outline"
@@ -138,7 +136,6 @@
               placeholder="Ej: Calle 1 #101, Reparto Centro"
               variant="outlined"
               density="comfortable"
-              hide-details
               :error-messages="formErrors.address"
               class="dark-input"
               prepend-inner-icon="mdi-map-marker-outline"
@@ -148,7 +145,13 @@
 
           <div class="flex justify-end">
             <button class="btn-primary" @click="saveCompany" :disabled="saving">
-              <v-progress-circular v-if="saving" indeterminate size="16" color="white" class="mr-2" />
+              <v-progress-circular
+                v-if="saving"
+                indeterminate
+                size="16"
+                color="white"
+                class="mr-2"
+              />
               {{ companyExists ? 'Guardar cambios' : 'Crear empresa' }}
             </button>
           </div>
@@ -164,194 +167,194 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue';
-import api from '@/utils/axios';
+import { ref, computed, onMounted } from 'vue'
+import api from '@/utils/axios'
 
-const COMPANY_URL = 'configuration/company/';
+const COMPANY_URL = 'configuration/company/'
 // URL base del backend (para construir URLs absolutas de archivos media)
-const API_BASE_URL = 'http://localhost:8000';
+const API_BASE_URL = 'http://localhost:8000'
 
 // ===== Estado =====
-const loadingCompany = ref(false);
-const saving = ref(false);
-const companyExists = ref(false);
-const company = ref({});
-const form = ref({});
-const formErrors = ref({});
-const logoFile = ref(null);
-const fileInputRef = ref(null);
-const snackbar = ref({ show: false, message: '', color: 'success' });
+const loadingCompany = ref(false)
+const saving = ref(false)
+const companyExists = ref(false)
+const company = ref({})
+const form = ref({})
+const formErrors = ref({})
+const logoFile = ref(null)
+const fileInputRef = ref(null)
+const snackbar = ref({ show: false, message: '', color: 'success' })
 
 // ===== Helpers =====
 /**
  * Construye una URL absoluta para archivos media
  * Maneja casos donde el backend devuelve URL relativa (/media/...) o absoluta
  */
-const buildMediaUrl = (path) => {
-  if (!path) return null;
+const buildMediaUrl = path => {
+  if (!path) return null
   // Si ya es absoluta (empieza con http), devolverla tal cual
   if (path.startsWith('http://') || path.startsWith('https://')) {
-    return path;
+    return path
   }
   // Si es relativa, concatenar con la base
-  return `${API_BASE_URL}${path.startsWith('/') ? '' : '/'}${path}`;
-};
+  return `${API_BASE_URL}${path.startsWith('/') ? '' : '/'}${path}`
+}
 
 // ===== Computed =====
 const logoPreviewUrl = computed(() => {
   // Prioridad 1: archivo local seleccionado (blob URL)
   if (logoFile.value) {
-    return URL.createObjectURL(logoFile.value);
+    return URL.createObjectURL(logoFile.value)
   }
   // Prioridad 2: URL del logo guardado en el servidor
   if (company.value?.logo) {
-    return buildMediaUrl(company.value.logo);
+    return buildMediaUrl(company.value.logo)
   }
-  return null;
-});
+  return null
+})
 
 // ===== Cargar empresa =====
 const loadCompany = async () => {
-  loadingCompany.value = true;
+  loadingCompany.value = true
   try {
-    const response = await api.get(COMPANY_URL);
-    company.value = response.data;
-    companyExists.value = true;
+    const response = await api.get(COMPANY_URL)
+    company.value = response.data
+    companyExists.value = true
     form.value = {
       name: response.data.name || '',
       slogan: response.data.slogan || '',
       email: response.data.email || '',
       phone: response.data.phone || '',
-      address: response.data.address || '',
-    };
+      address: response.data.address || ''
+    }
   } catch (error) {
     if (error.response?.status === 404) {
-      companyExists.value = false;
-      form.value = { name: '', slogan: '', email: '', phone: '', address: '' };
+      companyExists.value = false
+      form.value = { name: '', slogan: '', email: '', phone: '', address: '' }
     } else {
-      console.error('Error cargando empresa:', error);
-      showSnackbar('Error al cargar los datos de la empresa', 'error');
+      console.error('Error cargando empresa:', error)
+      showSnackbar('Error al cargar los datos de la empresa', 'error')
     }
   } finally {
-    loadingCompany.value = false;
+    loadingCompany.value = false
   }
-};
+}
 
 // ===== Logo =====
-const onLogoSelected = (event) => {
-  const file = event.target.files[0];
-  if (!file) return;
+const onLogoSelected = event => {
+  const file = event.target.files[0]
+  if (!file) return
 
   if (!file.type.startsWith('image/')) {
-    showSnackbar('El archivo debe ser una imagen', 'error');
-    return;
+    showSnackbar('El archivo debe ser una imagen', 'error')
+    return
   }
   if (file.size > 2 * 1024 * 1024) {
-    showSnackbar('La imagen no debe superar 2MB', 'error');
-    return;
+    showSnackbar('La imagen no debe superar 2MB', 'error')
+    return
   }
 
-  logoFile.value = file;
-};
+  logoFile.value = file
+}
 
 const removeLogo = () => {
-  logoFile.value = null;
-  if (fileInputRef.value) fileInputRef.value.value = '';
-};
+  logoFile.value = null
+  if (fileInputRef.value) fileInputRef.value.value = ''
+}
 
 // ===== Guardar =====
 const saveCompany = async () => {
-  formErrors.value = {};
-  let hasErrors = false;
+  formErrors.value = {}
+  let hasErrors = false
 
   if (!form.value.name.trim()) {
-    formErrors.value.name = ['El nombre es requerido'];
-    hasErrors = true;
+    formErrors.value.name = ['El nombre es requerido']
+    hasErrors = true
   }
   if (!form.value.email.trim()) {
-    formErrors.value.email = ['El email es requerido'];
-    hasErrors = true;
+    formErrors.value.email = ['El email es requerido']
+    hasErrors = true
   }
   if (!form.value.phone.trim()) {
-    formErrors.value.phone = ['El teléfono es requerido'];
-    hasErrors = true;
+    formErrors.value.phone = ['El teléfono es requerido']
+    hasErrors = true
   }
 
-  if (hasErrors) return;
+  if (hasErrors) return
 
-  saving.value = true;
+  saving.value = true
   try {
-    const companyId = company.value.id;
-    let response;
+    const companyId = company.value.id
+    let response
 
     if (logoFile.value) {
       // Con archivo: usar FormData
-      const formData = new FormData();
+      const formData = new FormData()
       Object.entries(form.value).forEach(([key, value]) => {
-        formData.append(key, value);
-      });
-      formData.append('logo', logoFile.value);
+        formData.append(key, value)
+      })
+      formData.append('logo', logoFile.value)
 
       if (companyId) {
         response = await api.put(`${COMPANY_URL}${companyId}/`, formData, {
-          headers: { 'Content-Type': 'multipart/form-data' },
-        });
+          headers: { 'Content-Type': 'multipart/form-data' }
+        })
       } else {
         response = await api.post(COMPANY_URL, formData, {
-          headers: { 'Content-Type': 'multipart/form-data' },
-        });
+          headers: { 'Content-Type': 'multipart/form-data' }
+        })
       }
     } else if (companyId) {
-      response = await api.patch(`${COMPANY_URL}${companyId}/`, form.value);
+      response = await api.patch(`${COMPANY_URL}${companyId}/`, form.value)
     } else {
-      response = await api.post(COMPANY_URL, form.value);
+      response = await api.post(COMPANY_URL, form.value)
     }
 
-    company.value = response.data;
-    companyExists.value = true;
-    logoFile.value = null;
-    if (fileInputRef.value) fileInputRef.value.value = '';
+    company.value = response.data
+    companyExists.value = true
+    logoFile.value = null
+    if (fileInputRef.value) fileInputRef.value.value = ''
 
-    showSnackbar('Empresa guardada correctamente');
+    showSnackbar('Empresa guardada correctamente')
   } catch (error) {
-    console.error('Error guardando empresa:', error);
-    handleApiError(error);
+    console.error('Error guardando empresa:', error)
+    handleApiError(error)
   } finally {
-    saving.value = false;
+    saving.value = false
   }
-};
+}
 
 // ===== Errores =====
-const handleApiError = (error) => {
+const handleApiError = error => {
   if (error.response?.data) {
-    const data = error.response.data;
-    const fieldErrors = {};
+    const data = error.response.data
+    const fieldErrors = {}
 
-    ['name', 'slogan', 'email', 'phone', 'address'].forEach(field => {
+    ;['name', 'slogan', 'email', 'phone', 'address'].forEach(field => {
       if (data[field]) {
-        fieldErrors[field] = Array.isArray(data[field]) ? data[field] : [data[field]];
+        fieldErrors[field] = Array.isArray(data[field]) ? data[field] : [data[field]]
       }
-    });
+    })
 
-    formErrors.value = fieldErrors;
+    formErrors.value = fieldErrors
 
     if (Object.keys(fieldErrors).length === 0) {
-      showSnackbar(data.detail || 'Error al guardar', 'error');
+      showSnackbar(data.detail || 'Error al guardar', 'error')
     }
   } else {
-    showSnackbar('Error de conexión', 'error');
+    showSnackbar('Error de conexión', 'error')
   }
-};
+}
 
-const clearFieldError = (field) => {
-  if (formErrors.value[field]) formErrors.value[field] = [];
-};
+const clearFieldError = field => {
+  if (formErrors.value[field]) formErrors.value[field] = []
+}
 
 const showSnackbar = (message, color = 'success') => {
-  snackbar.value = { show: true, message, color };
-};
+  snackbar.value = { show: true, message, color }
+}
 
-onMounted(loadCompany);
+onMounted(loadCompany)
 </script>
 
 <style scoped>

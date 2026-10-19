@@ -24,9 +24,7 @@
     <div v-if="defaultCurrency" class="default-currency-banner mb-5">
       <div class="flex items-center gap-3">
         <div class="flex-1">
-          <p class="text-sm font-medium text-white">
-            Moneda por defecto del sistema
-          </p>
+          <p class="text-sm font-medium text-white">Moneda por defecto del sistema</p>
           <p class="text-xs text-zinc-300">
             <strong>{{ defaultCurrency.short_name }}</strong> - {{ defaultCurrency.name }}
           </p>
@@ -46,30 +44,17 @@
             placeholder="Buscar por nombre o código..."
             @keyup.enter="onSearch"
           />
-          <button
-            v-if="search"
-            class="icon-btn !w-6 !h-6"
-            @click="clearSearch"
-            title="Limpiar"
-          >
+          <button v-if="search" class="icon-btn !w-6 !h-6" @click="clearSearch" title="Limpiar">
             <v-icon size="14">mdi-close</v-icon>
           </button>
         </div>
 
         <div class="flex gap-3">
           <!-- Filtro: Estado -->
-          <DarkSelect
-            v-model="filters.enabled"
-            :options="statusOptions"
-            @change="onSearch"
-          />
+          <DarkSelect v-model="filters.enabled" :options="statusOptions" @change="onSearch" />
 
           <!-- Filtro: Por defecto -->
-          <DarkSelect
-            v-model="filters.default"
-            :options="defaultOptions"
-            @change="onSearch"
-          />
+          <DarkSelect v-model="filters.default" :options="defaultOptions" @change="onSearch" />
         </div>
       </div>
     </div>
@@ -88,20 +73,16 @@
           <v-icon size="32" color="zinc-600">mdi-currency-usd</v-icon>
         </div>
         <div class="empty-state-title">
-          {{ hasActiveFilters ? "Sin resultados" : "Sin monedas registradas" }}
+          {{ hasActiveFilters ? 'Sin resultados' : 'Sin monedas registradas' }}
         </div>
         <div class="empty-state-text">
           {{
             hasActiveFilters
-              ? "No se encontraron monedas con los filtros aplicados."
-              : "Aún no hay monedas en el sistema. Crea la primera para comenzar."
+              ? 'No se encontraron monedas con los filtros aplicados.'
+              : 'Aún no hay monedas en el sistema. Crea la primera para comenzar.'
           }}
         </div>
-        <button
-          v-if="!hasActiveFilters"
-          class="btn-primary mt-6"
-          @click="openDialog()"
-        >
+        <button v-if="!hasActiveFilters" class="btn-primary mt-6" @click="openDialog()">
           <v-icon size="18" class="mr-2">mdi-plus</v-icon>
           Crear moneda
         </button>
@@ -120,33 +101,25 @@
                 <th @click="toggleOrdering('short_name')" class="sortable-th">
                   <span class="inline-flex items-center">
                     Código
-                    <v-icon size="14" class="ml-1">{{
-                      getOrderingIcon("short_name")
-                    }}</v-icon>
+                    <v-icon size="14" class="ml-1">{{ getOrderingIcon('short_name') }}</v-icon>
                   </span>
                 </th>
                 <th @click="toggleOrdering('name')" class="sortable-th">
                   <span class="inline-flex items-center">
                     Nombre
-                    <v-icon size="14" class="ml-1">{{
-                      getOrderingIcon("name")
-                    }}</v-icon>
+                    <v-icon size="14" class="ml-1">{{ getOrderingIcon('name') }}</v-icon>
                   </span>
                 </th>
                 <th @click="toggleOrdering('default')" class="sortable-th">
                   <span class="inline-flex items-center">
                     Por defecto
-                    <v-icon size="14" class="ml-1">{{
-                      getOrderingIcon("default")
-                    }}</v-icon>
+                    <v-icon size="14" class="ml-1">{{ getOrderingIcon('default') }}</v-icon>
                   </span>
                 </th>
                 <th @click="toggleOrdering('enabled')" class="sortable-th">
                   <span class="inline-flex items-center">
                     Estado
-                    <v-icon size="14" class="ml-1">{{
-                      getOrderingIcon("enabled")
-                    }}</v-icon>
+                    <v-icon size="14" class="ml-1">{{ getOrderingIcon('enabled') }}</v-icon>
                   </span>
                 </th>
                 <th class="text-right">Acciones</th>
@@ -157,9 +130,7 @@
                 <td>
                   <div class="flex items-center gap-3">
                     <div class="table-avatar avatar-gradient">
-                      <span class="text-[11px] font-bold">{{
-                        item.short_name
-                      }}</span>
+                      <span class="text-[11px] font-bold">{{ item.short_name }}</span>
                     </div>
                     <span class="text-sm font-mono font-semibold text-zinc-200">{{
                       item.short_name
@@ -175,13 +146,8 @@
                   <span v-else class="text-zinc-600 text-xs">—</span>
                 </td>
                 <td>
-                  <span
-                    :class="[
-                      'badge',
-                      item.enabled ? 'badge-success' : 'badge-neutral',
-                    ]"
-                  >
-                    {{ item.enabled ? "Activo" : "Inactivo" }}
+                  <span :class="['badge', item.enabled ? 'badge-success' : 'badge-neutral']">
+                    {{ item.enabled ? 'Activo' : 'Inactivo' }}
                   </span>
                 </td>
                 <td class="text-right">
@@ -190,17 +156,17 @@
                     <button
                       class="icon-btn"
                       :class="{ 'star-active': item.default }"
-                      :title="item.default ? 'Moneda por defecto (activa)' : 'Establecer por defecto'"
+                      :title="
+                        item.default ? 'Moneda por defecto (activa)' : 'Establecer por defecto'
+                      "
                       @click="!item.default && setDefault(item)"
                       :disabled="item.default"
                     >
-                      <v-icon size="16">{{ item.default ? 'mdi-star' : 'mdi-star-outline' }}</v-icon>
+                      <v-icon size="16">{{
+                        item.default ? 'mdi-star' : 'mdi-star-outline'
+                      }}</v-icon>
                     </button>
-                    <button
-                      class="icon-btn"
-                      title="Editar"
-                      @click="openDialog(item)"
-                    >
+                    <button class="icon-btn" title="Editar" @click="openDialog(item)">
                       <v-icon size="16">mdi-pencil-outline</v-icon>
                     </button>
                     <button
@@ -233,7 +199,7 @@
       <div class="dialog-card">
         <div class="dialog-header">
           <h3 class="text-lg font-semibold text-zinc-100">
-            {{ isEditing ? "Editar moneda" : "Nueva moneda" }}
+            {{ isEditing ? 'Editar moneda' : 'Nueva moneda' }}
           </h3>
           <button class="icon-btn" @click="dialogOpen = false">
             <v-icon size="20">mdi-close</v-icon>
@@ -248,7 +214,6 @@
               placeholder="Ej: USD"
               variant="outlined"
               density="comfortable"
-              hide-details
               :error-messages="formErrors.short_name"
               class="dark-input uppercase-input"
               maxlength="4"
@@ -263,7 +228,6 @@
               placeholder="Ej: Dólar estadounidense"
               variant="outlined"
               density="comfortable"
-              hide-details
               :error-messages="formErrors.name"
               class="dark-input"
               @update:model-value="clearFieldError('name')"
@@ -275,7 +239,6 @@
               v-model="form.default"
               label="Moneda por defecto del sistema"
               color="indigo"
-              hide-details
               density="compact"
               class="dark-switch"
             />
@@ -283,7 +246,6 @@
               v-model="form.enabled"
               label="Activo"
               color="indigo"
-              hide-details
               density="compact"
               class="dark-switch"
             />
@@ -291,18 +253,10 @@
         </div>
 
         <div class="dialog-footer">
-          <button class="btn-secondary" @click="dialogOpen = false">
-            Cancelar
-          </button>
+          <button class="btn-secondary" @click="dialogOpen = false">Cancelar</button>
           <button class="btn-primary" @click="saveItem" :disabled="saving">
-            <v-progress-circular
-              v-if="saving"
-              indeterminate
-              size="16"
-              color="white"
-              class="mr-2"
-            />
-            {{ isEditing ? "Guardar cambios" : "Crear" }}
+            <v-progress-circular v-if="saving" indeterminate size="16" color="white" class="mr-2" />
+            {{ isEditing ? 'Guardar cambios' : 'Crear' }}
           </button>
         </div>
       </div>
@@ -312,9 +266,7 @@
     <v-dialog v-model="deleteDialogOpen" max-width="400" class="dark-dialog">
       <div class="dialog-card">
         <div class="dialog-header">
-          <h3 class="text-lg font-semibold text-zinc-100">
-            Confirmar eliminación
-          </h3>
+          <h3 class="text-lg font-semibold text-zinc-100">Confirmar eliminación</h3>
           <button class="icon-btn" @click="deleteDialogOpen = false">
             <v-icon size="20">mdi-close</v-icon>
           </button>
@@ -333,11 +285,10 @@
             <div class="flex items-start gap-3">
               <v-icon size="20" color="error" class="mt-0.5">mdi-alert-circle</v-icon>
               <div>
-                <p class="text-sm font-semibold text-error mb-1">
-                  No se puede eliminar
-                </p>
+                <p class="text-sm font-semibold text-error mb-1">No se puede eliminar</p>
                 <p class="text-xs text-zinc-400">
-                  Esta es la moneda por defecto del sistema. Debes seleccionar otra moneda como predeterminada antes de eliminar esta.
+                  Esta es la moneda por defecto del sistema. Debes seleccionar otra moneda como
+                  predeterminada antes de eliminar esta.
                 </p>
               </div>
             </div>
@@ -345,20 +296,13 @@
         </div>
 
         <div class="dialog-footer">
-          <button class="btn-secondary" @click="deleteDialogOpen = false">
-            Cancelar
-          </button>
+          <button class="btn-secondary" @click="deleteDialogOpen = false">Cancelar</button>
           <button
             class="btn-danger"
             @click="deleteItem"
             :disabled="deleting || itemToDelete?.default"
           >
-            <v-progress-circular
-              v-if="deleting"
-              indeterminate
-              size="16"
-              class="mr-2"
-            />
+            <v-progress-circular v-if="deleting" indeterminate size="16" class="mr-2" />
             Eliminar
           </button>
         </div>
@@ -366,38 +310,33 @@
     </v-dialog>
 
     <!-- Snackbar -->
-    <v-snackbar
-      v-model="snackbar.show"
-      :color="snackbar.color"
-      location="top right"
-      timeout="3000"
-    >
+    <v-snackbar v-model="snackbar.show" :color="snackbar.color" location="top right" timeout="3000">
       {{ snackbar.message }}
     </v-snackbar>
   </div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from "vue";
-import api from "@/utils/axios";
-import { useTable } from "@/composables/useTable";
-import TablePagination from "@/components/TablePagination.vue";
-import DarkSelect from "@/components/DarkSelect.vue";
+import { ref, computed, onMounted } from 'vue'
+import api from '@/utils/axios'
+import { useTable } from '@/composables/useTable'
+import TablePagination from '@/components/TablePagination.vue'
+import DarkSelect from '@/components/DarkSelect.vue'
 
-const API_URL = "configuration/currencies/";
+const API_URL = 'configuration/currencies/'
 
 // Opciones para los filtros (con "Todos" como primer valor)
 const statusOptions = [
-  { value: "", label: "Todos los estados" },
-  { value: "true", label: "Activos" },
-  { value: "false", label: "Inactivos" },
-];
+  { value: '', label: 'Todos los estados' },
+  { value: 'true', label: 'Activos' },
+  { value: 'false', label: 'Inactivos' }
+]
 
 const defaultOptions = [
-  { value: "", label: "Todas" },
-  { value: "true", label: "Por defecto" },
-  { value: "false", label: "No por defecto" },
-];
+  { value: '', label: 'Todas' },
+  { value: 'true', label: 'Por defecto' },
+  { value: 'false', label: 'No por defecto' }
+]
 
 // ===== Tabla (paginación + búsqueda + ordenamiento + filtros) =====
 const {
@@ -419,160 +358,153 @@ const {
   changePage
 } = useTable({
   apiUrl: API_URL,
-  defaultOrdering: "name",
-  defaultFilters: { enabled: "", default: "" },
-});
+  defaultOrdering: 'name',
+  defaultFilters: { enabled: '', default: '' }
+})
 
 // ===== Estado de dialogs =====
-const dialogOpen = ref(false);
-const deleteDialogOpen = ref(false);
-const isEditing = ref(false);
-const saving = ref(false);
-const deleting = ref(false);
-const itemToDelete = ref(null);
+const dialogOpen = ref(false)
+const deleteDialogOpen = ref(false)
+const isEditing = ref(false)
+const saving = ref(false)
+const deleting = ref(false)
+const itemToDelete = ref(null)
 
-const form = ref({ name: "", short_name: "", default: false, enabled: true });
-const formErrors = ref({ name: [], short_name: [] });
-const snackbar = ref({ show: false, message: "", color: "success" });
+const form = ref({ name: '', short_name: '', default: false, enabled: true })
+const formErrors = ref({ name: [], short_name: [] })
+const snackbar = ref({ show: false, message: '', color: 'success' })
 
 // ===== Computed =====
 const hasActiveFilters = computed(() => {
-  return (
-    search.value.trim() !== "" ||
-    filters.value.enabled !== "" ||
-    filters.value.default !== ""
-  );
-});
+  return search.value.trim() !== '' || filters.value.enabled !== '' || filters.value.default !== ''
+})
 
 const defaultCurrency = computed(() => {
-  return items.value.find((item) => item.default) || null;
-});
+  return items.value.find(item => item.default) || null
+})
 
 // ===== Métodos =====
-const onShortNameInput = (value) => {
-  form.value.short_name = value.toUpperCase();
-  clearFieldError("short_name");
-};
+const onShortNameInput = value => {
+  form.value.short_name = value.toUpperCase()
+  clearFieldError('short_name')
+}
 
 const resetAll = () => {
-  search.value = "";
-  clearFilters();
-};
+  search.value = ''
+  clearFilters()
+}
 
 const openDialog = (item = null) => {
   if (item) {
-    isEditing.value = true;
-    form.value = { ...item };
+    isEditing.value = true
+    form.value = { ...item }
   } else {
-    isEditing.value = false;
-    form.value = { name: "", short_name: "", default: false, enabled: true };
+    isEditing.value = false
+    form.value = { name: '', short_name: '', default: false, enabled: true }
   }
-  formErrors.value = { name: [], short_name: [] };
-  dialogOpen.value = true;
-};
+  formErrors.value = { name: [], short_name: [] }
+  dialogOpen.value = true
+}
 
 const saveItem = async () => {
-  let hasErrors = false;
-  formErrors.value = { name: [], short_name: [] };
+  let hasErrors = false
+  formErrors.value = { name: [], short_name: [] }
 
   if (!form.value.short_name.trim()) {
-    formErrors.value.short_name = ["El código es requerido"];
-    hasErrors = true;
+    formErrors.value.short_name = ['El código es requerido']
+    hasErrors = true
   } else if (form.value.short_name.length < 2) {
-    formErrors.value.short_name = ["Mínimo 2 caracteres"];
-    hasErrors = true;
+    formErrors.value.short_name = ['Mínimo 2 caracteres']
+    hasErrors = true
   }
 
   if (!form.value.name.trim()) {
-    formErrors.value.name = ["El nombre es requerido"];
-    hasErrors = true;
+    formErrors.value.name = ['El nombre es requerido']
+    hasErrors = true
   }
 
-  if (hasErrors) return;
+  if (hasErrors) return
 
-  saving.value = true;
+  saving.value = true
   try {
     if (isEditing.value) {
-      await api.put(`${API_URL}${form.value.id}/`, form.value);
-      showSnackbar("Moneda actualizada correctamente");
+      await api.put(`${API_URL}${form.value.id}/`, form.value)
+      showSnackbar('Moneda actualizada correctamente')
     } else {
-      await api.post(API_URL, form.value);
-      showSnackbar("Moneda creada correctamente");
+      await api.post(API_URL, form.value)
+      showSnackbar('Moneda creada correctamente')
     }
-    dialogOpen.value = false;
-    await loadData();
+    dialogOpen.value = false
+    await loadData()
   } catch (error) {
-    handleApiError(error);
+    handleApiError(error)
   } finally {
-    saving.value = false;
+    saving.value = false
   }
-};
+}
 
-const setDefault = async (item) => {
+const setDefault = async item => {
   try {
-    await api.patch(`${API_URL}${item.id}/`, { default: true });
-    showSnackbar(`${item.short_name} ahora es la moneda por defecto`);
-    await loadData();
+    await api.patch(`${API_URL}${item.id}/`, { default: true })
+    showSnackbar(`${item.short_name} ahora es la moneda por defecto`)
+    await loadData()
   } catch (error) {
-    handleApiError(error);
+    handleApiError(error)
   }
-};
+}
 
-const confirmDelete = (item) => {
-  itemToDelete.value = item;
-  deleteDialogOpen.value = true;
-};
+const confirmDelete = item => {
+  itemToDelete.value = item
+  deleteDialogOpen.value = true
+}
 
 const deleteItem = async () => {
-  deleting.value = true;
+  deleting.value = true
   try {
-    await api.delete(`${API_URL}${itemToDelete.value.id}/`);
-    showSnackbar("Moneda eliminada correctamente");
-    deleteDialogOpen.value = false;
+    await api.delete(`${API_URL}${itemToDelete.value.id}/`)
+    showSnackbar('Moneda eliminada correctamente')
+    deleteDialogOpen.value = false
 
     // Si eliminamos el último item de la página, volver a la anterior
     if (items.value.length === 1 && page.value > 1) {
-      page.value--;
+      page.value--
     } else {
-      await loadData();
+      await loadData()
     }
   } catch (error) {
-    handleApiError(error);
+    handleApiError(error)
   } finally {
-    deleting.value = false;
+    deleting.value = false
   }
-};
+}
 
-const handleApiError = (error) => {
+const handleApiError = error => {
   if (error.response?.data) {
-    const data = error.response.data;
-    if (data.name)
-      formErrors.value.name = Array.isArray(data.name)
-        ? data.name
-        : [data.name];
+    const data = error.response.data
+    if (data.name) formErrors.value.name = Array.isArray(data.name) ? data.name : [data.name]
     if (data.short_name)
       formErrors.value.short_name = Array.isArray(data.short_name)
         ? data.short_name
-        : [data.short_name];
+        : [data.short_name]
 
-    const detail = data.detail || data.non_field_errors?.[0];
+    const detail = data.detail || data.non_field_errors?.[0]
     if (!data.name && !data.short_name) {
-      showSnackbar(detail || "Error al guardar", "error");
+      showSnackbar(detail || 'Error al guardar', 'error')
     }
   } else {
-    showSnackbar("Error de conexión", "error");
+    showSnackbar('Error de conexión', 'error')
   }
-};
+}
 
-const clearFieldError = (field) => {
-  if (form.value[field]?.trim()) formErrors.value[field] = [];
-};
+const clearFieldError = field => {
+  if (form.value[field]?.trim()) formErrors.value[field] = []
+}
 
-const showSnackbar = (message, color = "success") => {
-  snackbar.value = { show: true, message, color };
-};
+const showSnackbar = (message, color = 'success') => {
+  snackbar.value = { show: true, message, color }
+}
 
-onMounted(loadData);
+onMounted(loadData)
 </script>
 
 <style scoped>
@@ -649,7 +581,7 @@ onMounted(loadData);
 
 .uppercase-input :deep(input) {
   text-transform: uppercase;
-  font-family: "Courier New", monospace;
+  font-family: 'Courier New', monospace;
   font-weight: 600;
   letter-spacing: 0.1em;
 }

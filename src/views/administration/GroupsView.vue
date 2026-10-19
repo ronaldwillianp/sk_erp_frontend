@@ -32,12 +32,7 @@
             placeholder="Buscar por nombre..."
             @keyup.enter="onSearch"
           />
-          <button
-            v-if="search"
-            class="icon-btn !w-6 !h-6"
-            @click="clearSearch"
-            title="Limpiar"
-          >
+          <button v-if="search" class="icon-btn !w-6 !h-6" @click="clearSearch" title="Limpiar">
             <v-icon size="14">mdi-close</v-icon>
           </button>
         </div>
@@ -61,9 +56,10 @@
           {{ hasActiveFilters ? 'Sin resultados' : 'Sin grupos registrados' }}
         </div>
         <div class="empty-state-text">
-          {{ hasActiveFilters
-            ? 'No se encontraron grupos con la búsqueda aplicada.'
-            : 'Aún no hay grupos registrados. Crea el primero para comenzar a asignar roles.'
+          {{
+            hasActiveFilters
+              ? 'No se encontraron grupos con la búsqueda aplicada.'
+              : 'Aún no hay grupos registrados. Crea el primero para comenzar a asignar roles.'
           }}
         </div>
         <button v-if="!hasActiveFilters" class="btn-primary mt-6" @click="openDialog()">
@@ -112,9 +108,7 @@
                     <v-icon size="12" class="mr-1">mdi-account-multiple</v-icon>
                     {{ item.user_count }}
                   </span>
-                  <span v-else class="badge badge-neutral">
-                    Sin usuarios
-                  </span>
+                  <span v-else class="badge badge-neutral"> Sin usuarios </span>
                 </td>
                 <td class="text-right">
                   <div class="flex items-center justify-end gap-1">
@@ -166,7 +160,6 @@
               placeholder="Ej: Administrador, Vendedor, Contador"
               variant="outlined"
               density="comfortable"
-              hide-details
               :error-messages="formErrors.name"
               class="dark-input"
               prepend-inner-icon="mdi-account-group-outline"
@@ -197,14 +190,18 @@
         <div class="dialog-body">
           <p class="text-sm text-zinc-400">
             ¿Estás seguro de eliminar el grupo
-            <strong class="text-zinc-200">{{ itemToDelete?.name }}</strong>?
-            Esta acción no se puede deshacer.
+            <strong class="text-zinc-200">{{ itemToDelete?.name }}</strong
+            >? Esta acción no se puede deshacer.
           </p>
 
           <!-- Advertencia si el grupo tiene usuarios -->
           <div v-if="itemToDelete?.user_count > 0" class="alert-warning mt-4">
             <v-icon size="16" class="mr-2">mdi-account-off-outline</v-icon>
-            Este grupo tiene {{ itemToDelete.user_count }} usuario{{ itemToDelete.user_count !== 1 ? 's' : '' }} asociado{{ itemToDelete.user_count !== 1 ? 's' : '' }}. Serán desasociados, pero no se eliminarán.
+            Este grupo tiene {{ itemToDelete.user_count }} usuario{{
+              itemToDelete.user_count !== 1 ? 's' : ''
+            }}
+            asociado{{ itemToDelete.user_count !== 1 ? 's' : '' }}. Serán desasociados, pero no se
+            eliminarán.
           </div>
           <div v-else class="alert-warning mt-4">
             <v-icon size="16" class="mr-2">mdi-information-outline</v-icon>
@@ -229,144 +226,155 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue';
-import api from '@/utils/axios';
-import { useTable } from '@/composables/useTable';
-import TablePagination from '@/components/TablePagination.vue';
+import { ref, computed, onMounted } from 'vue'
+import api from '@/utils/axios'
+import { useTable } from '@/composables/useTable'
+import TablePagination from '@/components/TablePagination.vue'
 
-const API_URL = 'administration/groups/';
+const API_URL = 'administration/groups/'
 
 // ===== Tabla (paginación + búsqueda + ordenamiento) =====
 const {
-  items, loading, total, page, pageSize,
-  search, ordering, filters,
-  loadData, toggleOrdering, getOrderingIcon,
-  onSearch, clearSearch, clearFilters,
-  changePageSize, changePage
+  items,
+  loading,
+  total,
+  page,
+  pageSize,
+  search,
+  ordering,
+  filters,
+  loadData,
+  toggleOrdering,
+  getOrderingIcon,
+  onSearch,
+  clearSearch,
+  clearFilters,
+  changePageSize,
+  changePage
 } = useTable({
   apiUrl: API_URL,
-  defaultOrdering: 'name',
-});
+  defaultOrdering: 'name'
+})
 
 // ===== Estado de dialogs =====
-const dialogOpen = ref(false);
-const deleteDialogOpen = ref(false);
-const isEditing = ref(false);
-const saving = ref(false);
-const deleting = ref(false);
-const itemToDelete = ref(null);
+const dialogOpen = ref(false)
+const deleteDialogOpen = ref(false)
+const isEditing = ref(false)
+const saving = ref(false)
+const deleting = ref(false)
+const itemToDelete = ref(null)
 
-const form = ref({ name: '' });
-const formErrors = ref({ name: [] });
-const snackbar = ref({ show: false, message: '', color: 'success' });
+const form = ref({ name: '' })
+const formErrors = ref({ name: [] })
+const snackbar = ref({ show: false, message: '', color: 'success' })
 
 // ===== Computed =====
 const hasActiveFilters = computed(() => {
-  return search.value.trim() !== '';
-});
+  return search.value.trim() !== ''
+})
 
 // ===== Métodos =====
 const resetAll = () => {
-  search.value = '';
-  clearFilters();
-};
+  search.value = ''
+  clearFilters()
+}
 
 const openDialog = (item = null) => {
   if (item) {
-    isEditing.value = true;
-    form.value = { id: item.id, name: item.name };
+    isEditing.value = true
+    form.value = { id: item.id, name: item.name }
   } else {
-    isEditing.value = false;
-    form.value = { name: '' };
+    isEditing.value = false
+    form.value = { name: '' }
   }
-  formErrors.value = { name: [] };
-  dialogOpen.value = true;
-};
+  formErrors.value = { name: [] }
+  dialogOpen.value = true
+}
 
 const saveItem = async () => {
-  let hasErrors = false;
-  formErrors.value = { name: [] };
+  let hasErrors = false
+  formErrors.value = { name: [] }
 
   if (!form.value.name.trim()) {
-    formErrors.value.name = ['El nombre es requerido'];
-    hasErrors = true;
+    formErrors.value.name = ['El nombre es requerido']
+    hasErrors = true
   } else if (form.value.name.trim().length < 3) {
-    formErrors.value.name = ['Mínimo 3 caracteres'];
-    hasErrors = true;
+    formErrors.value.name = ['Mínimo 3 caracteres']
+    hasErrors = true
   }
 
-  if (hasErrors) return;
+  if (hasErrors) return
 
-  saving.value = true;
+  saving.value = true
   try {
-    const payload = { name: form.value.name.trim() };
+    const payload = { name: form.value.name.trim() }
 
     if (isEditing.value) {
-      await api.put(`${API_URL}${form.value.id}/`, payload);
-      showSnackbar('Grupo actualizado correctamente');
+      await api.put(`${API_URL}${form.value.id}/`, payload)
+      showSnackbar('Grupo actualizado correctamente')
     } else {
-      await api.post(API_URL, payload);
-      showSnackbar('Grupo creado correctamente');
+      await api.post(API_URL, payload)
+      showSnackbar('Grupo creado correctamente')
     }
-    dialogOpen.value = false;
-    await loadData();
+    dialogOpen.value = false
+    await loadData()
   } catch (error) {
-    handleApiError(error);
+    handleApiError(error)
   } finally {
-    saving.value = false;
+    saving.value = false
   }
-};
+}
 
-const confirmDelete = (item) => {
-  itemToDelete.value = item;
-  deleteDialogOpen.value = true;
-};
+const confirmDelete = item => {
+  itemToDelete.value = item
+  deleteDialogOpen.value = true
+}
 
 const deleteItem = async () => {
-  deleting.value = true;
+  deleting.value = true
   try {
-    await api.delete(`${API_URL}${itemToDelete.value.id}/`);
-    showSnackbar('Grupo eliminado correctamente');
-    deleteDialogOpen.value = false;
+    await api.delete(`${API_URL}${itemToDelete.value.id}/`)
+    showSnackbar('Grupo eliminado correctamente')
+    deleteDialogOpen.value = false
 
     if (items.value.length === 1 && page.value > 1) {
-      page.value--;
+      page.value--
     } else {
-      await loadData();
+      await loadData()
     }
   } catch (error) {
-    handleApiError(error);
+    handleApiError(error)
   } finally {
-    deleting.value = false;
+    deleting.value = false
   }
-};
+}
 
-const handleApiError = (error) => {
+const handleApiError = error => {
   if (error.response?.data) {
-    const data = error.response.data;
+    const data = error.response.data
 
     if (data.name) {
-      formErrors.value.name = Array.isArray(data.name) ? data.name : [data.name];
+      formErrors.value.name = Array.isArray(data.name) ? data.name : [data.name]
     }
 
-    const detail = data.detail || data.non_field_errors?.[0];
+    const detail = data.detail || data.non_field_errors?.[0]
     if (!data.name) {
-      showSnackbar(detail || 'Error al guardar', 'error');
+      showSnackbar(detail || 'Error al guardar', 'error')
     }
   } else {
-    showSnackbar('Error de conexión', 'error');
+    showSnackbar('Error de conexión', 'error')
   }
-};
+}
 
-const clearFieldError = (field) => {
-  if (form.value[field]?.trim()) formErrors.value[field] = [];
-};
+const clearFieldError = field => {
+  if (form.value[field]?.trim()) formErrors.value[field] = []
+}
 
 const showSnackbar = (message, color = 'success') => {
-  snackbar.value = { show: true, message, color };
-};
+  snackbar.value = { show: true, message, color }
+}
 
-onMounted(loadData);
+onMounted(loadData)
 </script>
 
 <style scoped>

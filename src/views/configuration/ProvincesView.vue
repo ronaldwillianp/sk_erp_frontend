@@ -32,23 +32,14 @@
             placeholder="Buscar por nombre o código..."
             @keyup.enter="onSearch"
           />
-          <button
-            v-if="search"
-            class="icon-btn !w-6 !h-6"
-            @click="clearSearch"
-            title="Limpiar"
-          >
+          <button v-if="search" class="icon-btn !w-6 !h-6" @click="clearSearch" title="Limpiar">
             <v-icon size="14">mdi-close</v-icon>
           </button>
         </div>
 
         <div class="flex gap-3">
           <!-- Filtro: Estado -->
-          <DarkSelect
-            v-model="filters.enabled"
-            :options="statusOptions"
-            @change="onSearch"
-          />
+          <DarkSelect v-model="filters.enabled" :options="statusOptions" @change="onSearch" />
         </div>
       </div>
     </div>
@@ -70,9 +61,10 @@
           {{ hasActiveFilters ? 'Sin resultados' : 'Sin provincias registradas' }}
         </div>
         <div class="empty-state-text">
-          {{ hasActiveFilters
-            ? 'No se encontraron provincias con los filtros aplicados.'
-            : 'Aún no hay provincias registradas. Crea la primera para comenzar.'
+          {{
+            hasActiveFilters
+              ? 'No se encontraron provincias con los filtros aplicados.'
+              : 'Aún no hay provincias registradas. Crea la primera para comenzar.'
           }}
         </div>
         <button v-if="!hasActiveFilters" class="btn-primary mt-6" @click="openDialog()">
@@ -119,7 +111,9 @@
                     <div class="table-avatar avatar-gradient">
                       <span class="text-[11px] font-bold">{{ item.short_name }}</span>
                     </div>
-                    <span class="text-sm font-mono font-semibold text-zinc-200">{{ item.short_name }}</span>
+                    <span class="text-sm font-mono font-semibold text-zinc-200">{{
+                      item.short_name
+                    }}</span>
                   </div>
                 </td>
                 <td class="text-sm text-zinc-300">{{ item.name }}</td>
@@ -185,7 +179,6 @@
               placeholder="Ej: CAV"
               variant="outlined"
               density="comfortable"
-              hide-details
               :error-messages="formErrors.short_name"
               class="dark-input uppercase-input"
               maxlength="5"
@@ -200,7 +193,6 @@
               placeholder="Ej: Ciego de Ávila"
               variant="outlined"
               density="comfortable"
-              hide-details
               :error-messages="formErrors.name"
               class="dark-input"
               @update:model-value="clearFieldError('name')"
@@ -239,7 +231,10 @@
               Municipios de {{ selectedProvince?.name }}
             </h3>
             <p class="text-xs text-zinc-500 mt-1">
-              {{ municipalitiesList.length }} municipio{{ municipalitiesList.length !== 1 ? 's' : '' }} registrado{{ municipalitiesList.length !== 1 ? 's' : '' }}
+              {{ municipalitiesList.length }} municipio{{
+                municipalitiesList.length !== 1 ? 's' : ''
+              }}
+              registrado{{ municipalitiesList.length !== 1 ? 's' : '' }}
             </p>
           </div>
           <button class="icon-btn" @click="municipalitiesDialogOpen = false">
@@ -260,9 +255,7 @@
               <v-icon size="28" color="zinc-600">mdi-map-marker-off-outline</v-icon>
             </div>
             <div class="empty-state-title">Sin municipios</div>
-            <div class="empty-state-text">
-              Esta provincia aún no tiene municipios registrados.
-            </div>
+            <div class="empty-state-text">Esta provincia aún no tiene municipios registrados.</div>
           </div>
 
           <!-- Lista de municipios -->
@@ -299,8 +292,8 @@
         <div class="dialog-body">
           <p class="text-sm text-zinc-400">
             ¿Estás seguro de eliminar la provincia
-            <strong class="text-zinc-200">{{ itemToDelete?.name }}</strong>?
-            Esta acción no se puede deshacer.
+            <strong class="text-zinc-200">{{ itemToDelete?.name }}</strong
+            >? Esta acción no se puede deshacer.
           </p>
           <div class="alert-warning mt-4">
             <v-icon size="16" class="mr-2">mdi-alert</v-icon>
@@ -325,177 +318,193 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue';
-import api from '@/utils/axios';
-import { useTable } from '@/composables/useTable';
-import TablePagination from '@/components/TablePagination.vue';
-import DarkSelect from '@/components/DarkSelect.vue';
+import { ref, computed, onMounted } from 'vue'
+import api from '@/utils/axios'
+import { useTable } from '@/composables/useTable'
+import TablePagination from '@/components/TablePagination.vue'
+import DarkSelect from '@/components/DarkSelect.vue'
 
-const API_URL = 'configuration/provinces/';
+const API_URL = 'configuration/provinces/'
 
 // Opciones para el filtro de estado
 const statusOptions = [
   { value: '', label: 'Todos los estados' },
   { value: 'true', label: 'Activas' },
-  { value: 'false', label: 'Inactivas' },
-];
+  { value: 'false', label: 'Inactivas' }
+]
 
 // ===== Tabla (paginación + búsqueda + ordenamiento + filtros) =====
 const {
-  items, loading, total, page, pageSize,
-  search, ordering, filters,
-  loadData, toggleOrdering, getOrderingIcon,
-  onSearch, clearSearch, clearFilters,
-  changePageSize, changePage
+  items,
+  loading,
+  total,
+  page,
+  pageSize,
+  search,
+  ordering,
+  filters,
+  loadData,
+  toggleOrdering,
+  getOrderingIcon,
+  onSearch,
+  clearSearch,
+  clearFilters,
+  changePageSize,
+  changePage
 } = useTable({
   apiUrl: API_URL,
   defaultOrdering: 'name',
-  defaultFilters: { enabled: '' },
-});
+  defaultFilters: { enabled: '' }
+})
 
 // ===== Estado de dialogs =====
-const dialogOpen = ref(false);
-const deleteDialogOpen = ref(false);
-const municipalitiesDialogOpen = ref(false);
-const isEditing = ref(false);
-const saving = ref(false);
-const deleting = ref(false);
-const loadingMunicipalities = ref(false);
-const itemToDelete = ref(null);
-const selectedProvince = ref(null);
-const municipalitiesList = ref([]);
+const dialogOpen = ref(false)
+const deleteDialogOpen = ref(false)
+const municipalitiesDialogOpen = ref(false)
+const isEditing = ref(false)
+const saving = ref(false)
+const deleting = ref(false)
+const loadingMunicipalities = ref(false)
+const itemToDelete = ref(null)
+const selectedProvince = ref(null)
+const municipalitiesList = ref([])
 
-const form = ref({ name: '', short_name: '', enabled: true });
-const formErrors = ref({ name: [], short_name: [] });
-const snackbar = ref({ show: false, message: '', color: 'success' });
+const form = ref({ name: '', short_name: '', enabled: true })
+const formErrors = ref({ name: [], short_name: [] })
+const snackbar = ref({ show: false, message: '', color: 'success' })
 
 // ===== Computed =====
 const hasActiveFilters = computed(() => {
-  return search.value.trim() !== '' || filters.value.enabled !== '';
-});
+  return search.value.trim() !== '' || filters.value.enabled !== ''
+})
 
 // ===== Métodos =====
-const onShortNameInput = (value) => {
-  form.value.short_name = value.toUpperCase();
-  clearFieldError('short_name');
-};
+const onShortNameInput = value => {
+  form.value.short_name = value.toUpperCase()
+  clearFieldError('short_name')
+}
 
 const resetAll = () => {
-  search.value = '';
-  clearFilters();
-};
+  search.value = ''
+  clearFilters()
+}
 
 const openDialog = (item = null) => {
   if (item) {
-    isEditing.value = true;
-    form.value = { ...item };
+    isEditing.value = true
+    form.value = { ...item }
   } else {
-    isEditing.value = false;
-    form.value = { name: '', short_name: '', enabled: true };
+    isEditing.value = false
+    form.value = { name: '', short_name: '', enabled: true }
   }
-  formErrors.value = { name: [], short_name: [] };
-  dialogOpen.value = true;
-};
+  formErrors.value = { name: [], short_name: [] }
+  dialogOpen.value = true
+}
 
 // Ver municipios de una provincia
-const openMunicipalities = async (province) => {
-  selectedProvince.value = province;
-  municipalitiesDialogOpen.value = true;
-  loadingMunicipalities.value = true;
-  municipalitiesList.value = [];
+const openMunicipalities = async province => {
+  selectedProvince.value = province
+  municipalitiesDialogOpen.value = true
+  loadingMunicipalities.value = true
+  municipalitiesList.value = []
 
   try {
-    const response = await api.get(`${API_URL}${province.id}/municipalities/`);
-    municipalitiesList.value = response.data;
+    const response = await api.get(`${API_URL}${province.id}/municipalities/`)
+    municipalitiesList.value = response.data
   } catch (error) {
-    showSnackbar('Error al cargar los municipios', 'error');
+    showSnackbar('Error al cargar los municipios', 'error')
   } finally {
-    loadingMunicipalities.value = false;
+    loadingMunicipalities.value = false
   }
-};
+}
 
 const saveItem = async () => {
-  let hasErrors = false;
-  formErrors.value = { name: [], short_name: [] };
+  formErrors.value = { name: [], short_name: [] }
+  let hasErrors = false
 
   if (!form.value.short_name.trim()) {
-    formErrors.value.short_name = ['El código es requerido'];
-    hasErrors = true;
+    formErrors.value.short_name = ['El código es requerido']
+    hasErrors = true
   }
 
   if (!form.value.name.trim()) {
-    formErrors.value.name = ['El nombre es requerido'];
-    hasErrors = true;
+    formErrors.value.name = ['El nombre es requerido']
+    hasErrors = true
   }
 
-  if (hasErrors) return;
+  if (hasErrors) return
 
-  saving.value = true;
+  saving.value = true
   try {
     if (isEditing.value) {
-      await api.put(`${API_URL}${form.value.id}/`, form.value);
-      showSnackbar('Provincia actualizada correctamente');
+      await api.put(`${API_URL}${form.value.id}/`, form.value)
+      showSnackbar('Provincia actualizada correctamente')
     } else {
-      await api.post(API_URL, form.value);
-      showSnackbar('Provincia creada correctamente');
+      await api.post(API_URL, form.value)
+      showSnackbar('Provincia creada correctamente')
     }
-    dialogOpen.value = false;
-    await loadData();
+    dialogOpen.value = false
+    await loadData()
   } catch (error) {
-    handleApiError(error);
+    handleApiError(error)
   } finally {
-    saving.value = false;
+    saving.value = false
   }
-};
+}
 
-const confirmDelete = (item) => {
-  itemToDelete.value = item;
-  deleteDialogOpen.value = true;
-};
+const confirmDelete = item => {
+  itemToDelete.value = item
+  deleteDialogOpen.value = true
+}
 
 const deleteItem = async () => {
-  deleting.value = true;
+  deleting.value = true
   try {
-    await api.delete(`${API_URL}${itemToDelete.value.id}/`);
-    showSnackbar('Provincia eliminada correctamente');
-    deleteDialogOpen.value = false;
+    await api.delete(`${API_URL}${itemToDelete.value.id}/`)
+    showSnackbar('Provincia eliminada correctamente')
+    deleteDialogOpen.value = false
 
     if (items.value.length === 1 && page.value > 1) {
-      page.value--;
+      page.value--
     } else {
-      await loadData();
+      await loadData()
     }
   } catch (error) {
-    handleApiError(error);
+    handleApiError(error)
   } finally {
-    deleting.value = false;
+    deleting.value = false
   }
-};
+}
 
-const handleApiError = (error) => {
+const handleApiError = error => {
   if (error.response?.data) {
-    const data = error.response.data;
-    if (data.name) formErrors.value.name = Array.isArray(data.name) ? data.name : [data.name];
-    if (data.short_name) formErrors.value.short_name = Array.isArray(data.short_name) ? data.short_name : [data.short_name];
+    const data = error.response.data
+    if (data.name) formErrors.value.name = Array.isArray(data.name) ? data.name : [data.name]
+    if (data.short_name)
+      formErrors.value.short_name = Array.isArray(data.short_name)
+        ? data.short_name
+        : [data.short_name]
 
-    const detail = data.detail || data.non_field_errors?.[0];
+    const detail = data.detail || data.non_field_errors?.[0]
     if (!data.name && !data.short_name) {
-      showSnackbar(detail || 'Error al guardar', 'error');
+      showSnackbar(detail || 'Error al guardar', 'error')
     }
   } else {
-    showSnackbar('Error de conexión', 'error');
+    showSnackbar('Error de conexión', 'error')
   }
-};
+}
 
-const clearFieldError = (field) => {
-  if (form.value[field]?.trim()) formErrors.value[field] = [];
-};
+const clearFieldError = field => {
+  if (form.value[field]?.trim()) formErrors.value[field] = []
+}
 
 const showSnackbar = (message, color = 'success') => {
-  snackbar.value = { show: true, message, color };
-};
+  snackbar.value = { show: true, message, color }
+}
 
-onMounted(loadData);
+onMounted(() => {
+  loadData()
+})
 </script>
 
 <style scoped>

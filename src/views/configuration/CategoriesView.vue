@@ -58,9 +58,10 @@
           {{ hasActiveFilters ? 'Sin resultados' : 'Sin categorías registradas' }}
         </div>
         <div class="empty-state-text">
-          {{ hasActiveFilters
-            ? 'No se encontraron categorías con los filtros aplicados.'
-            : 'Aún no hay categorías. Crea la primera para organizar tus movimientos.'
+          {{
+            hasActiveFilters
+              ? 'No se encontraron categorías con los filtros aplicados.'
+              : 'Aún no hay categorías. Crea la primera para organizar tus movimientos.'
           }}
         </div>
         <button v-if="!hasActiveFilters" class="btn-primary mt-6" @click="openDialog()">
@@ -110,7 +111,9 @@
                     </div>
                     <div>
                       <div class="text-sm font-medium text-zinc-200">{{ item.name }}</div>
-                      <div v-if="item.description" class="text-xs text-zinc-500">{{ item.description }}</div>
+                      <div v-if="item.description" class="text-xs text-zinc-500">
+                        {{ item.description }}
+                      </div>
                     </div>
                   </div>
                 </td>
@@ -139,7 +142,11 @@
                     <button class="icon-btn" title="Editar" @click="openDialog(item)">
                       <v-icon size="16">mdi-pencil-outline</v-icon>
                     </button>
-                    <button class="icon-btn !text-red-400 hover:!bg-red-500/10" title="Eliminar" @click="confirmDelete(item)">
+                    <button
+                      class="icon-btn !text-red-400 hover:!bg-red-500/10"
+                      title="Eliminar"
+                      @click="confirmDelete(item)"
+                    >
                       <v-icon size="16">mdi-delete-outline</v-icon>
                     </button>
                   </div>
@@ -149,7 +156,13 @@
           </table>
         </div>
 
-        <TablePagination v-model:page="page" :total="total" :page-size="pageSize" @update:page="changePage" @update:page-size="changePageSize" />
+        <TablePagination
+          v-model:page="page"
+          :total="total"
+          :page-size="pageSize"
+          @update:page="changePage"
+          @update:page-size="changePageSize"
+        />
       </template>
     </div>
 
@@ -175,7 +188,9 @@
               class="full-width-select"
               @change="onTypeChange"
             />
-            <p v-if="formErrors.category_type?.length" class="field-error">{{ formErrors.category_type[0] }}</p>
+            <p v-if="formErrors.category_type?.length" class="field-error">
+              {{ formErrors.category_type[0] }}
+            </p>
           </div>
 
           <div class="mb-5">
@@ -185,7 +200,6 @@
               placeholder="Ej: Alquiler del local"
               variant="outlined"
               density="comfortable"
-              hide-details
               :error-messages="formErrors.name"
               class="dark-input"
               @update:model-value="clearFieldError('name')"
@@ -199,11 +213,18 @@
               :options="parentOptions"
               :searchable="true"
               search-placeholder="Buscar categoría..."
-              :placeholder="form.category_type ? 'Sin categoría padre' : 'Selecciona un tipo primero'"
+              :placeholder="
+                form.category_type ? 'Sin categoría padre' : 'Selecciona un tipo primero'
+              "
               class="full-width-select"
             />
-            <p v-if="formErrors.parent_id?.length" class="field-error">{{ formErrors.parent_id[0] }}</p>
-            <p v-if="form.category_type && !parentOptions.length" class="text-xs text-zinc-500 mt-2">
+            <p v-if="formErrors.parent_id?.length" class="field-error">
+              {{ formErrors.parent_id[0] }}
+            </p>
+            <p
+              v-if="form.category_type && !parentOptions.length"
+              class="text-xs text-zinc-500 mt-2"
+            >
               No hay categorías de este tipo para usar como padre.
             </p>
           </div>
@@ -215,7 +236,6 @@
               placeholder="Ej: Gastos de alquiler del local comercial"
               variant="outlined"
               density="comfortable"
-              hide-details
               class="dark-input"
             />
           </div>
@@ -225,7 +245,6 @@
               v-model="form.enabled"
               label="Activo"
               color="indigo"
-              hide-details
               density="compact"
               class="dark-switch"
             />
@@ -254,12 +273,13 @@
         <div class="dialog-body">
           <p class="text-sm text-zinc-400">
             ¿Estás seguro de eliminar la categoría
-            <strong class="text-zinc-200">{{ itemToDelete?.name }}</strong>?
-            Esta acción no se puede deshacer.
+            <strong class="text-zinc-200">{{ itemToDelete?.name }}</strong
+            >? Esta acción no se puede deshacer.
           </p>
           <div v-if="itemToDelete?.children_count > 0" class="alert-warning mt-4">
             <v-icon size="16" class="mr-2">mdi-alert</v-icon>
-            Esta categoría tiene {{ itemToDelete.children_count }} subcategoría(s) que también se eliminarán.
+            Esta categoría tiene {{ itemToDelete.children_count }} subcategoría(s) que también se
+            eliminarán.
           </div>
         </div>
         <div class="dialog-footer">
@@ -280,242 +300,253 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue';
-import api from '@/utils/axios';
-import { useTable } from '@/composables/useTable';
-import TablePagination from '@/components/TablePagination.vue';
-import DarkSelect from '@/components/DarkSelect.vue';
+import { ref, computed, onMounted } from 'vue'
+import api from '@/utils/axios'
+import { useTable } from '@/composables/useTable'
+import TablePagination from '@/components/TablePagination.vue'
+import DarkSelect from '@/components/DarkSelect.vue'
 
-const API_URL = 'configuration/categories/';
+const API_URL = 'configuration/categories/'
 
 // ===== Opciones de filtros =====
 const typeOptions = [
   { value: '', label: 'Todos los tipos' },
   { value: 'INCOME', label: 'Ingresos' },
   { value: 'EXPENSE', label: 'Gastos' },
-  { value: 'PRODUCT', label: 'Productos' },
-];
+  { value: 'PRODUCT', label: 'Productos' }
+]
 
 const statusOptions = [
   { value: '', label: 'Todos los estados' },
   { value: 'true', label: 'Activas' },
-  { value: 'false', label: 'Inactivas' },
-];
+  { value: 'false', label: 'Inactivas' }
+]
 
 // ===== Tabla =====
 const {
-  items, loading, total, page, pageSize,
-  search, ordering, filters,
-  loadData, toggleOrdering, getOrderingIcon,
-  onSearch, clearSearch, clearFilters,
-  changePageSize, changePage
+  items,
+  loading,
+  total,
+  page,
+  pageSize,
+  search,
+  ordering,
+  filters,
+  loadData,
+  toggleOrdering,
+  getOrderingIcon,
+  onSearch,
+  clearSearch,
+  clearFilters,
+  changePageSize,
+  changePage
 } = useTable({
   apiUrl: API_URL,
   defaultOrdering: 'name',
-  defaultFilters: { category_type: '', enabled: '' },
-});
+  defaultFilters: { category_type: '', enabled: '' }
+})
 
 // ===== Estado =====
-const dialogOpen = ref(false);
-const deleteDialogOpen = ref(false);
-const isEditing = ref(false);
-const saving = ref(false);
-const deleting = ref(false);
-const itemToDelete = ref(null);
-const parentOptions = ref([]);
+const dialogOpen = ref(false)
+const deleteDialogOpen = ref(false)
+const isEditing = ref(false)
+const saving = ref(false)
+const deleting = ref(false)
+const itemToDelete = ref(null)
+const parentOptions = ref([])
 
-const form = ref({ name: '', category_type: '', parent_id: '', description: '', enabled: true });
-const formErrors = ref({});
-const snackbar = ref({ show: false, message: '', color: 'success' });
+const form = ref({ name: '', category_type: '', parent_id: '', description: '', enabled: true })
+const formErrors = ref({})
+const snackbar = ref({ show: false, message: '', color: 'success' })
 
 // ===== Computed =====
 const hasActiveFilters = computed(() => {
-  return search.value.trim() !== '' ||
-    filters.value.category_type !== '' ||
-    filters.value.enabled !== '';
-});
+  return (
+    search.value.trim() !== '' || filters.value.category_type !== '' || filters.value.enabled !== ''
+  )
+})
 
 // ===== Helpers de tipo =====
-const getTypeLabel = (type) => {
-  const map = { INCOME: 'Ingreso', EXPENSE: 'Gasto', PRODUCT: 'Producto' };
-  return map[type] || type;
-};
+const getTypeLabel = type => {
+  const map = { INCOME: 'Ingreso', EXPENSE: 'Gasto', PRODUCT: 'Producto' }
+  return map[type] || type
+}
 
-const getTypeBadge = (type) => {
-  const map = { INCOME: 'badge-success', EXPENSE: 'badge-warning', PRODUCT: 'badge-info' };
-  return map[type] || 'badge-neutral';
-};
+const getTypeBadge = type => {
+  const map = { INCOME: 'badge-success', EXPENSE: 'badge-warning', PRODUCT: 'badge-info' }
+  return map[type] || 'badge-neutral'
+}
 
-const getTypeIcon = (type) => {
+const getTypeIcon = type => {
   const map = {
     INCOME: 'mdi-cash-plus',
     EXPENSE: 'mdi-cash-minus',
-    PRODUCT: 'mdi-package-variant',
-  };
-  return map[type] || 'mdi-shape-outline';
-};
+    PRODUCT: 'mdi-package-variant'
+  }
+  return map[type] || 'mdi-shape-outline'
+}
 
 // ===== Cargar categorías padre (filtradas por tipo) =====
 const loadParentOptions = async (categoryType, excludeId = null) => {
   if (!categoryType) {
-    parentOptions.value = [];
-    return;
+    parentOptions.value = []
+    return
   }
   try {
-    let allCategories = [];
-    let url = `${API_URL}?category_type=${categoryType}&enabled=true`;
+    let allCategories = []
+    let url = `${API_URL}?category_type=${categoryType}&enabled=true`
 
     while (url) {
-      const response = await api.get(url);
-      allCategories = [...allCategories, ...response.data.results];
-      url = response.data.next;
+      const response = await api.get(url)
+      allCategories = [...allCategories, ...response.data.results]
+      url = response.data.next
     }
 
     // Excluir la categoría actual (al editar) para evitar que sea su propio padre
     if (excludeId) {
-      allCategories = allCategories.filter(c => c.id !== excludeId);
+      allCategories = allCategories.filter(c => c.id !== excludeId)
     }
 
-    parentOptions.value = allCategories.map(c => ({ value: c.id, label: c.name }));
+    parentOptions.value = allCategories.map(c => ({ value: c.id, label: c.name }))
   } catch (error) {
-    console.error('Error cargando categorías padre:', error);
-    parentOptions.value = [];
+    console.error('Error cargando categorías padre:', error)
+    parentOptions.value = []
   }
-};
+}
 
-const onTypeChange = (type) => {
-  form.value.parent_id = '';
-  loadParentOptions(type, isEditing.value ? form.value.id : null);
-};
+const onTypeChange = type => {
+  form.value.parent_id = ''
+  loadParentOptions(type, isEditing.value ? form.value.id : null)
+}
 
 // ===== Dialog =====
 const openDialog = async (item = null) => {
-  formErrors.value = {};
+  formErrors.value = {}
 
   if (item) {
-    isEditing.value = true;
+    isEditing.value = true
     form.value = {
       id: item.id,
       name: item.name,
       category_type: item.category_type,
       parent_id: item.parent?.id || '',
       description: item.description || '',
-      enabled: item.enabled,
-    };
+      enabled: item.enabled
+    }
     // Cargar opciones de padre del mismo tipo
-    await loadParentOptions(item.category_type, item.id);
+    await loadParentOptions(item.category_type, item.id)
   } else {
-    isEditing.value = false;
-    form.value = { name: '', category_type: '', parent_id: '', description: '', enabled: true };
-    parentOptions.value = [];
+    isEditing.value = false
+    form.value = { name: '', category_type: '', parent_id: '', description: '', enabled: true }
+    parentOptions.value = []
   }
 
-  dialogOpen.value = true;
-};
+  dialogOpen.value = true
+}
 
 // ===== Guardar =====
 const saveItem = async () => {
-  formErrors.value = {};
-  let hasErrors = false;
+  formErrors.value = {}
+  let hasErrors = false
 
   if (!form.value.name.trim()) {
-    formErrors.value.name = ['El nombre es requerido'];
-    hasErrors = true;
+    formErrors.value.name = ['El nombre es requerido']
+    hasErrors = true
   }
   if (!form.value.category_type) {
-    formErrors.value.category_type = ['Debes seleccionar un tipo'];
-    hasErrors = true;
+    formErrors.value.category_type = ['Debes seleccionar un tipo']
+    hasErrors = true
   }
 
-  if (hasErrors) return;
+  if (hasErrors) return
 
-  saving.value = true;
+  saving.value = true
   try {
     const payload = {
       name: form.value.name,
       category_type: form.value.category_type,
       parent_id: form.value.parent_id || null,
       description: form.value.description,
-      enabled: form.value.enabled,
-    };
+      enabled: form.value.enabled
+    }
 
     if (isEditing.value) {
-      await api.put(`${API_URL}${form.value.id}/`, payload);
-      showSnackbar('Categoría actualizada correctamente');
+      await api.put(`${API_URL}${form.value.id}/`, payload)
+      showSnackbar('Categoría actualizada correctamente')
     } else {
-      await api.post(API_URL, payload);
-      showSnackbar('Categoría creada correctamente');
+      await api.post(API_URL, payload)
+      showSnackbar('Categoría creada correctamente')
     }
-    dialogOpen.value = false;
-    await loadData();
+    dialogOpen.value = false
+    await loadData()
   } catch (error) {
-    handleApiError(error);
+    handleApiError(error)
   } finally {
-    saving.value = false;
+    saving.value = false
   }
-};
+}
 
 // ===== Eliminar =====
-const confirmDelete = (item) => {
-  itemToDelete.value = item;
-  deleteDialogOpen.value = true;
-};
+const confirmDelete = item => {
+  itemToDelete.value = item
+  deleteDialogOpen.value = true
+}
 
 const deleteItem = async () => {
-  deleting.value = true;
+  deleting.value = true
   try {
-    await api.delete(`${API_URL}${itemToDelete.value.id}/`);
-    showSnackbar('Categoría eliminada correctamente');
-    deleteDialogOpen.value = false;
+    await api.delete(`${API_URL}${itemToDelete.value.id}/`)
+    showSnackbar('Categoría eliminada correctamente')
+    deleteDialogOpen.value = false
 
     if (items.value.length === 1 && page.value > 1) {
-      page.value--;
+      page.value--
     } else {
-      await loadData();
+      await loadData()
     }
   } catch (error) {
-    handleApiError(error);
+    handleApiError(error)
   } finally {
-    deleting.value = false;
+    deleting.value = false
   }
-};
+}
 
 // ===== Errores =====
-const handleApiError = (error) => {
+const handleApiError = error => {
   if (error.response?.data) {
-    const data = error.response.data;
-    const fieldErrors = {};
+    const data = error.response.data
+    const fieldErrors = {}
 
-    ['name', 'category_type', 'parent_id', 'description'].forEach(field => {
+    ;['name', 'category_type', 'parent_id', 'description'].forEach(field => {
       if (data[field]) {
-        fieldErrors[field] = Array.isArray(data[field]) ? data[field] : [data[field]];
+        fieldErrors[field] = Array.isArray(data[field]) ? data[field] : [data[field]]
       }
-    });
+    })
 
-    formErrors.value = fieldErrors;
+    formErrors.value = fieldErrors
 
     if (Object.keys(fieldErrors).length === 0) {
-      showSnackbar(data.detail || data.non_field_errors?.[0] || 'Error al guardar', 'error');
+      showSnackbar(data.detail || data.non_field_errors?.[0] || 'Error al guardar', 'error')
     }
   } else {
-    showSnackbar('Error de conexión', 'error');
+    showSnackbar('Error de conexión', 'error')
   }
-};
+}
 
-const clearFieldError = (field) => {
-  if (formErrors.value[field]) formErrors.value[field] = [];
-};
+const clearFieldError = field => {
+  if (formErrors.value[field]) formErrors.value[field] = []
+}
 
 const resetAll = () => {
-  search.value = '';
-  clearFilters();
-};
+  search.value = ''
+  clearFilters()
+}
 
 const showSnackbar = (message, color = 'success') => {
-  snackbar.value = { show: true, message, color };
-};
+  snackbar.value = { show: true, message, color }
+}
 
-onMounted(loadData);
+onMounted(loadData)
 </script>
 
 <style scoped>
