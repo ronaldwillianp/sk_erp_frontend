@@ -4,18 +4,14 @@
     <div class="glow glow-2"></div>
     <div class="grid-pattern"></div>
 
-    <div
-      class="relative z-10 flex min-h-screen items-center justify-center p-6 overflow-hidden"
-    >
-      <div class="w-full max-w-[420px]">
+    <div class="relative z-10 flex min-h-screen items-center justify-center p-6 overflow-hidden">
+      <div class="w-full max-w-105">
         <!-- Logo -->
         <div class="flex flex-col items-center mb-10">
           <div class="login-logo">
             <v-icon size="28" color="white">mdi-store-outline</v-icon>
           </div>
-          <h1 class="mt-5 text-2xl font-semibold tracking-tight text-white">
-            Mi Negocio
-          </h1>
+          <h1 class="mt-5 text-2xl font-semibold tracking-tight text-white">Mi Negocio</h1>
           <p class="mt-2 text-sm text-zinc-500">Mi negocio al día</p>
         </div>
 
@@ -26,11 +22,10 @@
               <label class="input-label">Usuario</label>
               <v-text-field
                 v-model="form.username"
-                placeholder="tu.usuario"
+                placeholder="Nombre de usuario"
                 prepend-inner-icon="mdi-account-outline"
                 variant="outlined"
                 density="comfortable"
-                hide-details
                 :error-messages="errors.username"
                 class="dark-input"
                 @blur="validateField('username')"
@@ -39,22 +34,19 @@
             </div>
 
             <div class="mb-6">
-              <div class="flex items-center justify-between mb-2">
+              <!-- <div class="flex items-center justify-between mb-2">
                 <label class="input-label mb-0">Contraseña</label>
                 <a href="#" class="link-accent text-xs">¿La olvidaste?</a>
-              </div>
+              </div> -->
               <v-text-field
                 v-model="form.password"
                 placeholder="••••••••"
                 prepend-inner-icon="mdi-lock-outline"
                 :type="showPassword ? 'text' : 'password'"
-                :append-inner-icon="
-                  showPassword ? 'mdi-eye-off-outline' : 'mdi-eye-outline'
-                "
+                :append-inner-icon="showPassword ? 'mdi-eye-off-outline' : 'mdi-eye-outline'"
                 @click:append-inner="showPassword = !showPassword"
                 variant="outlined"
                 density="comfortable"
-                hide-details
                 :error-messages="errors.password"
                 class="dark-input"
                 @blur="validateField('password')"
@@ -69,27 +61,16 @@
               </div>
             </transition>
 
-            <button
-              type="submit"
-              class="btn-primary w-full !h-[48px]"
-              :disabled="isLoading"
-            >
+            <button type="submit" class="btn-primary w-full !h-[48px]" :disabled="isLoading">
               <span v-if="!isLoading">Iniciar sesión</span>
-              <v-icon v-if="!isLoading" end size="18" class="ml-1"
-                >mdi-arrow-right</v-icon
-              >
-              <v-progress-circular
-                v-else
-                indeterminate
-                size="20"
-                color="white"
-              />
+              <v-icon v-if="!isLoading" end size="18" class="ml-1">mdi-arrow-right</v-icon>
+              <v-progress-circular v-else indeterminate size="20" color="white" />
             </button>
           </v-form>
         </div>
 
         <!-- Separador -->
-        <div class="flex items-center gap-4 my-8">
+        <!-- <div class="flex items-center gap-4 my-8">
           <div class="h-px flex-1 bg-zinc-800"></div>
           <span class="text-xs text-zinc-600">¿Necesitas acceso?</span>
           <div class="h-px flex-1 bg-zinc-800"></div>
@@ -100,75 +81,71 @@
             <v-icon size="16" class="mr-1.5">mdi-lifebuoy</v-icon>
             Contactar al administrador
           </a>
-        </div>
+        </div> -->
 
-        <p class="mt-10 text-center text-xs text-zinc-600">
-          © 2026 Mi Negocio · v1.0.0
-        </p>
+        <p class="mt-10 text-center text-xs text-zinc-600">© 2026 Mi Negocio · v1.0.0</p>
       </div>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref } from "vue";
-import { useRouter } from "vue-router";
-import { useAuthStore } from "@/stores/auth";
+import { ref } from 'vue'
+import { useRouter } from 'vue-router'
+import { useAuthStore } from '@/stores/auth'
 
-const router = useRouter();
-const authStore = useAuthStore();
-const formRef = ref(null);
+const router = useRouter()
+const authStore = useAuthStore()
+const formRef = ref(null)
 
-const form = ref({ username: "", password: "" });
-const showPassword = ref(false);
-const isLoading = ref(false);
-const errorMessage = ref("");
-const errors = ref({ username: [], password: [] });
-const redirectTo = sessionStorage.getItem("redirect_after_login");
+const form = ref({ username: '', password: '' })
+const showPassword = ref(false)
+const isLoading = ref(false)
+const errorMessage = ref('')
+const errors = ref({ username: [], password: [] })
+const redirectTo = sessionStorage.getItem('redirect_after_login')
 
-const validateField = (field) => {
+const validateField = field => {
   if (!form.value[field]) {
-    errors.value[field] = [
-      field === "username" ? "Ingresa tu usuario" : "Ingresa tu contraseña",
-    ];
+    errors.value[field] = [field === 'username' ? 'Ingresa tu usuario' : 'Ingresa tu contraseña']
   } else {
-    errors.value[field] = [];
+    errors.value[field] = []
   }
-};
+}
 
-const clearError = (field) => {
-  if (form.value[field]) errors.value[field] = [];
-};
+const clearError = field => {
+  if (form.value[field]) errors.value[field] = []
+}
 
 const handleLogin = async () => {
-  let hasErrors = false;
+  let hasErrors = false
   if (!form.value.username) {
-    errors.value.username = ["Ingresa tu usuario"];
-    hasErrors = true;
+    errors.value.username = ['Ingresa tu usuario']
+    hasErrors = true
   }
   if (!form.value.password) {
-    errors.value.password = ["Ingresa tu contraseña"];
-    hasErrors = true;
+    errors.value.password = ['Ingresa tu contraseña']
+    hasErrors = true
   }
-  if (hasErrors) return;
+  if (hasErrors) return
 
-  isLoading.value = true;
-  errorMessage.value = "";
+  isLoading.value = true
+  errorMessage.value = ''
 
-  const result = await authStore.login(form.value);
+  const result = await authStore.login(form.value)
   if (result.success) {
     // Después del login exitoso
     if (redirectTo) {
-      sessionStorage.removeItem("redirect_after_login");
-      router.push(redirectTo);
+      sessionStorage.removeItem('redirect_after_login')
+      router.push(redirectTo)
     } else {
-      router.push("/dashboard");
+      router.push('/dashboard')
     }
   } else {
-    errorMessage.value = result.message;
+    errorMessage.value = result.message
   }
-  isLoading.value = false;
-};
+  isLoading.value = false
+}
 </script>
 
 <style scoped>
@@ -190,11 +167,7 @@ const handleLogin = async () => {
 .glow-1 {
   width: 500px;
   height: 500px;
-  background: radial-gradient(
-    circle,
-    rgba(99, 102, 241, 0.15),
-    transparent 70%
-  );
+  background: radial-gradient(circle, rgba(51, 54, 252, 0.15));
   top: -150px;
   left: -100px;
 }
@@ -202,7 +175,7 @@ const handleLogin = async () => {
 .glow-2 {
   width: 600px;
   height: 600px;
-  background: radial-gradient(circle, rgba(139, 92, 246, 0.1), transparent 70%);
+  background: radial-gradient(circle, rgba(111, 51, 249, 0.1));
   bottom: -200px;
   right: -150px;
 }
@@ -215,11 +188,7 @@ const handleLogin = async () => {
     linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
   background-size: 60px 60px;
   mask-image: radial-gradient(ellipse at center, black 30%, transparent 80%);
-  -webkit-mask-image: radial-gradient(
-    ellipse at center,
-    black 30%,
-    transparent 80%
-  );
+  -webkit-mask-image: radial-gradient(ellipse at center, black 30%, transparent 80%);
 }
 
 .login-logo {

@@ -31,22 +31,13 @@
             placeholder="Buscar por nombre, contacto, email..."
             @keyup.enter="onSearch"
           />
-          <button
-            v-if="search"
-            class="icon-btn !w-6 !h-6"
-            @click="clearSearch"
-            title="Limpiar"
-          >
+          <button v-if="search" class="icon-btn !w-6 !h-6" @click="clearSearch" title="Limpiar">
             <v-icon size="14">mdi-close</v-icon>
           </button>
         </div>
 
         <div class="flex gap-3">
-          <DarkSelect
-            v-model="filters.enabled"
-            :options="statusOptions"
-            @change="onSearch"
-          />
+          <DarkSelect v-model="filters.enabled" :options="statusOptions" @change="onSearch" />
         </div>
       </div>
     </div>
@@ -63,22 +54,16 @@
           <v-icon size="32" color="zinc-600">mdi-truck-delivery-outline</v-icon>
         </div>
         <div class="empty-state-title">
-          {{
-            hasActiveFilters ? "Sin resultados" : "Sin proveedores registrados"
-          }}
+          {{ hasActiveFilters ? 'Sin resultados' : 'Sin proveedores registrados' }}
         </div>
         <div class="empty-state-text">
           {{
             hasActiveFilters
-              ? "No se encontraron proveedores con los filtros aplicados."
-              : "Aún no hay proveedores. Crea el primero para comenzar."
+              ? 'No se encontraron proveedores con los filtros aplicados.'
+              : 'Aún no hay proveedores. Crea el primero para comenzar.'
           }}
         </div>
-        <button
-          v-if="!hasActiveFilters"
-          class="btn-primary mt-6"
-          @click="openDialog()"
-        >
+        <button v-if="!hasActiveFilters" class="btn-primary mt-6" @click="openDialog()">
           <v-icon size="18" class="mr-2">mdi-plus</v-icon>
           Crear proveedor
         </button>
@@ -96,9 +81,7 @@
                 <th @click="toggleOrdering('name')" class="sortable-th">
                   <span class="inline-flex items-center">
                     Nombre
-                    <v-icon size="14" class="ml-1">{{
-                      getOrderingIcon("name")
-                    }}</v-icon>
+                    <v-icon size="14" class="ml-1">{{ getOrderingIcon('name') }}</v-icon>
                   </span>
                 </th>
                 <th>Contacto</th>
@@ -107,9 +90,7 @@
                 <th @click="toggleOrdering('enabled')" class="sortable-th">
                   <span class="inline-flex items-center">
                     Estado
-                    <v-icon size="14" class="ml-1">{{
-                      getOrderingIcon("enabled")
-                    }}</v-icon>
+                    <v-icon size="14" class="ml-1">{{ getOrderingIcon('enabled') }}</v-icon>
                   </span>
                 </th>
                 <th class="text-right">Acciones</th>
@@ -120,47 +101,32 @@
                 <td>
                   <div class="flex items-center gap-3">
                     <div class="table-avatar avatar-gradient">
-                      <v-icon size="18" color="white"
-                        >mdi-truck-delivery-outline</v-icon
-                      >
+                      <v-icon size="18" color="white">mdi-truck-delivery-outline</v-icon>
                     </div>
-                    <span class="text-sm font-medium text-zinc-200">{{
-                      item.name
-                    }}</span>
+                    <span class="text-sm font-medium text-zinc-200">{{ item.name }}</span>
                   </div>
                 </td>
                 <td class="text-sm text-zinc-400">
-                  {{ item.contact_person || "—" }}
+                  {{ item.contact_person || '—' }}
                 </td>
                 <td class="text-sm text-zinc-400">
                   <div v-if="item.phone" class="flex items-center gap-2">
-                    <v-icon size="14" class="text-zinc-600"
-                      >mdi-phone-outline</v-icon
-                    >
+                    <v-icon size="14" class="text-zinc-600">mdi-phone-outline</v-icon>
                     {{ item.phone }}
                   </div>
                   <span v-else class="text-zinc-600">—</span>
                 </td>
                 <td class="text-sm text-zinc-400">
-                  {{ item.province?.name || "—" }}
+                  {{ item.province?.name || '—' }}
                 </td>
                 <td>
-                  <span
-                    :class="[
-                      'badge',
-                      item.enabled ? 'badge-success' : 'badge-neutral',
-                    ]"
-                  >
-                    {{ item.enabled ? "Activo" : "Inactivo" }}
+                  <span :class="['badge', item.enabled ? 'badge-success' : 'badge-neutral']">
+                    {{ item.enabled ? 'Activo' : 'Inactivo' }}
                   </span>
                 </td>
                 <td class="text-right">
                   <div class="flex items-center justify-end gap-1">
-                    <button
-                      class="icon-btn"
-                      title="Editar"
-                      @click="openDialog(item)"
-                    >
+                    <button class="icon-btn" title="Editar" @click="openDialog(item)">
                       <v-icon size="16">mdi-pencil-outline</v-icon>
                     </button>
                     <button
@@ -188,22 +154,18 @@
     </div>
 
     <!-- Dialog: Crear / Editar -->
-    <v-dialog
-      v-model="dialogOpen"
-      max-width="650"
-      class="dark-dialog supplier-dialog"
-    >
+    <v-dialog v-model="dialogOpen" max-width="650" class="dark-dialog supplier-dialog">
       <div class="dialog-card">
         <div class="dialog-header">
           <h3 class="text-lg font-semibold text-zinc-100">
-            {{ isEditing ? "Editar proveedor" : "Nuevo proveedor" }}
+            {{ isEditing ? 'Editar proveedor' : 'Nuevo proveedor' }}
           </h3>
           <button class="icon-btn" @click="dialogOpen = false">
             <v-icon size="20">mdi-close</v-icon>
           </button>
         </div>
 
-        <div class="dialog-body">
+        <div class="dialog-body" style="max-height: 500px; overflow-y: auto">
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-5">
             <div>
               <label class="input-label">Nombre del proveedor</label>
@@ -212,7 +174,6 @@
                 placeholder="Ej: Distribuidora El Sol"
                 variant="outlined"
                 density="comfortable"
-                hide-details
                 :error-messages="formErrors.name"
                 class="dark-input"
                 prepend-inner-icon="mdi-truck-delivery-outline"
@@ -226,7 +187,6 @@
                 placeholder="Ej: Juan Pérez"
                 variant="outlined"
                 density="comfortable"
-                hide-details
                 class="dark-input"
                 prepend-inner-icon="mdi-account-outline"
               />
@@ -241,7 +201,6 @@
                 placeholder="contacto@proveedor.com"
                 variant="outlined"
                 density="comfortable"
-                hide-details
                 :error-messages="formErrors.email"
                 class="dark-input"
                 prepend-inner-icon="mdi-email-outline"
@@ -255,7 +214,6 @@
                 placeholder="Ej: +53 55551234"
                 variant="outlined"
                 density="comfortable"
-                hide-details
                 class="dark-input"
                 prepend-inner-icon="mdi-phone-outline"
               />
@@ -269,7 +227,6 @@
               placeholder="Ej: Calle 1 #101, Reparto Centro"
               variant="outlined"
               density="comfortable"
-              hide-details
               class="dark-input"
               prepend-inner-icon="mdi-map-marker-outline"
             />
@@ -292,7 +249,6 @@
               v-model="form.enabled"
               label="Activo"
               color="indigo"
-              hide-details
               density="compact"
               class="dark-switch"
             />
@@ -300,18 +256,10 @@
         </div>
 
         <div class="dialog-footer">
-          <button class="btn-secondary" @click="dialogOpen = false">
-            Cancelar
-          </button>
+          <button class="btn-secondary" @click="dialogOpen = false">Cancelar</button>
           <button class="btn-primary" @click="saveItem" :disabled="saving">
-            <v-progress-circular
-              v-if="saving"
-              indeterminate
-              size="16"
-              color="white"
-              class="mr-2"
-            />
-            {{ isEditing ? "Guardar cambios" : "Crear" }}
+            <v-progress-circular v-if="saving" indeterminate size="16" color="white" class="mr-2" />
+            {{ isEditing ? 'Guardar cambios' : 'Crear' }}
           </button>
         </div>
       </div>
@@ -321,9 +269,7 @@
     <v-dialog v-model="deleteDialogOpen" max-width="420" class="dark-dialog">
       <div class="dialog-card">
         <div class="dialog-header">
-          <h3 class="text-lg font-semibold text-zinc-100">
-            Confirmar eliminación
-          </h3>
+          <h3 class="text-lg font-semibold text-zinc-100">Confirmar eliminación</h3>
           <button class="icon-btn" @click="deleteDialogOpen = false">
             <v-icon size="20">mdi-close</v-icon>
           </button>
@@ -336,16 +282,9 @@
           </p>
         </div>
         <div class="dialog-footer">
-          <button class="btn-secondary" @click="deleteDialogOpen = false">
-            Cancelar
-          </button>
+          <button class="btn-secondary" @click="deleteDialogOpen = false">Cancelar</button>
           <button class="btn-danger" @click="deleteItem" :disabled="deleting">
-            <v-progress-circular
-              v-if="deleting"
-              indeterminate
-              size="16"
-              class="mr-2"
-            />
+            <v-progress-circular v-if="deleting" indeterminate size="16" class="mr-2" />
             Eliminar
           </button>
         </div>
@@ -353,33 +292,28 @@
     </v-dialog>
 
     <!-- Snackbar -->
-    <v-snackbar
-      v-model="snackbar.show"
-      :color="snackbar.color"
-      location="top right"
-      timeout="3000"
-    >
+    <v-snackbar v-model="snackbar.show" :color="snackbar.color" location="top right" timeout="3000">
       {{ snackbar.message }}
     </v-snackbar>
   </div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from "vue";
-import api from "@/utils/axios";
-import { useTable } from "@/composables/useTable";
-import TablePagination from "@/components/TablePagination.vue";
-import DarkSelect from "@/components/DarkSelect.vue";
+import { ref, computed, onMounted } from 'vue'
+import api from '@/utils/axios'
+import { useTable } from '@/composables/useTable'
+import TablePagination from '@/components/TablePagination.vue'
+import DarkSelect from '@/components/DarkSelect.vue'
 
-const API_URL = "inventory/suppliers/";
-const PROVINCES_URL = "configuration/provinces/enabled/";
+const API_URL = 'inventory/suppliers/'
+const PROVINCES_URL = 'configuration/provinces/enabled/'
 
 // ===== Opciones de filtros =====
 const statusOptions = [
-  { value: "", label: "Todos los estados" },
-  { value: "true", label: "Activos" },
-  { value: "false", label: "Inactivos" },
-];
+  { value: '', label: 'Todos los estados' },
+  { value: 'true', label: 'Activos' },
+  { value: 'false', label: 'Inactivos' }
+]
 
 // ===== Tabla =====
 const {
@@ -398,108 +332,105 @@ const {
   clearSearch,
   clearFilters,
   changePage,
-  changePageSize,
+  changePageSize
 } = useTable({
   apiUrl: API_URL,
-  defaultOrdering: "name",
-  defaultFilters: { enabled: "" },
-});
+  defaultOrdering: 'name',
+  defaultFilters: { enabled: '' }
+})
 
 // ===== Estado =====
-const dialogOpen = ref(false);
-const deleteDialogOpen = ref(false);
-const isEditing = ref(false);
-const saving = ref(false);
-const deleting = ref(false);
-const itemToDelete = ref(null);
+const dialogOpen = ref(false)
+const deleteDialogOpen = ref(false)
+const isEditing = ref(false)
+const saving = ref(false)
+const deleting = ref(false)
+const itemToDelete = ref(null)
 
-const provinceOptions = ref([]);
+const provinceOptions = ref([])
 
 const form = ref({
-  name: "",
-  contact_person: "",
-  email: "",
-  phone: "",
-  address: "",
-  province_id: "",
-  notes: "",
-  enabled: true,
-});
-const formErrors = ref({});
-const snackbar = ref({ show: false, message: "", color: "success" });
+  name: '',
+  contact_person: '',
+  email: '',
+  phone: '',
+  address: '',
+  province_id: '',
+  notes: '',
+  enabled: true
+})
+const formErrors = ref({})
+const snackbar = ref({ show: false, message: '', color: 'success' })
 
 // ===== Computed =====
 const hasActiveFilters = computed(() => {
-  return search.value.trim() !== "" || filters.value.enabled !== "";
-});
+  return search.value.trim() !== '' || filters.value.enabled !== ''
+})
 
 // ===== Cargar provincias =====
 const loadProvinces = async () => {
   try {
-    const response = await api.get(PROVINCES_URL);
-    provinceOptions.value = response.data.map((p) => ({
+    const response = await api.get(PROVINCES_URL)
+    provinceOptions.value = response.data.map(p => ({
       value: p.id,
-      label: p.name,
-    }));
+      label: p.name
+    }))
   } catch (error) {
-    console.error("Error cargando provincias:", error);
+    console.error('Error cargando provincias:', error)
   }
-};
+}
 
 // ===== Dialog =====
 const openDialog = (item = null) => {
-  formErrors.value = {};
+  formErrors.value = {}
 
   if (item) {
-    isEditing.value = true;
+    isEditing.value = true
     form.value = {
       id: item.id,
       name: item.name,
-      contact_person: item.contact_person || "",
-      email: item.email || "",
-      phone: item.phone || "",
-      address: item.address || "",
-      province_id: item.province?.id || "",
-      notes: item.notes || "",
-      enabled: item.enabled,
-    };
+      contact_person: item.contact_person || '',
+      email: item.email || '',
+      phone: item.phone || '',
+      address: item.address || '',
+      province_id: item.province?.id || '',
+      notes: item.notes || '',
+      enabled: item.enabled
+    }
   } else {
-    isEditing.value = false;
+    isEditing.value = false
     form.value = {
-      name: "",
-      contact_person: "",
-      email: "",
-      phone: "",
-      address: "",
-      province_id: "",
-      notes: "",
-      enabled: true,
-    };
+      name: '',
+      contact_person: '',
+      email: '',
+      phone: '',
+      address: '',
+      province_id: '',
+      notes: '',
+      enabled: true
+    }
   }
 
-  dialogOpen.value = true;
-};
+  dialogOpen.value = true
+}
 
 // ===== Guardar =====
 const saveItem = async () => {
-  formErrors.value = {};
-  let hasErrors = false;
+  formErrors.value = {}
+  let hasErrors = false
 
   if (!form.value.name.trim()) {
-    formErrors.value.name = ["El nombre es requerido"];
-    hasErrors = true;
+    formErrors.value.name = ['El nombre es requerido']
+    hasErrors = true
   }
-  if (
-    form.value.email &&
-    !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.value.email)
-  ) {
-    formErrors.value.email = ["Email inválido"];
-    hasErrors = true;
+  if (form.value.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.value.email)) {
+    formErrors.value.email = ['Email inválido']
+    hasErrors = true
   }
 
-  if (hasErrors) return;
+  if (hasErrors) return
 
-  saving.value = true;
+  saving.value = true
   try {
     const payload = {
       name: form.value.name,
@@ -509,91 +440,89 @@ const saveItem = async () => {
       address: form.value.address,
       province_id: form.value.province_id || null,
       notes: form.value.notes,
-      enabled: form.value.enabled,
-    };
+      enabled: form.value.enabled
+    }
 
     if (isEditing.value) {
-      await api.put(`${API_URL}${form.value.id}/`, payload);
-      showSnackbar("Proveedor actualizado correctamente");
+      await api.put(`${API_URL}${form.value.id}/`, payload)
+      showSnackbar('Proveedor actualizado correctamente')
     } else {
-      await api.post(API_URL, payload);
-      showSnackbar("Proveedor creado correctamente");
+      await api.post(API_URL, payload)
+      showSnackbar('Proveedor creado correctamente')
     }
-    dialogOpen.value = false;
-    await loadData();
+    dialogOpen.value = false
+    await loadData()
   } catch (error) {
-    handleApiError(error);
+    handleApiError(error)
   } finally {
-    saving.value = false;
+    saving.value = false
   }
-};
+}
 
 // ===== Eliminar =====
-const confirmDelete = (item) => {
-  itemToDelete.value = item;
-  deleteDialogOpen.value = true;
-};
+const confirmDelete = item => {
+  itemToDelete.value = item
+  deleteDialogOpen.value = true
+}
 
 const deleteItem = async () => {
-  deleting.value = true;
+  deleting.value = true
   try {
-    await api.delete(`${API_URL}${itemToDelete.value.id}/`);
-    showSnackbar("Proveedor eliminado correctamente");
-    deleteDialogOpen.value = false;
+    await api.delete(`${API_URL}${itemToDelete.value.id}/`)
+    showSnackbar('Proveedor eliminado correctamente')
+    deleteDialogOpen.value = false
 
     if (items.value.length === 1 && page.value > 1) {
-      page.value--;
+      page.value--
     } else {
-      await loadData();
+      await loadData()
     }
   } catch (error) {
-    handleApiError(error);
+    handleApiError(error)
   } finally {
-    deleting.value = false;
+    deleting.value = false
   }
-};
+}
 
 // ===== Errores =====
-const handleApiError = (error) => {
+const handleApiError = error => {
   if (error.response?.data) {
-    const data = error.response.data;
-    const fieldErrors = {};
+    const data = error.response.data
+    const fieldErrors = {}
 
-    ["name", "email"].forEach((field) => {
+    ;['name', 'email'].forEach(field => {
       if (data[field]) {
-        fieldErrors[field] = Array.isArray(data[field])
-          ? data[field]
-          : [data[field]];
+        fieldErrors[field] = Array.isArray(data[field]) ? data[field] : [data[field]]
       }
-    });
+    })
 
-    formErrors.value = fieldErrors;
+    formErrors.value = fieldErrors
 
     if (Object.keys(fieldErrors).length === 0) {
-      showSnackbar(data.detail || "Error al guardar", "error");
+      showSnackbar(data.detail || 'Error al guardar', 'error')
     }
   } else {
-    showSnackbar("Error de conexión", "error");
+    showSnackbar('Error de conexión', 'error')
   }
-};
+}
 
-const clearFieldError = (field) => {
-  if (formErrors.value[field]) formErrors.value[field] = [];
-};
+const clearFieldError = field => {
+  if (formErrors.value[field]) formErrors.value[field] = []
+}
 
 const resetAll = () => {
-  search.value = "";
-  clearFilters();
-};
+  search.value = ''
+  clearFilters()
+}
 
-const showSnackbar = (message, color = "success") => {
-  snackbar.value = { show: true, message, color };
-};
+const showSnackbar = (message, color = 'success') => {
+  snackbar.value = { show: true, message, color }
+}
 
 onMounted(() => {
-  loadProvinces();
-  loadData();
-});
+  loadProvinces()
+  loadData()
+})
 </script>
 
 <style scoped>

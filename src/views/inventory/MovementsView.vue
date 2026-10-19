@@ -5,26 +5,15 @@
       <div class="page-header-row">
         <div>
           <h1 class="page-title">Movimientos de inventario</h1>
-          <p class="page-subtitle">
-            Historial de entradas, salidas, traslados y ajustes
-          </p>
+          <p class="page-subtitle">Historial de entradas, salidas, traslados y ajustes</p>
         </div>
         <div class="flex gap-3">
           <button class="btn-secondary" @click="loadData">
             <v-icon size="18" class="mr-2">mdi-refresh</v-icon>
             Actualizar
           </button>
-          <button
-            class="btn-danger"
-            @click="confirmPurge"
-            :disabled="!items.length || purging"
-          >
-            <v-progress-circular
-              v-if="purging"
-              indeterminate
-              size="16"
-              class="mr-2"
-            />
+          <button class="btn-danger" @click="confirmPurge" :disabled="!items.length || purging">
+            <v-progress-circular v-if="purging" indeterminate size="16" class="mr-2" />
             <v-icon v-else size="18" class="mr-2">mdi-delete-sweep</v-icon>
             {{ purgeButtonText }}
           </button>
@@ -47,12 +36,7 @@
             placeholder="Buscar por producto, SKU o referencia..."
             @keyup.enter="onSearch"
           />
-          <button
-            v-if="search"
-            class="icon-btn !w-6 !h-6"
-            @click="clearSearch"
-            title="Limpiar"
-          >
+          <button v-if="search" class="icon-btn !w-6 !h-6" @click="clearSearch" title="Limpiar">
             <v-icon size="14">mdi-close</v-icon>
           </button>
         </div>
@@ -84,22 +68,16 @@
           <v-icon size="32" color="zinc-600">mdi-swap-horizontal</v-icon>
         </div>
         <div class="empty-state-title">
-          {{
-            hasActiveFilters ? "Sin resultados" : "Sin movimientos registrados"
-          }}
+          {{ hasActiveFilters ? 'Sin resultados' : 'Sin movimientos registrados' }}
         </div>
         <div class="empty-state-text">
           {{
             hasActiveFilters
-              ? "No se encontraron movimientos con los filtros aplicados."
-              : "Aún no hay movimientos. Registra una entrada para comenzar."
+              ? 'No se encontraron movimientos con los filtros aplicados.'
+              : 'Aún no hay movimientos. Registra una entrada para comenzar.'
           }}
         </div>
-        <button
-          v-if="!hasActiveFilters"
-          class="btn-primary mt-6"
-          @click="openDialog()"
-        >
+        <button v-if="!hasActiveFilters" class="btn-primary mt-6" @click="openDialog()">
           <v-icon size="18" class="mr-2">mdi-plus</v-icon>
           Registrar movimiento
         </button>
@@ -133,9 +111,7 @@
                 </td>
                 <td>
                   <span :class="['badge', getTypeBadge(item.movement_type)]">
-                    <v-icon size="12" class="mr-1">{{
-                      getTypeIcon(item.movement_type)
-                    }}</v-icon>
+                    <v-icon size="12" class="mr-1">{{ getTypeIcon(item.movement_type) }}</v-icon>
                     {{ getTypeLabel(item.movement_type) }}
                   </span>
                 </td>
@@ -148,30 +124,18 @@
                   </div>
                 </td>
                 <td class="text-sm text-zinc-400">
-                  {{ item.presentation?.measure_unit?.short_name || "—" }}
+                  {{ item.presentation?.measure_unit?.short_name || '—' }}
                   <template
-                    v-if="
-                      item.movement_type === 'TRANSFER' &&
-                      item.destination_presentation
-                    "
+                    v-if="item.movement_type === 'TRANSFER' && item.destination_presentation"
                   >
-                    <v-icon size="12" class="mx-1 text-zinc-600"
-                      >mdi-arrow-right</v-icon
-                    >
+                    <v-icon size="12" class="mx-1 text-zinc-600">mdi-arrow-right</v-icon>
                     {{ item.destination_presentation.measure_unit.short_name }}
                   </template>
                 </td>
                 <td class="text-sm text-zinc-400">
                   {{ item.warehouse.name }}
-                  <template
-                    v-if="
-                      item.movement_type === 'TRANSFER' &&
-                      item.destination_warehouse
-                    "
-                  >
-                    <v-icon size="12" class="mx-1 text-zinc-600"
-                      >mdi-arrow-right</v-icon
-                    >
+                  <template v-if="item.movement_type === 'TRANSFER' && item.destination_warehouse">
+                    <v-icon size="12" class="mx-1 text-zinc-600">mdi-arrow-right</v-icon>
                     {{ item.destination_warehouse.name }}
                   </template>
                 </td>
@@ -181,13 +145,13 @@
                   </span>
                 </td>
                 <td class="text-right text-sm font-mono text-zinc-400">
-                  {{ item.unit_cost > 0 ? formatPrice(item.unit_cost) : "—" }}
+                  {{ item.unit_cost > 0 ? formatPrice(item.unit_cost) : '—' }}
                 </td>
                 <td class="text-sm text-zinc-500">
-                  {{ item.reference || "—" }}
+                  {{ item.reference || '—' }}
                 </td>
                 <td class="text-sm text-zinc-500">
-                  {{ item.user || "—" }}
+                  {{ item.user || '—' }}
                 </td>
                 <td class="text-right">
                   <button
@@ -219,9 +183,7 @@
     <v-dialog v-model="dialogOpen" max-width="850" class="dark-dialog">
       <div class="dialog-card dialog-card-scrollable">
         <div class="dialog-header">
-          <h3 class="text-lg font-semibold text-zinc-100">
-            Registrar movimiento
-          </h3>
+          <h3 class="text-lg font-semibold text-zinc-100">Registrar movimiento</h3>
           <button class="icon-btn" @click="dialogOpen = false">
             <v-icon size="20">mdi-close</v-icon>
           </button>
@@ -235,10 +197,7 @@
               <button
                 v-for="opt in movementTypeOptions"
                 :key="opt.value"
-                :class="[
-                  'movement-type-btn',
-                  { active: form.movement_type === opt.value },
-                ]"
+                :class="['movement-type-btn', { active: form.movement_type === opt.value }]"
                 @click="onMovementTypeChange(opt.value)"
                 type="button"
               >
@@ -260,10 +219,8 @@
                 placeholder="Seleccionar producto"
                 class="full-width-select"
                 @change="onProductChange"
+                :error-messages="formErrors.warehouse_id"
               />
-              <p v-if="formErrors.product_id?.length" class="field-error">
-                {{ formErrors.product_id[0] }}
-              </p>
             </div>
             <div>
               <label class="input-label">Presentación</label>
@@ -272,10 +229,8 @@
                 :options="presentationOptions"
                 placeholder="Seleccionar presentación"
                 class="full-width-select"
+                :error-messages="formErrors.presentation_id"
               />
-              <p v-if="formErrors.presentation_id?.length" class="field-error">
-                {{ formErrors.presentation_id[0] }}
-              </p>
             </div>
           </div>
 
@@ -283,21 +238,20 @@
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-5">
             <div>
               <label class="input-label">
-                {{
-                  form.movement_type === "TRANSFER"
-                    ? "Almacén origen"
-                    : "Almacén"
-                }}
+                {{ form.movement_type === 'TRANSFER' ? 'Almacén origen' : 'Almacén' }}
               </label>
+
               <DarkSelect
                 v-model="form.warehouse_id"
                 :options="warehouseOptions"
                 placeholder="Seleccionar"
                 class="full-width-select"
+                :error-messages="formErrors.warehouse_id"
               />
-              <p v-if="formErrors.warehouse_id?.length" class="field-error">
+
+              <!-- <p v-if="formErrors.warehouse_id?.length" class="field-error">
                 {{ formErrors.warehouse_id[0] }}
-              </p>
+              </p> -->
             </div>
             <div v-if="form.movement_type === 'TRANSFER'">
               <label class="input-label">Almacén destino</label>
@@ -306,13 +260,11 @@
                 :options="destinationWarehouseOptions"
                 placeholder="Seleccionar"
                 class="full-width-select"
+                :error-messages="formErrors.destination_warehouse_id"
               />
-              <p
-                v-if="formErrors.destination_warehouse_id?.length"
-                class="field-error"
-              >
+              <!-- <p v-if="formErrors.destination_warehouse_id?.length" class="field-error">
                 {{ formErrors.destination_warehouse_id[0] }}
-              </p>
+              </p> -->
             </div>
           </div>
 
@@ -326,18 +278,12 @@
                 type="number"
                 variant="outlined"
                 density="comfortable"
-                hide-details
                 :error-messages="formErrors.quantity"
                 class="dark-input"
                 @update:model-value="clearFieldError('quantity')"
               />
             </div>
-            <div
-              v-if="
-                form.movement_type === 'ENTRY' ||
-                form.movement_type === 'ADJUSTMENT'
-              "
-            >
+            <div v-if="form.movement_type === 'ENTRY' || form.movement_type === 'ADJUSTMENT'">
               <label class="input-label">Costo unitario</label>
               <v-text-field
                 v-model="form.unit_cost"
@@ -345,7 +291,6 @@
                 type="number"
                 variant="outlined"
                 density="comfortable"
-                hide-details
                 :error-messages="formErrors.unit_cost"
                 class="dark-input"
                 @update:model-value="clearFieldError('unit_cost')"
@@ -381,17 +326,9 @@
         </div>
 
         <div class="dialog-footer">
-          <button class="btn-secondary" @click="dialogOpen = false">
-            Cancelar
-          </button>
+          <button class="btn-secondary" @click="dialogOpen = false">Cancelar</button>
           <button class="btn-primary" @click="saveMovement" :disabled="saving">
-            <v-progress-circular
-              v-if="saving"
-              indeterminate
-              size="16"
-              color="white"
-              class="mr-2"
-            />
+            <v-progress-circular v-if="saving" indeterminate size="16" color="white" class="mr-2" />
             Registrar movimiento
           </button>
         </div>
@@ -404,9 +341,7 @@
     <v-dialog v-model="deleteDialogOpen" max-width="450" class="dark-dialog">
       <div class="dialog-card">
         <div class="dialog-header">
-          <h3 class="text-lg font-semibold text-zinc-100">
-            Eliminar movimiento
-          </h3>
+          <h3 class="text-lg font-semibold text-zinc-100">Eliminar movimiento</h3>
           <button class="icon-btn" @click="deleteDialogOpen = false">
             <v-icon size="20">mdi-close</v-icon>
           </button>
@@ -415,30 +350,20 @@
           <div class="alert-warning mb-4">
             <v-icon size="18" class="mr-2 flex-shrink-0">mdi-alert</v-icon>
             <span
-              ><strong>Advertencia:</strong> Esta acción solo elimina el
-              registro del movimiento.
+              ><strong>Advertencia:</strong> Esta acción solo elimina el registro del movimiento.
               <strong>No restaura el stock</strong> asociado.</span
             >
           </div>
           <p class="text-sm text-zinc-400">
             ¿Estás seguro de eliminar este movimiento de
-            <strong class="text-zinc-200">{{
-              itemToDelete?.product?.name
-            }}</strong>
+            <strong class="text-zinc-200">{{ itemToDelete?.product?.name }}</strong>
             ({{ getTypeLabel(itemToDelete?.movement_type) }})?
           </p>
         </div>
         <div class="dialog-footer">
-          <button class="btn-secondary" @click="deleteDialogOpen = false">
-            Cancelar
-          </button>
+          <button class="btn-secondary" @click="deleteDialogOpen = false">Cancelar</button>
           <button class="btn-danger" @click="deleteItem" :disabled="deleting">
-            <v-progress-circular
-              v-if="deleting"
-              indeterminate
-              size="16"
-              class="mr-2"
-            />
+            <v-progress-circular v-if="deleting" indeterminate size="16" class="mr-2" />
             Eliminar movimiento
           </button>
         </div>
@@ -452,9 +377,7 @@
       <div class="dialog-card">
         <div class="dialog-header">
           <h3 class="text-lg font-semibold text-red-400 flex items-center">
-            <v-icon size="20" class="mr-2 text-red-400"
-              >mdi-alert-octagon</v-icon
-            >
+            <v-icon size="20" class="mr-2 text-red-400">mdi-alert-octagon</v-icon>
             Vaciar historial completo
           </h3>
           <button class="icon-btn" @click="cancelPurge">
@@ -463,19 +386,16 @@
         </div>
         <div class="dialog-body">
           <div class="alert-error mb-4">
-            <v-icon size="18" class="mr-2 flex-shrink-0"
-              >mdi-alert-octagon</v-icon
-            >
+            <v-icon size="18" class="mr-2 flex-shrink-0">mdi-alert-octagon</v-icon>
             <span
-              ><strong>Peligro:</strong> Esta acción eliminará
-              <strong>TODOS</strong> los movimientos y reiniciará los IDs desde
-              1. El stock actual <strong>NO se modificará</strong>.</span
+              ><strong>Peligro:</strong> Esta acción eliminará <strong>TODOS</strong> los
+              movimientos y reiniciará los IDs desde 1. El stock actual
+              <strong>NO se modificará</strong>.</span
             >
           </div>
           <p class="text-sm text-zinc-400 mb-2">
             Se eliminarán
-            <strong class="text-zinc-200">{{ total }}</strong> movimientos de
-            forma permanente.
+            <strong class="text-zinc-200">{{ total }}</strong> movimientos de forma permanente.
           </p>
           <p class="text-xs text-zinc-500">
             Esta acción no se puede deshacer. Los IDs se reiniciarán a 1.
@@ -488,59 +408,45 @@
             @click="executePurge"
             :disabled="purgeCountdown > 0 || purging"
           >
-            <v-progress-circular
-              v-if="purging"
-              indeterminate
-              size="16"
-              class="mr-2"
-            />
-            {{
-              purgeCountdown > 0
-                ? `Espera ${purgeCountdown}s...`
-                : "Eliminar todo"
-            }}
+            <v-progress-circular v-if="purging" indeterminate size="16" class="mr-2" />
+            {{ purgeCountdown > 0 ? `Espera ${purgeCountdown}s...` : 'Eliminar todo' }}
           </button>
         </div>
       </div>
     </v-dialog>
 
     <!-- Snackbar -->
-    <v-snackbar
-      v-model="snackbar.show"
-      :color="snackbar.color"
-      location="top right"
-      timeout="3000"
-    >
+    <v-snackbar v-model="snackbar.show" :color="snackbar.color" location="top right" timeout="3000">
       {{ snackbar.message }}
     </v-snackbar>
   </div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onUnmounted } from "vue";
-import { useRoute } from "vue-router";
-import api from "@/utils/axios";
-import { useTable } from "@/composables/useTable";
-import TablePagination from "@/components/TablePagination.vue";
-import DarkSelect from "@/components/DarkSelect.vue";
+import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { useRoute } from 'vue-router'
+import api from '@/utils/axios'
+import { useTable } from '@/composables/useTable'
+import TablePagination from '@/components/TablePagination.vue'
+import DarkSelect from '@/components/DarkSelect.vue'
 
-const route = useRoute();
-const API_URL = "inventory/movements/";
-const PRODUCTS_URL = "inventory/products/enabled/?is_service=false";
-const WAREHOUSES_URL = "inventory/warehouses/enabled/";
+const route = useRoute()
+const API_URL = 'inventory/movements/'
+const PRODUCTS_URL = 'inventory/products/enabled/?is_service=false'
+const WAREHOUSES_URL = 'inventory/warehouses/enabled/'
 
 // ===== Opciones =====
 const movementTypeOptions = [
-  { value: "ENTRY", label: "Entrada", icon: "mdi-package-down" },
-  { value: "EXIT", label: "Salida", icon: "mdi-package-up" },
-  { value: "TRANSFER", label: "Traslado", icon: "mdi-swap-horizontal" },
-  { value: "ADJUSTMENT", label: "Ajuste", icon: "mdi-tune-vertical" },
-];
+  { value: 'ENTRY', label: 'Entrada', icon: 'mdi-package-down' },
+  { value: 'EXIT', label: 'Salida', icon: 'mdi-package-up' },
+  { value: 'TRANSFER', label: 'Traslado', icon: 'mdi-swap-horizontal' },
+  { value: 'ADJUSTMENT', label: 'Ajuste', icon: 'mdi-tune-vertical' }
+]
 
 const typeFilterOptions = [
-  { value: "", label: "Todos los tipos" },
-  ...movementTypeOptions.map((o) => ({ value: o.value, label: o.label })),
-];
+  { value: '', label: 'Todos los tipos' },
+  ...movementTypeOptions.map(o => ({ value: o.value, label: o.label }))
+]
 
 // ===== Tabla =====
 const {
@@ -556,234 +462,221 @@ const {
   clearSearch,
   clearFilters,
   changePage,
-  changePageSize,
+  changePageSize
 } = useTable({
   apiUrl: API_URL,
-  defaultOrdering: "-created_at",
-  defaultFilters: { movement_type: "", warehouse: "" },
-});
+  defaultOrdering: '-created_at',
+  defaultFilters: { movement_type: '', warehouse: '' }
+})
 
 // ===== Estado =====
-const dialogOpen = ref(false);
-const saving = ref(false);
+const dialogOpen = ref(false)
+const saving = ref(false)
 
-const deleteDialogOpen = ref(false);
-const deleting = ref(false);
-const itemToDelete = ref(null);
+const deleteDialogOpen = ref(false)
+const deleting = ref(false)
+const itemToDelete = ref(null)
 
-const purgeDialogOpen = ref(false);
-const purging = ref(false);
-const purgeCountdown = ref(0);
-let purgeTimer = null;
+const purgeDialogOpen = ref(false)
+const purging = ref(false)
+const purgeCountdown = ref(0)
+let purgeTimer = null
 
-const productOptions = ref([]);
-const warehouseOptions = ref([]);
-const presentationOptions = ref([]);
+const productOptions = ref([])
+const warehouseOptions = ref([])
+const presentationOptions = ref([])
 
 const emptyForm = () => ({
-  movement_type: "ENTRY",
-  product_id: "",
-  presentation_id: "",
-  warehouse_id: "",
-  destination_warehouse_id: "",
-  quantity: "",
-  unit_cost: "",
-  reference: "",
-  notes: "",
-});
+  movement_type: 'ENTRY',
+  product_id: '',
+  presentation_id: '',
+  warehouse_id: '',
+  destination_warehouse_id: '',
+  quantity: '',
+  unit_cost: '',
+  reference: '',
+  notes: ''
+})
 
-const form = ref(emptyForm());
-const formErrors = ref({});
-const snackbar = ref({ show: false, message: "", color: "success" });
+const form = ref(emptyForm())
+const formErrors = ref({})
+const snackbar = ref({ show: false, message: '', color: 'success' })
 
 // ===== Computed =====
 const hasActiveFilters = computed(() => {
   return (
-    search.value.trim() !== "" ||
-    filters.value.movement_type !== "" ||
-    filters.value.warehouse !== ""
-  );
-});
+    search.value.trim() !== '' ||
+    filters.value.movement_type !== '' ||
+    filters.value.warehouse !== ''
+  )
+})
 
 const warehouseFilterOptions = computed(() => [
-  { value: "", label: "Todos los almacenes" },
-  ...warehouseOptions.value,
-]);
+  { value: '', label: 'Todos los almacenes' },
+  ...warehouseOptions.value
+])
 
 const destinationWarehouseOptions = computed(() => {
-  return warehouseOptions.value.filter(
-    (w) => w.value !== form.value.warehouse_id,
-  );
-});
+  return warehouseOptions.value.filter(w => w.value !== form.value.warehouse_id)
+})
 
 const purgeButtonText = computed(() => {
-  if (purging.value) return "Vaciando...";
-  return "Vaciar historial";
-});
+  if (purging.value) return 'Vaciando...'
+  return 'Vaciar historial'
+})
 
 // ===== Helpers =====
-const getTypeLabel = (type) => {
+const getTypeLabel = type => {
   const map = {
-    ENTRY: "Entrada",
-    EXIT: "Salida",
-    TRANSFER: "Traslado",
-    ADJUSTMENT: "Ajuste",
-    CONVERSION: "Conversión",
-  };
-  return map[type] || type;
-};
+    ENTRY: 'Entrada',
+    EXIT: 'Salida',
+    TRANSFER: 'Traslado',
+    ADJUSTMENT: 'Ajuste',
+    CONVERSION: 'Conversión'
+  }
+  return map[type] || type
+}
 
-const getTypeBadge = (type) => {
+const getTypeBadge = type => {
   const map = {
-    ENTRY: "badge-success",
-    EXIT: "badge-warning",
-    TRANSFER: "badge-info",
-    ADJUSTMENT: "badge-neutral",
-    CONVERSION: "badge-neutral",
-  };
-  return map[type] || "badge-neutral";
-};
+    ENTRY: 'badge-success',
+    EXIT: 'badge-warning',
+    TRANSFER: 'badge-info',
+    ADJUSTMENT: 'badge-neutral',
+    CONVERSION: 'badge-neutral'
+  }
+  return map[type] || 'badge-neutral'
+}
 
-const getTypeIcon = (type) => {
+const getTypeIcon = type => {
   const map = {
-    ENTRY: "mdi-package-down",
-    EXIT: "mdi-package-up",
-    TRANSFER: "mdi-swap-horizontal",
-    ADJUSTMENT: "mdi-tune-vertical",
-    CONVERSION: "mdi-repeat",
-  };
-  return map[type] || "mdi-help-circle-outline";
-};
+    ENTRY: 'mdi-package-down',
+    EXIT: 'mdi-package-up',
+    TRANSFER: 'mdi-swap-horizontal',
+    ADJUSTMENT: 'mdi-tune-vertical',
+    CONVERSION: 'mdi-repeat'
+  }
+  return map[type] || 'mdi-help-circle-outline'
+}
 
-const formatDate = (dateStr) => {
-  if (!dateStr) return "—";
-  const d = new Date(dateStr);
-  return d.toLocaleDateString("es-CU", {
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
-};
+const formatDate = dateStr => {
+  if (!dateStr) return '—'
+  const d = new Date(dateStr)
+  return d.toLocaleDateString('es-CU', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit'
+  })
+}
 
-const formatQuantity = (qty) => {
-  const num = parseFloat(qty);
-  return isNaN(num)
-    ? "0"
-    : num.toLocaleString("es-CU", { maximumFractionDigits: 2 });
-};
+const formatQuantity = qty => {
+  const num = parseFloat(qty)
+  return isNaN(num) ? '0' : num.toLocaleString('es-CU', { maximumFractionDigits: 2 })
+}
 
-const formatPrice = (price) => {
-  const num = parseFloat(price);
-  return isNaN(num)
-    ? "—"
-    : num.toLocaleString("es-CU", { minimumFractionDigits: 2 });
-};
+const formatPrice = price => {
+  const num = parseFloat(price)
+  return isNaN(num) ? '—' : num.toLocaleString('es-CU', { minimumFractionDigits: 2 })
+}
 
 // ===== Cargar opciones =====
 const loadProducts = async () => {
   try {
-    const response = await api.get(PRODUCTS_URL);
-    productOptions.value = response.data.map((p) => ({
+    const response = await api.get(PRODUCTS_URL)
+    productOptions.value = response.data.map(p => ({
       value: p.id,
-      label: `${p.sku} - ${p.name}`,
-    }));
+      label: `${p.sku} - ${p.name}`
+    }))
   } catch (error) {
-    console.error("Error cargando productos:", error);
+    console.error('Error cargando productos:', error)
   }
-};
+}
 
 const loadWarehouses = async () => {
   try {
-    const response = await api.get(WAREHOUSES_URL);
-    warehouseOptions.value = response.data.map((w) => ({
+    const response = await api.get(WAREHOUSES_URL)
+    warehouseOptions.value = response.data.map(w => ({
       value: w.id,
-      label: w.name,
-    }));
+      label: w.name
+    }))
   } catch (error) {
-    console.error("Error cargando almacenes:", error);
+    console.error('Error cargando almacenes:', error)
   }
-};
+}
 
-const loadPresentations = async (productId) => {
+const loadPresentations = async productId => {
   if (!productId) {
-    presentationOptions.value = [];
-    return;
+    presentationOptions.value = []
+    return
   }
   try {
-    const response = await api.get(`inventory/products/${productId}/`);
-    presentationOptions.value = response.data.presentations.map((p) => ({
+    const response = await api.get(`inventory/products/${productId}/`)
+    presentationOptions.value = response.data.presentations.map(p => ({
       value: p.id,
-      label: `${p.measure_unit.name} (x${p.conversion_factor})`,
-    }));
+      label: `${p.measure_unit.name} (x${p.conversion_factor})`
+    }))
   } catch (error) {
-    console.error("Error cargando presentaciones:", error);
-    presentationOptions.value = [];
+    console.error('Error cargando presentaciones:', error)
+    presentationOptions.value = []
   }
-};
+}
 
 // ===== Dialog: Crear =====
 const openDialog = () => {
-  formErrors.value = {};
-  form.value = emptyForm();
-  presentationOptions.value = [];
-  dialogOpen.value = true;
-};
+  formErrors.value = {}
+  form.value = emptyForm()
+  presentationOptions.value = []
+  dialogOpen.value = true
+}
 
-const onMovementTypeChange = (type) => {
-  form.value.movement_type = type;
-  formErrors.value = {};
-};
+const onMovementTypeChange = type => {
+  form.value.movement_type = type
+  formErrors.value = {}
+}
 
-const onProductChange = (productId) => {
-  form.value.presentation_id = "";
-  loadPresentations(productId);
-};
+const onProductChange = productId => {
+  form.value.presentation_id = ''
+  loadPresentations(productId)
+}
 
 // ===== Guardar =====
 const saveMovement = async () => {
-  formErrors.value = {};
-  let hasErrors = false;
+  formErrors.value = {}
+  let hasErrors = false
 
   if (!form.value.product_id) {
-    formErrors.value.product_id = ["Selecciona un producto"];
-    hasErrors = true;
+    formErrors.value.product_id = ['Selecciona un producto']
+    hasErrors = true
   }
   if (!form.value.presentation_id) {
-    formErrors.value.presentation_id = ["Selecciona una presentación"];
-    hasErrors = true;
+    formErrors.value.presentation_id = ['Selecciona una presentación']
+    hasErrors = true
   }
   if (!form.value.warehouse_id) {
-    formErrors.value.warehouse_id = ["Selecciona un almacén"];
-    hasErrors = true;
+    formErrors.value.warehouse_id = ['Selecciona un almacén']
+    hasErrors = true
   }
-  if (
-    form.value.movement_type === "TRANSFER" &&
-    !form.value.destination_warehouse_id
-  ) {
-    formErrors.value.destination_warehouse_id = [
-      "Selecciona un almacén destino",
-    ];
-    hasErrors = true;
+  if (form.value.movement_type === 'TRANSFER' && !form.value.destination_warehouse_id) {
+    formErrors.value.destination_warehouse_id = ['Selecciona un almacén destino']
+    hasErrors = true
   }
   if (!form.value.quantity || parseFloat(form.value.quantity) <= 0) {
-    formErrors.value.quantity = ["La cantidad debe ser mayor a 0"];
-    hasErrors = true;
+    formErrors.value.quantity = ['La cantidad debe ser mayor a 0']
+    hasErrors = true
   }
   if (
-    form.value.movement_type === "ENTRY" &&
+    form.value.movement_type === 'ENTRY' &&
     (!form.value.unit_cost || parseFloat(form.value.unit_cost) < 0)
   ) {
-    formErrors.value.unit_cost = [
-      "El costo unitario es requerido para entradas",
-    ];
-    hasErrors = true;
+    formErrors.value.unit_cost = ['El costo unitario es requerido para entradas']
+    hasErrors = true
   }
 
-  if (hasErrors) return;
+  if (hasErrors) return
 
-  saving.value = true;
+  saving.value = true
   try {
     const payload = {
       movement_type: form.value.movement_type,
@@ -792,184 +685,211 @@ const saveMovement = async () => {
       warehouse_id: parseInt(form.value.warehouse_id),
       quantity: parseFloat(form.value.quantity),
       reference: form.value.reference,
-      notes: form.value.notes,
-    };
-
-    if (form.value.movement_type === "TRANSFER") {
-      payload.destination_warehouse_id = parseInt(
-        form.value.destination_warehouse_id,
-      );
+      notes: form.value.notes
     }
 
-    if (
-      form.value.movement_type === "ENTRY" ||
-      form.value.movement_type === "ADJUSTMENT"
-    ) {
-      payload.unit_cost = parseFloat(form.value.unit_cost) || 0;
+    if (form.value.movement_type === 'TRANSFER') {
+      payload.destination_warehouse_id = parseInt(form.value.destination_warehouse_id)
     }
 
-    await api.post(API_URL, payload);
-    showSnackbar("Movimiento registrado correctamente");
-    dialogOpen.value = false;
-    await loadData();
+    if (form.value.movement_type === 'ENTRY' || form.value.movement_type === 'ADJUSTMENT') {
+      payload.unit_cost = parseFloat(form.value.unit_cost) || 0
+    }
+
+    await api.post(API_URL, payload)
+    showSnackbar('Movimiento registrado correctamente')
+    dialogOpen.value = false
+    await loadData()
   } catch (error) {
-    handleApiError(error);
+    handleApiError(error)
   } finally {
-    saving.value = false;
+    saving.value = false
   }
-};
+}
 
 // ===== Eliminar individual =====
-const confirmDelete = (item) => {
-  itemToDelete.value = item;
-  deleteDialogOpen.value = true;
-};
+const confirmDelete = item => {
+  itemToDelete.value = item
+  deleteDialogOpen.value = true
+}
 
 const deleteItem = async () => {
-  deleting.value = true;
+  deleting.value = true
   try {
-    await api.delete(`${API_URL}${itemToDelete.value.id}/`);
-    showSnackbar("Movimiento eliminado (stock no restaurado)");
-    deleteDialogOpen.value = false;
+    await api.delete(`${API_URL}${itemToDelete.value.id}/`)
+    showSnackbar('Movimiento eliminado (stock no restaurado)')
+    deleteDialogOpen.value = false
 
     if (items.value.length === 1 && page.value > 1) {
-      page.value--;
+      page.value--
     } else {
-      await loadData();
+      await loadData()
     }
   } catch (error) {
-    handleApiError(error);
+    handleApiError(error)
   } finally {
-    deleting.value = false;
+    deleting.value = false
   }
-};
+}
 
 // ===== Vaciar todo con temporizador =====
 const confirmPurge = () => {
-  purgeCountdown.value = 10;
-  purgeDialogOpen.value = true;
+  purgeCountdown.value = 10
+  purgeDialogOpen.value = true
 
   purgeTimer = setInterval(() => {
-    purgeCountdown.value--;
+    purgeCountdown.value--
     if (purgeCountdown.value <= 0) {
-      clearInterval(purgeTimer);
-      purgeTimer = null;
+      clearInterval(purgeTimer)
+      purgeTimer = null
     }
-  }, 1000);
-};
+  }, 1000)
+}
 
 const cancelPurge = () => {
   if (purgeTimer) {
-    clearInterval(purgeTimer);
-    purgeTimer = null;
+    clearInterval(purgeTimer)
+    purgeTimer = null
   }
-  purgeCountdown.value = 0;
-  purgeDialogOpen.value = false;
-};
+  purgeCountdown.value = 0
+  purgeDialogOpen.value = false
+}
 
 const executePurge = async () => {
-  purging.value = true;
+  purging.value = true
   try {
-    const response = await api.delete(`${API_URL}purge/`);
-    showSnackbar(response.data.message || "Historial vaciado correctamente");
-    purgeDialogOpen.value = false;
-    page.value = 1;
-    await loadData();
+    const response = await api.delete(`${API_URL}purge/`)
+    showSnackbar(response.data.message || 'Historial vaciado correctamente')
+    purgeDialogOpen.value = false
+    page.value = 1
+    await loadData()
   } catch (error) {
-    handleApiError(error);
+    handleApiError(error)
   } finally {
-    purging.value = false;
+    purging.value = false
   }
-};
+}
 
 // ===== Errores =====
-const handleApiError = (error) => {
+const handleApiError = error => {
   if (error.response?.data) {
-    const data = error.response.data;
-    const fieldErrors = {};
+    const data = error.response.data
+    const fieldErrors = {}
 
-    [
-      "product_id",
-      "presentation_id",
-      "warehouse_id",
-      "destination_warehouse_id",
-      "quantity",
-      "unit_cost",
-    ].forEach((field) => {
+    ;[
+      'product_id',
+      'presentation_id',
+      'warehouse_id',
+      'destination_warehouse_id',
+      'quantity',
+      'unit_cost'
+    ].forEach(field => {
       if (data[field]) {
-        fieldErrors[field] = Array.isArray(data[field])
-          ? data[field]
-          : [data[field]];
+        fieldErrors[field] = Array.isArray(data[field]) ? data[field] : [data[field]]
       }
-    });
+    })
 
-    formErrors.value = fieldErrors;
+    formErrors.value = fieldErrors
 
     if (Object.keys(fieldErrors).length === 0) {
-      showSnackbar(
-        data.detail || data.error || "Error al registrar movimiento",
-        "error",
-      );
+      showSnackbar(data.detail || data.error || 'Error al registrar movimiento', 'error')
     }
   } else {
-    showSnackbar("Error de conexión", "error");
+    showSnackbar('Error de conexión', 'error')
   }
-};
+}
 
-const clearFieldError = (field) => {
-  if (formErrors.value[field]) formErrors.value[field] = [];
-};
+const clearFieldError = field => {
+  if (formErrors.value[field]) formErrors.value[field] = []
+}
 
 const resetAll = () => {
-  search.value = "";
-  clearFilters();
-};
+  search.value = ''
+  clearFilters()
+}
 
-const showSnackbar = (message, color = "success") => {
-  snackbar.value = { show: true, message, color };
-};
+const showSnackbar = (message, color = 'success') => {
+  snackbar.value = { show: true, message, color }
+}
 
 // ===== Cleanup =====
 onMounted(() => {
-  loadProducts();
-  loadWarehouses();
-  loadData();
+  loadProducts()
+  loadWarehouses()
+  loadData()
 
   // ← NUEVO: Si viene desde una alerta, abrir dialog con entrada pre-llenada
-  if (route.query.new_entry === "true" && route.query.product_id) {
+  if (route.query.new_entry === 'true' && route.query.product_id) {
     openDialogWithProduct(
       parseInt(route.query.product_id),
-      parseFloat(route.query.suggested_quantity) || 0,
-    );
+      parseFloat(route.query.suggested_quantity) || 0
+    )
   }
-});
+})
 
 // ← NUEVO: Función para abrir dialog con producto pre-llenado
 const openDialogWithProduct = async (productId, suggestedQuantity) => {
-  formErrors.value = {};
-  form.value = emptyForm();
-  form.value.movement_type = "ENTRY";
-  form.value.product_id = productId;
-  form.value.quantity = suggestedQuantity || "";
-  presentationOptions.value = [];
+  formErrors.value = {}
+  form.value = emptyForm()
+  form.value.movement_type = 'ENTRY'
+  form.value.product_id = productId
+  form.value.quantity = suggestedQuantity || ''
+  presentationOptions.value = []
 
   // Cargar presentaciones del producto
-  await loadPresentations(productId);
+  await loadPresentations(productId)
 
   // Seleccionar la primera presentación automáticamente si solo hay una
   if (presentationOptions.value.length === 1) {
-    form.value.presentation_id = presentationOptions.value[0].value;
+    form.value.presentation_id = presentationOptions.value[0].value
   }
 
-  dialogOpen.value = true;
-};
+  dialogOpen.value = true
+}
 
 onUnmounted(() => {
-  if (purgeTimer) clearInterval(purgeTimer);
-});
+  if (purgeTimer) clearInterval(purgeTimer)
+})
 </script>
 
 <style scoped>
+/* ===== Animación del mensaje de error ===== */
+.vuetify-error-enter-active,
+.vuetify-error-leave-active {
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+  overflow: hidden;
+}
+
+/* Estado inicial al entrar / Estado final al salir */
+.vuetify-error-enter-from,
+.vuetify-error-leave-to {
+  opacity: 0;
+  transform: translateY(-8px); /* Se desliza desde arriba hacia abajo */
+  max-height: 0;
+  margin-top: 0;
+  margin-bottom: 0;
+}
+
+/* Estado final al entrar / Estado inicial al salir */
+.vuetify-error-enter-to,
+.vuetify-error-leave-from {
+  opacity: 1;
+  transform: translateY(0);
+  max-height: 40px; /* Altura suficiente para una línea de error */
+  margin-top: 4px;
+  margin-bottom: 4px;
+}
+
+/* ===== Estilo del texto de error ===== */
+/* .field-error {
+  color: #ff5252; 
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 1.5;
+  margin-left: 14px; 
+  margin-right: 14px;
+} */
+
 .dialog-card {
   background: rgba(24, 24, 27, 0.98);
   backdrop-filter: blur(20px);
@@ -1053,9 +973,9 @@ onUnmounted(() => {
   width: 100%;
 }
 
-.field-error {
+/* .field-error {
   color: var(--error);
   font-size: 12px;
   margin-top: 6px;
-}
+} */
 </style>

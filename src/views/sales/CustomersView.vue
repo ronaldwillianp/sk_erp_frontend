@@ -5,9 +5,7 @@
       <div class="page-header-row">
         <div>
           <h1 class="page-title">Clientes</h1>
-          <p class="page-subtitle">
-            Gestiona tu cartera de clientes para facturación
-          </p>
+          <p class="page-subtitle">Gestiona tu cartera de clientes para facturación</p>
         </div>
         <div class="flex gap-3">
           <button class="btn-secondary" @click="loadData">
@@ -33,22 +31,13 @@
             placeholder="Buscar por nombre, email, teléfono o NIT..."
             @keyup.enter="onSearch"
           />
-          <button
-            v-if="search"
-            class="icon-btn !w-6 !h-6"
-            @click="clearSearch"
-            title="Limpiar"
-          >
+          <button v-if="search" class="icon-btn !w-6 !h-6" @click="clearSearch" title="Limpiar">
             <v-icon size="14">mdi-close</v-icon>
           </button>
         </div>
 
         <div class="flex gap-3">
-          <DarkSelect
-            v-model="filters.enabled"
-            :options="statusOptions"
-            @change="onSearch"
-          />
+          <DarkSelect v-model="filters.enabled" :options="statusOptions" @change="onSearch" />
         </div>
       </div>
     </div>
@@ -65,20 +54,16 @@
           <v-icon size="32" color="zinc-600">mdi-account-group-outline</v-icon>
         </div>
         <div class="empty-state-title">
-          {{ hasActiveFilters ? "Sin resultados" : "Sin clientes registrados" }}
+          {{ hasActiveFilters ? 'Sin resultados' : 'Sin clientes registrados' }}
         </div>
         <div class="empty-state-text">
           {{
             hasActiveFilters
-              ? "No se encontraron clientes con los filtros aplicados."
-              : "Aún no hay clientes. Crea el primero para comenzar a facturar."
+              ? 'No se encontraron clientes con los filtros aplicados.'
+              : 'Aún no hay clientes. Crea el primero para comenzar a facturar.'
           }}
         </div>
-        <button
-          v-if="!hasActiveFilters"
-          class="btn-primary mt-6"
-          @click="openDialog()"
-        >
+        <button v-if="!hasActiveFilters" class="btn-primary mt-6" @click="openDialog()">
           <v-icon size="18" class="mr-2">mdi-plus</v-icon>
           Crear cliente
         </button>
@@ -96,9 +81,7 @@
                 <th @click="toggleOrdering('name')" class="sortable-th">
                   <span class="inline-flex items-center">
                     Nombre
-                    <v-icon size="14" class="ml-1">{{
-                      getOrderingIcon("name")
-                    }}</v-icon>
+                    <v-icon size="14" class="ml-1">{{ getOrderingIcon('name') }}</v-icon>
                   </span>
                 </th>
                 <th>Email</th>
@@ -109,9 +92,7 @@
                 <th @click="toggleOrdering('enabled')" class="sortable-th">
                   <span class="inline-flex items-center">
                     Estado
-                    <v-icon size="14" class="ml-1">{{
-                      getOrderingIcon("enabled")
-                    }}</v-icon>
+                    <v-icon size="14" class="ml-1">{{ getOrderingIcon('enabled') }}</v-icon>
                   </span>
                 </th>
                 <th class="text-right">Acciones</th>
@@ -128,49 +109,35 @@
                       <div class="text-sm font-medium text-zinc-200">
                         {{ item.name }}
                       </div>
-                      <div
-                        v-if="item.address"
-                        class="text-xs text-zinc-500 truncate max-w-[200px]"
-                      >
+                      <div v-if="item.address" class="text-xs text-zinc-500 truncate max-w-[200px]">
                         {{ item.address }}
                       </div>
                     </div>
                   </div>
                 </td>
                 <td class="text-sm text-zinc-400">
-                  {{ item.email || "—" }}
+                  {{ item.email || '—' }}
                 </td>
                 <td class="text-sm text-zinc-400">
-                  {{ item.phone || "—" }}
+                  {{ item.phone || '—' }}
                 </td>
                 <td class="text-sm font-mono text-zinc-400">
-                  {{ item.nit || "—" }}
+                  {{ item.nit || '—' }}
                 </td>
                 <td class="text-right">
-                  <span class="badge badge-neutral">{{
-                    item.invoices_count
-                  }}</span>
+                  <span class="badge badge-neutral">{{ item.invoices_count }}</span>
                 </td>
                 <td class="text-right text-sm font-mono text-zinc-300">
                   {{ formatPrice(item.total_spent) }}
                 </td>
                 <td>
-                  <span
-                    :class="[
-                      'badge',
-                      item.enabled ? 'badge-success' : 'badge-neutral',
-                    ]"
-                  >
-                    {{ item.enabled ? "Activo" : "Inactivo" }}
+                  <span :class="['badge', item.enabled ? 'badge-success' : 'badge-neutral']">
+                    {{ item.enabled ? 'Activo' : 'Inactivo' }}
                   </span>
                 </td>
                 <td class="text-right">
                   <div class="flex items-center justify-end gap-1">
-                    <button
-                      class="icon-btn"
-                      title="Editar"
-                      @click="openDialog(item)"
-                    >
+                    <button class="icon-btn" title="Editar" @click="openDialog(item)">
                       <v-icon size="16">mdi-pencil-outline</v-icon>
                     </button>
                     <button
@@ -205,14 +172,10 @@
         <div class="dialog-header">
           <div>
             <h3 class="text-lg font-semibold text-zinc-100">
-              {{ isEditing ? "Editar cliente" : "Nuevo cliente" }}
+              {{ isEditing ? 'Editar cliente' : 'Nuevo cliente' }}
             </h3>
             <p class="text-xs text-zinc-500 mt-1">
-              {{
-                isEditing
-                  ? `Editando: ${form.name}`
-                  : "Completa los datos del cliente"
-              }}
+              {{ isEditing ? `Editando: ${form.name}` : 'Completa los datos del cliente' }}
             </p>
           </div>
           <button class="icon-btn" @click="dialogOpen = false">
@@ -229,7 +192,6 @@
               placeholder="Ej: Juan Pérez García"
               variant="outlined"
               density="comfortable"
-              hide-details
               :error-messages="formErrors.name"
               class="dark-input"
               prepend-inner-icon="mdi-account-outline"
@@ -246,7 +208,6 @@
                 placeholder="correo@ejemplo.com"
                 variant="outlined"
                 density="comfortable"
-                hide-details
                 :error-messages="formErrors.email"
                 class="dark-input"
                 prepend-inner-icon="mdi-email-outline"
@@ -260,7 +221,6 @@
                 placeholder="+53 55551234"
                 variant="outlined"
                 density="comfortable"
-                hide-details
                 :error-messages="formErrors.phone"
                 class="dark-input"
                 prepend-inner-icon="mdi-phone-outline"
@@ -325,18 +285,10 @@
         </div>
 
         <div class="dialog-footer">
-          <button class="btn-secondary" @click="dialogOpen = false">
-            Cancelar
-          </button>
+          <button class="btn-secondary" @click="dialogOpen = false">Cancelar</button>
           <button class="btn-primary" @click="saveItem" :disabled="saving">
-            <v-progress-circular
-              v-if="saving"
-              indeterminate
-              size="16"
-              color="white"
-              class="mr-2"
-            />
-            {{ isEditing ? "Guardar cambios" : "Crear cliente" }}
+            <v-progress-circular v-if="saving" indeterminate size="16" color="white" class="mr-2" />
+            {{ isEditing ? 'Guardar cambios' : 'Crear cliente' }}
           </button>
         </div>
       </div>
@@ -346,9 +298,7 @@
     <v-dialog v-model="deleteDialogOpen" max-width="400" class="dark-dialog">
       <div class="dialog-card">
         <div class="dialog-header">
-          <h3 class="text-lg font-semibold text-zinc-100">
-            Confirmar eliminación
-          </h3>
+          <h3 class="text-lg font-semibold text-zinc-100">Confirmar eliminación</h3>
           <button class="icon-btn" @click="deleteDialogOpen = false">
             <v-icon size="20">mdi-close</v-icon>
           </button>
@@ -357,8 +307,8 @@
           <div class="alert-warning mb-4">
             <v-icon size="18" class="mr-2 flex-shrink-0">mdi-alert</v-icon>
             <span
-              ><strong>Advertencia:</strong> No se puede eliminar un cliente que
-              tenga facturas asociadas.</span
+              ><strong>Advertencia:</strong> No se puede eliminar un cliente que tenga facturas
+              asociadas.</span
             >
           </div>
           <p class="text-sm text-zinc-400">
@@ -368,16 +318,9 @@
           </p>
         </div>
         <div class="dialog-footer">
-          <button class="btn-secondary" @click="deleteDialogOpen = false">
-            Cancelar
-          </button>
+          <button class="btn-secondary" @click="deleteDialogOpen = false">Cancelar</button>
           <button class="btn-danger" @click="deleteItem" :disabled="deleting">
-            <v-progress-circular
-              v-if="deleting"
-              indeterminate
-              size="16"
-              class="mr-2"
-            />
+            <v-progress-circular v-if="deleting" indeterminate size="16" class="mr-2" />
             Eliminar
           </button>
         </div>
@@ -385,32 +328,27 @@
     </v-dialog>
 
     <!-- Snackbar -->
-    <v-snackbar
-      v-model="snackbar.show"
-      :color="snackbar.color"
-      location="top right"
-      timeout="3000"
-    >
+    <v-snackbar v-model="snackbar.show" :color="snackbar.color" location="top right" timeout="3000">
       {{ snackbar.message }}
     </v-snackbar>
   </div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from "vue";
-import api from "@/utils/axios";
-import { useTable } from "@/composables/useTable";
-import TablePagination from "@/components/TablePagination.vue";
-import DarkSelect from "@/components/DarkSelect.vue";
+import { ref, computed, onMounted } from 'vue'
+import api from '@/utils/axios'
+import { useTable } from '@/composables/useTable'
+import TablePagination from '@/components/TablePagination.vue'
+import DarkSelect from '@/components/DarkSelect.vue'
 
-const API_URL = "sales/customers/";
+const API_URL = 'sales/customers/'
 
 // ===== Opciones de filtros =====
 const statusOptions = [
-  { value: "", label: "Todos los estados" },
-  { value: "true", label: "Activos" },
-  { value: "false", label: "Inactivos" },
-];
+  { value: '', label: 'Todos los estados' },
+  { value: 'true', label: 'Activos' },
+  { value: 'false', label: 'Inactivos' }
+]
 
 // ===== Tabla =====
 const {
@@ -429,85 +367,83 @@ const {
   clearSearch,
   clearFilters,
   changePage,
-  changePageSize,
+  changePageSize
 } = useTable({
   apiUrl: API_URL,
-  defaultOrdering: "name",
-  defaultFilters: { enabled: "" },
-});
+  defaultOrdering: 'name',
+  defaultFilters: { enabled: '' }
+})
 
 // ===== Estado =====
-const dialogOpen = ref(false);
-const deleteDialogOpen = ref(false);
-const isEditing = ref(false);
-const saving = ref(false);
-const deleting = ref(false);
-const itemToDelete = ref(null);
+const dialogOpen = ref(false)
+const deleteDialogOpen = ref(false)
+const isEditing = ref(false)
+const saving = ref(false)
+const deleting = ref(false)
+const itemToDelete = ref(null)
 
 const emptyForm = () => ({
-  name: "",
-  email: "",
-  phone: "",
-  address: "",
-  nit: "",
-  notes: "",
-  enabled: true,
-});
+  name: '',
+  email: '',
+  phone: '',
+  address: '',
+  nit: '',
+  notes: '',
+  enabled: true
+})
 
-const form = ref(emptyForm());
-const formErrors = ref({});
-const snackbar = ref({ show: false, message: "", color: "success" });
+const form = ref(emptyForm())
+const formErrors = ref({})
+const snackbar = ref({ show: false, message: '', color: 'success', prependInnerIcon: 'mdi-check' })
 
 // ===== Computed =====
 const hasActiveFilters = computed(() => {
-  return search.value.trim() !== "" || filters.value.enabled !== "";
-});
+  return search.value.trim() !== '' || filters.value.enabled !== ''
+})
 
 // ===== Helpers =====
-const formatPrice = (price) => {
-  const num = parseFloat(price);
-  return isNaN(num)
-    ? "—"
-    : num.toLocaleString("es-CU", { minimumFractionDigits: 2 });
-};
+const formatPrice = price => {
+  const num = parseFloat(price)
+  return isNaN(num) ? '—' : num.toLocaleString('es-CU', { minimumFractionDigits: 2 })
+}
 
 // ===== Dialog =====
 const openDialog = (item = null) => {
-  formErrors.value = {};
+  formErrors.value = {}
 
   if (item) {
-    isEditing.value = true;
+    isEditing.value = true
     form.value = {
       id: item.id,
       name: item.name,
-      email: item.email || "",
-      phone: item.phone || "",
-      address: item.address || "",
-      nit: item.nit || "",
-      notes: item.notes || "",
-      enabled: item.enabled,
-    };
+      email: item.email || '',
+      phone: item.phone || '',
+      address: item.address || '',
+      nit: item.nit || '',
+      notes: item.notes || '',
+      enabled: item.enabled
+    }
   } else {
-    isEditing.value = false;
-    form.value = emptyForm();
+    isEditing.value = false
+    form.value = emptyForm()
   }
 
-  dialogOpen.value = true;
-};
+  dialogOpen.value = true
+}
 
 // ===== Guardar =====
 const saveItem = async () => {
-  formErrors.value = {};
-  let hasErrors = false;
+  formErrors.value = {}
+  let hasErrors = false
 
   if (!form.value.name.trim()) {
-    formErrors.value.name = ["El nombre es requerido"];
-    hasErrors = true;
+    formErrors.value.name = ['El nombre es requerido']
+    hasErrors = true
   }
 
-  if (hasErrors) return;
+  if (hasErrors) return
 
-  saving.value = true;
+  saving.value = true
   try {
     const payload = {
       name: form.value.name.trim(),
@@ -516,92 +452,89 @@ const saveItem = async () => {
       address: form.value.address.trim(),
       nit: form.value.nit.trim(),
       notes: form.value.notes.trim(),
-      enabled: form.value.enabled,
-    };
-
-    if (isEditing.value) {
-      await api.put(`${API_URL}${form.value.id}/`, payload);
-      showSnackbar("Cliente actualizado correctamente");
-    } else {
-      await api.post(API_URL, payload);
-      showSnackbar("Cliente creado correctamente");
+      enabled: form.value.enabled
     }
 
-    dialogOpen.value = false;
-    await loadData();
+    if (isEditing.value) {
+      await api.put(`${API_URL}${form.value.id}/`, payload)
+      showSnackbar('Cliente actualizado correctamente')
+    } else {
+      await api.post(API_URL, payload)
+      showSnackbar('Cliente creado correctamente')
+    }
+
+    dialogOpen.value = false
+    await loadData()
   } catch (error) {
-    handleApiError(error);
+    handleApiError(error)
   } finally {
-    saving.value = false;
+    saving.value = false
   }
-};
+}
 
 // ===== Eliminar =====
-const confirmDelete = (item) => {
-  itemToDelete.value = item;
-  deleteDialogOpen.value = true;
-};
+const confirmDelete = item => {
+  itemToDelete.value = item
+  deleteDialogOpen.value = true
+}
 
 const deleteItem = async () => {
-  deleting.value = true;
+  deleting.value = true
   try {
-    await api.delete(`${API_URL}${itemToDelete.value.id}/`);
-    showSnackbar("Cliente eliminado correctamente");
-    deleteDialogOpen.value = false;
+    await api.delete(`${API_URL}${itemToDelete.value.id}/`)
+    showSnackbar('Cliente eliminado correctamente')
+    deleteDialogOpen.value = false
 
     if (items.value.length === 1 && page.value > 1) {
-      page.value--;
+      page.value--
     } else {
-      await loadData();
+      await loadData()
     }
   } catch (error) {
     const msg =
-      error.response?.data?.detail ||
-      "Error al eliminar. Verifica que no tenga facturas asociadas.";
-    showSnackbar(msg, "error");
+      error.response?.data?.detail || 'Error al eliminar. Verifica que no tenga facturas asociadas.'
+    showSnackbar(msg, 'error')
   } finally {
-    deleting.value = false;
+    deleting.value = false
   }
-};
+}
 
 // ===== Errores =====
-const handleApiError = (error) => {
+const handleApiError = error => {
   if (error.response?.data) {
-    const data = error.response.data;
-    const fieldErrors = {};
+    const data = error.response.data
+    const fieldErrors = {}
 
-    ["name", "email", "phone", "nit"].forEach((field) => {
+    ;['name', 'email', 'phone', 'nit'].forEach(field => {
       if (data[field]) {
-        fieldErrors[field] = Array.isArray(data[field])
-          ? data[field]
-          : [data[field]];
+        fieldErrors[field] = Array.isArray(data[field]) ? data[field] : [data[field]]
       }
-    });
+    })
 
-    formErrors.value = fieldErrors;
+    formErrors.value = fieldErrors
 
     if (Object.keys(fieldErrors).length === 0) {
-      showSnackbar(data.detail || "Error al guardar", "error");
+      showSnackbar(data.detail || 'Error al guardar', 'error')
     }
   } else {
-    showSnackbar("Error de conexión", "error");
+    showSnackbar('Error de conexión', 'error')
   }
-};
+}
 
-const clearFieldError = (field) => {
-  if (formErrors.value[field]) formErrors.value[field] = [];
-};
+const clearFieldError = field => {
+  if (formErrors.value[field]) formErrors.value[field] = []
+}
 
 const resetAll = () => {
-  search.value = "";
-  clearFilters();
-};
+  search.value = ''
+  clearFilters()
+}
 
-const showSnackbar = (message, color = "success") => {
-  snackbar.value = { show: true, message, color };
-};
+const showSnackbar = (message, color = 'success') => {
+  snackbar.value = { show: true, message, color }
+}
 
-onMounted(loadData);
+onMounted(loadData)
 </script>
 
 <style scoped>
