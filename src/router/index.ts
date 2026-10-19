@@ -127,6 +127,11 @@ const router = createRouter({
         name: 'Facturas',
         component: () => import('@/views/sales/InvoicesView.vue'),
       },
+      {
+        path: 'inventory/stock-documents',
+        name: 'Vales de Inventario',
+        component: () => import('@/views/inventory/StockDocumentsView.vue'),
+      },
     ],
   },
   {

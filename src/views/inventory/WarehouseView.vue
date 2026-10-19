@@ -5,7 +5,9 @@
       <div class="page-header-row">
         <div>
           <h1 class="page-title">Almacenes y puntos de venta</h1>
-          <p class="page-subtitle">Gestiona las ubicaciones de stock de tu negocio</p>
+          <p class="page-subtitle">
+            Gestiona las ubicaciones de stock de tu negocio
+          </p>
         </div>
         <div class="flex gap-3">
           <button class="btn-secondary" @click="loadData">
@@ -31,14 +33,27 @@
             placeholder="Buscar por nombre, código o dirección..."
             @keyup.enter="onSearch"
           />
-          <button v-if="search" class="icon-btn !w-6 !h-6" @click="clearSearch" title="Limpiar">
+          <button
+            v-if="search"
+            class="icon-btn !w-6 !h-6"
+            @click="clearSearch"
+            title="Limpiar"
+          >
             <v-icon size="14">mdi-close</v-icon>
           </button>
         </div>
 
         <div class="flex gap-3">
-          <DarkSelect v-model="filters.warehouse_type" :options="typeOptions" @change="onSearch" />
-          <DarkSelect v-model="filters.enabled" :options="statusOptions" @change="onSearch" />
+          <DarkSelect
+            v-model="filters.warehouse_type"
+            :options="typeOptions"
+            @change="onSearch"
+          />
+          <DarkSelect
+            v-model="filters.enabled"
+            :options="statusOptions"
+            @change="onSearch"
+          />
         </div>
       </div>
     </div>
@@ -55,15 +70,22 @@
           <v-icon size="32" color="zinc-600">mdi-warehouse</v-icon>
         </div>
         <div class="empty-state-title">
-          {{ hasActiveFilters ? 'Sin resultados' : 'Sin almacenes registrados' }}
-        </div>
-        <div class="empty-state-text">
-          {{ hasActiveFilters
-            ? 'No se encontraron almacenes con los filtros aplicados.'
-            : 'Aún no hay almacenes. Crea el primero para comenzar a gestionar tu stock.'
+          {{
+            hasActiveFilters ? "Sin resultados" : "Sin almacenes registrados"
           }}
         </div>
-        <button v-if="!hasActiveFilters" class="btn-primary mt-6" @click="openDialog()">
+        <div class="empty-state-text">
+          {{
+            hasActiveFilters
+              ? "No se encontraron almacenes con los filtros aplicados."
+              : "Aún no hay almacenes. Crea el primero para comenzar a gestionar tu stock."
+          }}
+        </div>
+        <button
+          v-if="!hasActiveFilters"
+          class="btn-primary mt-6"
+          @click="openDialog()"
+        >
           <v-icon size="18" class="mr-2">mdi-plus</v-icon>
           Crear almacén
         </button>
@@ -81,26 +103,37 @@
                 <th @click="toggleOrdering('code')" class="sortable-th">
                   <span class="inline-flex items-center">
                     Código
-                    <v-icon size="14" class="ml-1">{{ getOrderingIcon('code') }}</v-icon>
+                    <v-icon size="14" class="ml-1">{{
+                      getOrderingIcon("code")
+                    }}</v-icon>
                   </span>
                 </th>
                 <th @click="toggleOrdering('name')" class="sortable-th">
                   <span class="inline-flex items-center">
                     Nombre
-                    <v-icon size="14" class="ml-1">{{ getOrderingIcon('name') }}</v-icon>
+                    <v-icon size="14" class="ml-1">{{
+                      getOrderingIcon("name")
+                    }}</v-icon>
                   </span>
                 </th>
-                <th @click="toggleOrdering('warehouse_type')" class="sortable-th">
+                <th
+                  @click="toggleOrdering('warehouse_type')"
+                  class="sortable-th"
+                >
                   <span class="inline-flex items-center">
                     Tipo
-                    <v-icon size="14" class="ml-1">{{ getOrderingIcon('warehouse_type') }}</v-icon>
+                    <v-icon size="14" class="ml-1">{{
+                      getOrderingIcon("warehouse_type")
+                    }}</v-icon>
                   </span>
                 </th>
                 <th>Ubicación</th>
                 <th @click="toggleOrdering('enabled')" class="sortable-th">
                   <span class="inline-flex items-center">
                     Estado
-                    <v-icon size="14" class="ml-1">{{ getOrderingIcon('enabled') }}</v-icon>
+                    <v-icon size="14" class="ml-1">{{
+                      getOrderingIcon("enabled")
+                    }}</v-icon>
                   </span>
                 </th>
                 <th class="text-right">Acciones</th>
@@ -111,15 +144,25 @@
                 <td>
                   <div class="flex items-center gap-3">
                     <div class="table-avatar avatar-gradient">
-                      <v-icon size="18" color="white">{{ getTypeIcon(item.warehouse_type) }}</v-icon>
+                      <v-icon size="18" color="white">{{
+                        getTypeIcon(item.warehouse_type)
+                      }}</v-icon>
                     </div>
-                    <span class="text-sm font-mono font-semibold text-zinc-200">{{ item.code }}</span>
+                    <span
+                      class="text-sm font-mono font-semibold text-zinc-200"
+                      >{{ item.code }}</span
+                    >
                   </div>
                 </td>
                 <td>
                   <div class="flex items-center gap-2">
-                    <span class="text-sm font-medium text-zinc-200">{{ item.name }}</span>
-                    <span v-if="item.is_default" class="badge badge-warning !py-0.5">
+                    <span class="text-sm font-medium text-zinc-200">{{
+                      item.name
+                    }}</span>
+                    <span
+                      v-if="item.is_default"
+                      class="badge badge-warning !py-0.5"
+                    >
                       <v-icon size="10" class="mr-1">mdi-star</v-icon>
                       Principal
                     </span>
@@ -132,14 +175,23 @@
                 </td>
                 <td class="text-sm text-zinc-400">
                   <div v-if="item.province || item.municipality">
-                    <span v-if="item.municipality">{{ item.municipality.name }}</span>
-                    <span v-if="item.province" class="text-zinc-600">, {{ item.province.name }}</span>
+                    <span v-if="item.municipality">{{
+                      item.municipality.name
+                    }}</span>
+                    <span v-if="item.province" class="text-zinc-600"
+                      >, {{ item.province.name }}</span
+                    >
                   </div>
                   <span v-else class="text-zinc-600">—</span>
                 </td>
                 <td>
-                  <span :class="['badge', item.enabled ? 'badge-success' : 'badge-neutral']">
-                    {{ item.enabled ? 'Activo' : 'Inactivo' }}
+                  <span
+                    :class="[
+                      'badge',
+                      item.enabled ? 'badge-success' : 'badge-neutral',
+                    ]"
+                  >
+                    {{ item.enabled ? "Activo" : "Inactivo" }}
                   </span>
                 </td>
                 <td class="text-right">
@@ -147,16 +199,30 @@
                     <button
                       class="icon-btn"
                       :class="{ 'star-active': item.is_default }"
-                      :title="item.is_default ? 'Almacén principal' : 'Marcar como principal'"
+                      :title="
+                        item.is_default
+                          ? 'Almacén principal'
+                          : 'Marcar como principal'
+                      "
                       :disabled="item.is_default"
                       @click="!item.is_default && setDefault(item)"
                     >
-                      <v-icon size="16">{{ item.is_default ? 'mdi-star' : 'mdi-star-outline' }}</v-icon>
+                      <v-icon size="16">{{
+                        item.is_default ? "mdi-star" : "mdi-star-outline"
+                      }}</v-icon>
                     </button>
-                    <button class="icon-btn" title="Editar" @click="openDialog(item)">
+                    <button
+                      class="icon-btn"
+                      title="Editar"
+                      @click="openDialog(item)"
+                    >
                       <v-icon size="16">mdi-pencil-outline</v-icon>
                     </button>
-                    <button class="icon-btn !text-red-400 hover:!bg-red-500/10" title="Eliminar" @click="confirmDelete(item)">
+                    <button
+                      class="icon-btn !text-red-400 hover:!bg-red-500/10"
+                      title="Eliminar"
+                      @click="confirmDelete(item)"
+                    >
                       <v-icon size="16">mdi-delete-outline</v-icon>
                     </button>
                   </div>
@@ -166,16 +232,26 @@
           </table>
         </div>
 
-        <TablePagination v-model:page="page" :total="total" :page-size="pageSize" />
+        <TablePagination
+          v-model:page="page"
+          :total="total"
+          :page-size="pageSize"
+          @update:page="changePage"
+          @update:page-size="changePageSize"
+        />
       </template>
     </div>
 
     <!-- Dialog: Crear / Editar -->
-    <v-dialog v-model="dialogOpen" max-width="600" class="dark-dialog warehouse-dialog">
+    <v-dialog
+      v-model="dialogOpen"
+      max-width="600"
+      class="dark-dialog warehouse-dialog"
+    >
       <div class="dialog-card">
         <div class="dialog-header">
           <h3 class="text-lg font-semibold text-zinc-100">
-            {{ isEditing ? 'Editar almacén' : 'Nuevo almacén' }}
+            {{ isEditing ? "Editar almacén" : "Nuevo almacén" }}
           </h3>
           <button class="icon-btn" @click="dialogOpen = false">
             <v-icon size="20">mdi-close</v-icon>
@@ -217,11 +293,13 @@
             <label class="input-label">Tipo</label>
             <DarkSelect
               v-model="form.warehouse_type"
-              :options="typeOptions.filter(o => o.value !== '')"
+              :options="typeOptions.filter((o) => o.value !== '')"
               placeholder="Seleccionar tipo"
               class="full-width-select"
             />
-            <p v-if="formErrors.warehouse_type?.length" class="field-error">{{ formErrors.warehouse_type[0] }}</p>
+            <p v-if="formErrors.warehouse_type?.length" class="field-error">
+              {{ formErrors.warehouse_type[0] }}
+            </p>
           </div>
 
           <div class="mb-5">
@@ -257,7 +335,11 @@
                 :options="municipalityOptions"
                 :searchable="true"
                 search-placeholder="Buscar municipio..."
-                :placeholder="form.province_id ? 'Seleccionar municipio' : 'Selecciona una provincia primero'"
+                :placeholder="
+                  form.province_id
+                    ? 'Seleccionar municipio'
+                    : 'Selecciona una provincia primero'
+                "
                 class="full-width-select"
               />
             </div>
@@ -284,10 +366,18 @@
         </div>
 
         <div class="dialog-footer">
-          <button class="btn-secondary" @click="dialogOpen = false">Cancelar</button>
+          <button class="btn-secondary" @click="dialogOpen = false">
+            Cancelar
+          </button>
           <button class="btn-primary" @click="saveItem" :disabled="saving">
-            <v-progress-circular v-if="saving" indeterminate size="16" color="white" class="mr-2" />
-            {{ isEditing ? 'Guardar cambios' : 'Crear' }}
+            <v-progress-circular
+              v-if="saving"
+              indeterminate
+              size="16"
+              color="white"
+              class="mr-2"
+            />
+            {{ isEditing ? "Guardar cambios" : "Crear" }}
           </button>
         </div>
       </div>
@@ -297,7 +387,9 @@
     <v-dialog v-model="deleteDialogOpen" max-width="420" class="dark-dialog">
       <div class="dialog-card">
         <div class="dialog-header">
-          <h3 class="text-lg font-semibold text-zinc-100">Confirmar eliminación</h3>
+          <h3 class="text-lg font-semibold text-zinc-100">
+            Confirmar eliminación
+          </h3>
           <button class="icon-btn" @click="deleteDialogOpen = false">
             <v-icon size="20">mdi-close</v-icon>
           </button>
@@ -305,22 +397,30 @@
         <div class="dialog-body">
           <p class="text-sm text-zinc-400">
             ¿Estás seguro de eliminar el almacén
-            <strong class="text-zinc-200">{{ itemToDelete?.name }}</strong>?
-            Esta acción no se puede deshacer.
+            <strong class="text-zinc-200">{{ itemToDelete?.name }}</strong
+            >? Esta acción no se puede deshacer.
           </p>
           <div v-if="itemToDelete?.is_default" class="alert-warning mt-4">
             <v-icon size="16" class="mr-2">mdi-alert</v-icon>
-            Este es el almacén principal. Debes marcar otro como principal antes de eliminarlo.
+            Este es el almacén principal. Debes marcar otro como principal antes
+            de eliminarlo.
           </div>
         </div>
         <div class="dialog-footer">
-          <button class="btn-secondary" @click="deleteDialogOpen = false">Cancelar</button>
+          <button class="btn-secondary" @click="deleteDialogOpen = false">
+            Cancelar
+          </button>
           <button
             class="btn-danger"
             @click="deleteItem"
             :disabled="deleting || itemToDelete?.is_default"
           >
-            <v-progress-circular v-if="deleting" indeterminate size="16" class="mr-2" />
+            <v-progress-circular
+              v-if="deleting"
+              indeterminate
+              size="16"
+              class="mr-2"
+            />
             Eliminar
           </button>
         </div>
@@ -328,45 +428,62 @@
     </v-dialog>
 
     <!-- Snackbar -->
-    <v-snackbar v-model="snackbar.show" :color="snackbar.color" location="top right" timeout="3000">
+    <v-snackbar
+      v-model="snackbar.show"
+      :color="snackbar.color"
+      location="top right"
+      timeout="3000"
+    >
       {{ snackbar.message }}
     </v-snackbar>
   </div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue';
-import api from '@/utils/axios';
-import { useTable } from '@/composables/useTable';
-import TablePagination from '@/components/TablePagination.vue';
-import DarkSelect from '@/components/DarkSelect.vue';
+import { ref, computed, onMounted } from "vue";
+import api from "@/utils/axios";
+import { useTable } from "@/composables/useTable";
+import TablePagination from "@/components/TablePagination.vue";
+import DarkSelect from "@/components/DarkSelect.vue";
 
-const API_URL = 'inventory/warehouses/';
-const PROVINCES_URL = 'configuration/provinces/enabled/';
+const API_URL = "inventory/warehouses/";
+const PROVINCES_URL = "configuration/provinces/enabled/";
 
 // ===== Opciones de filtros =====
 const typeOptions = [
-  { value: '', label: 'Todos los tipos' },
-  { value: 'WAREHOUSE', label: 'Almacén' },
-  { value: 'POINT_OF_SALE', label: 'Punto de venta' },
+  { value: "", label: "Todos los tipos" },
+  { value: "WAREHOUSE", label: "Almacén" },
+  { value: "POINT_OF_SALE", label: "Punto de venta" },
 ];
 
 const statusOptions = [
-  { value: '', label: 'Todos los estados' },
-  { value: 'true', label: 'Activos' },
-  { value: 'false', label: 'Inactivos' },
+  { value: "", label: "Todos los estados" },
+  { value: "true", label: "Activos" },
+  { value: "false", label: "Inactivos" },
 ];
 
 // ===== Tabla =====
 const {
-  items, loading, total, page, pageSize,
-  search, ordering, filters,
-  loadData, toggleOrdering, getOrderingIcon,
-  onSearch, clearSearch, clearFilters,
+  items,
+  loading,
+  total,
+  page,
+  pageSize,
+  search,
+  ordering,
+  filters,
+  loadData,
+  toggleOrdering,
+  getOrderingIcon,
+  onSearch,
+  clearSearch,
+  clearFilters,
+  changePage,
+  changePageSize,
 } = useTable({
   apiUrl: API_URL,
-  defaultOrdering: 'name',
-  defaultFilters: { warehouse_type: '', enabled: '' },
+  defaultOrdering: "name",
+  defaultFilters: { warehouse_type: "", enabled: "" },
 });
 
 // ===== Estado =====
@@ -381,43 +498,56 @@ const provinceOptions = ref([]);
 const municipalityOptions = ref([]);
 
 const form = ref({
-  name: '', code: '', warehouse_type: '', address: '',
-  province_id: '', municipality_id: '',
-  is_default: false, enabled: true,
+  name: "",
+  code: "",
+  warehouse_type: "",
+  address: "",
+  province_id: "",
+  municipality_id: "",
+  is_default: false,
+  enabled: true,
 });
 const formErrors = ref({});
-const snackbar = ref({ show: false, message: '', color: 'success' });
+const snackbar = ref({ show: false, message: "", color: "success" });
 
 // ===== Computed =====
 const hasActiveFilters = computed(() => {
-  return search.value.trim() !== '' ||
-    filters.value.warehouse_type !== '' ||
-    filters.value.enabled !== '';
+  return (
+    search.value.trim() !== "" ||
+    filters.value.warehouse_type !== "" ||
+    filters.value.enabled !== ""
+  );
 });
 
 // ===== Helpers de tipo =====
 const getTypeLabel = (type) => {
-  const map = { WAREHOUSE: 'Almacén', POINT_OF_SALE: 'Punto de venta' };
+  const map = { WAREHOUSE: "Almacén", POINT_OF_SALE: "Punto de venta" };
   return map[type] || type;
 };
 
 const getTypeBadge = (type) => {
-  const map = { WAREHOUSE: 'badge-info', POINT_OF_SALE: 'badge-success' };
-  return map[type] || 'badge-neutral';
+  const map = { WAREHOUSE: "badge-info", POINT_OF_SALE: "badge-success" };
+  return map[type] || "badge-neutral";
 };
 
 const getTypeIcon = (type) => {
-  const map = { WAREHOUSE: 'mdi-warehouse', POINT_OF_SALE: 'mdi-store-outline' };
-  return map[type] || 'mdi-warehouse';
+  const map = {
+    WAREHOUSE: "mdi-warehouse",
+    POINT_OF_SALE: "mdi-store-outline",
+  };
+  return map[type] || "mdi-warehouse";
 };
 
 // ===== Cargar provincias y municipios =====
 const loadProvinces = async () => {
   try {
     const response = await api.get(PROVINCES_URL);
-    provinceOptions.value = response.data.map(p => ({ value: p.id, label: p.name }));
+    provinceOptions.value = response.data.map((p) => ({
+      value: p.id,
+      label: p.name,
+    }));
   } catch (error) {
-    console.error('Error cargando provincias:', error);
+    console.error("Error cargando provincias:", error);
   }
 };
 
@@ -427,22 +557,27 @@ const loadMunicipalities = async (provinceId) => {
     return;
   }
   try {
-    const response = await api.get(`configuration/provinces/${provinceId}/municipalities/`);
-    municipalityOptions.value = response.data.map(m => ({ value: m.id, label: m.name }));
+    const response = await api.get(
+      `configuration/provinces/${provinceId}/municipalities/`,
+    );
+    municipalityOptions.value = response.data.map((m) => ({
+      value: m.id,
+      label: m.name,
+    }));
   } catch (error) {
-    console.error('Error cargando municipios:', error);
+    console.error("Error cargando municipios:", error);
     municipalityOptions.value = [];
   }
 };
 
 const onProvinceChange = (provinceId) => {
-  form.value.municipality_id = '';
+  form.value.municipality_id = "";
   loadMunicipalities(provinceId);
 };
 
 const onCodeInput = (value) => {
   form.value.code = value.toUpperCase();
-  clearFieldError('code');
+  clearFieldError("code");
 };
 
 // ===== Dialog =====
@@ -456,9 +591,9 @@ const openDialog = async (item = null) => {
       name: item.name,
       code: item.code,
       warehouse_type: item.warehouse_type,
-      address: item.address || '',
-      province_id: item.province?.id || '',
-      municipality_id: item.municipality?.id || '',
+      address: item.address || "",
+      province_id: item.province?.id || "",
+      municipality_id: item.municipality?.id || "",
       is_default: item.is_default,
       enabled: item.enabled,
     };
@@ -470,9 +605,14 @@ const openDialog = async (item = null) => {
   } else {
     isEditing.value = false;
     form.value = {
-      name: '', code: '', warehouse_type: '', address: '',
-      province_id: '', municipality_id: '',
-      is_default: false, enabled: true,
+      name: "",
+      code: "",
+      warehouse_type: "",
+      address: "",
+      province_id: "",
+      municipality_id: "",
+      is_default: false,
+      enabled: true,
     };
     municipalityOptions.value = [];
   }
@@ -486,15 +626,15 @@ const saveItem = async () => {
   let hasErrors = false;
 
   if (!form.value.code.trim()) {
-    formErrors.value.code = ['El código es requerido'];
+    formErrors.value.code = ["El código es requerido"];
     hasErrors = true;
   }
   if (!form.value.name.trim()) {
-    formErrors.value.name = ['El nombre es requerido'];
+    formErrors.value.name = ["El nombre es requerido"];
     hasErrors = true;
   }
   if (!form.value.warehouse_type) {
-    formErrors.value.warehouse_type = ['Debes seleccionar un tipo'];
+    formErrors.value.warehouse_type = ["Debes seleccionar un tipo"];
     hasErrors = true;
   }
 
@@ -515,10 +655,10 @@ const saveItem = async () => {
 
     if (isEditing.value) {
       await api.put(`${API_URL}${form.value.id}/`, payload);
-      showSnackbar('Almacén actualizado correctamente');
+      showSnackbar("Almacén actualizado correctamente");
     } else {
       await api.post(API_URL, payload);
-      showSnackbar('Almacén creado correctamente');
+      showSnackbar("Almacén creado correctamente");
     }
     dialogOpen.value = false;
     await loadData();
@@ -536,7 +676,7 @@ const setDefault = async (item) => {
     showSnackbar(`${item.name} ahora es el almacén principal`);
     await loadData();
   } catch (error) {
-    showSnackbar('Error al marcar como principal', 'error');
+    showSnackbar("Error al marcar como principal", "error");
   }
 };
 
@@ -550,7 +690,7 @@ const deleteItem = async () => {
   deleting.value = true;
   try {
     await api.delete(`${API_URL}${itemToDelete.value.id}/`);
-    showSnackbar('Almacén eliminado correctamente');
+    showSnackbar("Almacén eliminado correctamente");
     deleteDialogOpen.value = false;
 
     if (items.value.length === 1 && page.value > 1) {
@@ -571,19 +711,21 @@ const handleApiError = (error) => {
     const data = error.response.data;
     const fieldErrors = {};
 
-    ['name', 'code', 'warehouse_type'].forEach(field => {
+    ["name", "code", "warehouse_type"].forEach((field) => {
       if (data[field]) {
-        fieldErrors[field] = Array.isArray(data[field]) ? data[field] : [data[field]];
+        fieldErrors[field] = Array.isArray(data[field])
+          ? data[field]
+          : [data[field]];
       }
     });
 
     formErrors.value = fieldErrors;
 
     if (Object.keys(fieldErrors).length === 0) {
-      showSnackbar(data.detail || 'Error al guardar', 'error');
+      showSnackbar(data.detail || "Error al guardar", "error");
     }
   } else {
-    showSnackbar('Error de conexión', 'error');
+    showSnackbar("Error de conexión", "error");
   }
 };
 
@@ -592,11 +734,11 @@ const clearFieldError = (field) => {
 };
 
 const resetAll = () => {
-  search.value = '';
+  search.value = "";
   clearFilters();
 };
 
-const showSnackbar = (message, color = 'success') => {
+const showSnackbar = (message, color = "success") => {
   snackbar.value = { show: true, message, color };
 };
 
@@ -641,7 +783,7 @@ onMounted(() => {
 
 .uppercase-input :deep(input) {
   text-transform: uppercase;
-  font-family: 'Courier New', monospace;
+  font-family: "Courier New", monospace;
   font-weight: 600;
   letter-spacing: 0.1em;
 }

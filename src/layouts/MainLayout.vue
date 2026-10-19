@@ -125,15 +125,7 @@
 
       
 
-      <!-- Bottom: User info -->
-      <div class="absolute bottom-0 left-0 right-0 p-3 border-t border-white/5">
-        <v-list-item
-          prepend-icon="mdi-logout"
-          title="Cerrar Sesión"
-          @click="handleLogout"
-          class="!text-red-400"
-        />
-      </div>
+      
     </v-navigation-drawer>
 
     <!-- Topbar -->
@@ -321,6 +313,7 @@ const inventoryItems = [
   { title: 'Productos', icon: 'mdi-package-variant', to: '/inventory/products' },
   { title: 'Inventario', icon: 'mdi-clipboard-list-outline', to: '/inventory/stock' },
   { title: 'Movimientos', icon: 'mdi-swap-horizontal', to: '/inventory/movements' },
+  { title: 'Vales', icon: 'mdi-file-document-multiple-outline', to: '/inventory/stock-documents' },
   { title: 'Alertas de stock', icon: 'mdi-alert-circle-outline', to: '/inventory/alerts' },
   { title: 'Importación masiva', icon: 'mdi-file-upload-outline', to: '/inventory/import' }
 ];

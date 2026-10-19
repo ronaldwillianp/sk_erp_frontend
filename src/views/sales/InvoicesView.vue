@@ -37,9 +37,11 @@
         <div class="flex items-center justify-between">
           <div>
             <div class="stat-label">Cobrado</div>
-            <div class="stat-value" style="color: var(--success);">{{ formatPrice(summary.total_paid) }}</div>
+            <div class="stat-value" style="color: var(--success)">
+              {{ formatPrice(summary.total_paid) }}
+            </div>
           </div>
-          <div class="stat-icon" style="background: var(--success-bg);">
+          <div class="stat-icon" style="background: var(--success-bg)">
             <v-icon size="22" class="text-green-400">mdi-cash-check</v-icon>
           </div>
         </div>
@@ -48,9 +50,11 @@
         <div class="flex items-center justify-between">
           <div>
             <div class="stat-label">Pendiente por cobrar</div>
-            <div class="stat-value" style="color: var(--warning);">{{ formatPrice(summary.pending) }}</div>
+            <div class="stat-value" style="color: var(--warning)">
+              {{ formatPrice(summary.pending) }}
+            </div>
           </div>
-          <div class="stat-icon" style="background: var(--warning-bg);">
+          <div class="stat-icon" style="background: var(--warning-bg)">
             <v-icon size="22" class="text-yellow-400">mdi-cash-clock</v-icon>
           </div>
         </div>
@@ -68,13 +72,22 @@
             placeholder="Buscar por número o cliente..."
             @keyup.enter="onSearch"
           />
-          <button v-if="search" class="icon-btn !w-6 !h-6" @click="clearSearch" title="Limpiar">
+          <button
+            v-if="search"
+            class="icon-btn !w-6 !h-6"
+            @click="clearSearch"
+            title="Limpiar"
+          >
             <v-icon size="14">mdi-close</v-icon>
           </button>
         </div>
 
         <div class="flex gap-3">
-          <DarkSelect v-model="filters.status" :options="statusFilterOptions" @change="onSearch" />
+          <DarkSelect
+            v-model="filters.status"
+            :options="statusFilterOptions"
+            @change="onSearch"
+          />
         </div>
       </div>
     </div>
@@ -91,15 +104,20 @@
           <v-icon size="32" color="zinc-600">mdi-file-document-outline</v-icon>
         </div>
         <div class="empty-state-title">
-          {{ hasActiveFilters ? 'Sin resultados' : 'Sin facturas registradas' }}
+          {{ hasActiveFilters ? "Sin resultados" : "Sin facturas registradas" }}
         </div>
         <div class="empty-state-text">
-          {{ hasActiveFilters
-            ? 'No se encontraron facturas con los filtros aplicados.'
-            : 'Aún no hay facturas. Crea la primera para comenzar a vender.'
+          {{
+            hasActiveFilters
+              ? "No se encontraron facturas con los filtros aplicados."
+              : "Aún no hay facturas. Crea la primera para comenzar a vender."
           }}
         </div>
-        <button v-if="!hasActiveFilters" class="btn-primary mt-6" @click="openDialog()">
+        <button
+          v-if="!hasActiveFilters"
+          class="btn-primary mt-6"
+          @click="openDialog()"
+        >
           <v-icon size="18" class="mr-2">mdi-plus</v-icon>
           Crear factura
         </button>
@@ -127,21 +145,32 @@
             <tbody>
               <tr v-for="item in items" :key="item.id">
                 <td>
-                  <span class="text-sm font-mono font-semibold text-zinc-200">{{ item.number }}</span>
+                  <span class="text-sm font-mono font-semibold text-zinc-200">{{
+                    item.number
+                  }}</span>
                 </td>
                 <td>
-                  <div class="text-sm font-medium text-zinc-200">{{ item.customer_detail.name }}</div>
-                  <div class="text-xs text-zinc-500">{{ item.customer_detail.email || '—' }}</div>
+                  <div class="text-sm font-medium text-zinc-200">
+                    {{ item.customer_detail.name }}
+                  </div>
+                  <div class="text-xs text-zinc-500">
+                    {{ item.customer_detail.email || "—" }}
+                  </div>
                 </td>
                 <td class="text-sm text-zinc-400 whitespace-nowrap">
                   {{ formatDate(item.issue_date) }}
                 </td>
-                <td class="text-sm whitespace-nowrap" :class="isOverdue(item) ? 'text-red-400' : 'text-zinc-400'">
-                  {{ item.due_date ? formatDate(item.due_date) : '—' }}
+                <td
+                  class="text-sm whitespace-nowrap"
+                  :class="isOverdue(item) ? 'text-red-400' : 'text-zinc-400'"
+                >
+                  {{ item.due_date ? formatDate(item.due_date) : "—" }}
                 </td>
                 <td>
                   <span :class="['badge', getStatusBadge(item.status)]">
-                    <v-icon size="12" class="mr-1">{{ getStatusIcon(item.status) }}</v-icon>
+                    <v-icon size="12" class="mr-1">{{
+                      getStatusIcon(item.status)
+                    }}</v-icon>
                     {{ getStatusLabel(item.status) }}
                   </span>
                 </td>
@@ -150,26 +179,50 @@
                     {{ formatPrice(item.total) }}
                   </span>
                 </td>
-                <td class="text-sm text-zinc-500">{{ item.created_by_name }}</td>
+                <td class="text-sm text-zinc-500">
+                  {{ item.created_by_name }}
+                </td>
                 <td class="text-right">
                   <div class="flex items-center justify-end gap-1">
-                    <button class="icon-btn" title="Ver detalle" @click="viewInvoice(item)">
+                    <button
+                      class="icon-btn"
+                      title="Ver detalle"
+                      @click="viewInvoice(item)"
+                    >
                       <v-icon size="16">mdi-eye-outline</v-icon>
                     </button>
 
                     <!-- Acciones según estado -->
                     <template v-if="item.status === 'DRAFT'">
-                      <button class="icon-btn !text-blue-400 hover:!bg-blue-500/10" title="Enviar" @click="changeStatus(item, 'SENT')">
+                      <button
+                        class="icon-btn !text-blue-400 hover:!bg-blue-500/10"
+                        title="Enviar"
+                        @click="changeStatus(item, 'SENT')"
+                      >
                         <v-icon size="16">mdi-send-outline</v-icon>
                       </button>
                     </template>
-                    <template v-if="item.status === 'SENT' || item.status === 'OVERDUE'">
-                      <button class="icon-btn !text-green-400 hover:!bg-green-500/10" title="Marcar pagada" @click="changeStatus(item, 'PAID')">
+                    <template
+                      v-if="item.status === 'SENT' || item.status === 'OVERDUE'"
+                    >
+                      <button
+                        class="icon-btn !text-green-400 hover:!bg-green-500/10"
+                        title="Marcar pagada"
+                        @click="changeStatus(item, 'PAID')"
+                      >
                         <v-icon size="16">mdi-cash-check</v-icon>
                       </button>
                     </template>
-                    <template v-if="item.status !== 'CANCELLED' && item.status !== 'PAID'">
-                      <button class="icon-btn !text-red-400 hover:!bg-red-500/10" title="Cancelar factura" @click="confirmCancel(item)">
+                    <template
+                      v-if="
+                        item.status !== 'CANCELLED' && item.status !== 'PAID'
+                      "
+                    >
+                      <button
+                        class="icon-btn !text-red-400 hover:!bg-red-500/10"
+                        title="Cancelar factura"
+                        @click="confirmCancel(item)"
+                      >
                         <v-icon size="16">mdi-cancel</v-icon>
                       </button>
                     </template>
@@ -180,14 +233,25 @@
           </table>
         </div>
 
-        <TablePagination v-model:page="page" :total="total" :page-size="pageSize" />
+        <TablePagination
+          v-model:page="page"
+          :total="total"
+          :page-size="pageSize"
+          @update:page="changePage"
+          @update:page-size="changePageSize"
+        />
       </template>
     </div>
 
     <!-- ============================================ -->
     <!-- Dialog: Nueva factura                        -->
     <!-- ============================================ -->
-    <v-dialog v-model="dialogOpen" max-width="1100" class="dark-dialog" persistent>
+    <v-dialog
+      v-model="dialogOpen"
+      max-width="1100"
+      class="dark-dialog"
+      persistent
+    >
       <div class="dialog-card dialog-card-scrollable">
         <div class="dialog-header">
           <div>
@@ -214,7 +278,9 @@
                 placeholder="Seleccionar cliente"
                 class="full-width-select"
               />
-              <p v-if="formErrors.customer_id" class="field-error">{{ formErrors.customer_id }}</p>
+              <p v-if="formErrors.customer_id" class="field-error">
+                {{ formErrors.customer_id }}
+              </p>
             </div>
             <div>
               <label class="input-label">Fecha de vencimiento (opcional)</label>
@@ -233,18 +299,29 @@
           <div class="mb-5">
             <div class="flex items-center justify-between mb-3">
               <label class="input-label !mb-0">Líneas de la factura</label>
-              <button class="btn-secondary !px-3 !py-1.5 !text-xs" @click="addLine">
+              <button
+                class="btn-secondary !px-3 !py-1.5 !text-xs"
+                @click="addLine"
+              >
                 <v-icon size="14" class="mr-1">mdi-plus</v-icon>
                 Agregar línea
               </button>
             </div>
 
             <div v-if="form.items.length === 0" class="empty-lines">
-              <v-icon size="32" class="text-zinc-600 mb-2">mdi-format-list-bulleted-type</v-icon>
-              <p class="text-sm text-zinc-500">No hay líneas. Agrega al menos un producto a la factura.</p>
+              <v-icon size="32" class="text-zinc-600 mb-2"
+                >mdi-format-list-bulleted-type</v-icon
+              >
+              <p class="text-sm text-zinc-500">
+                No hay líneas. Agrega al menos un producto a la factura.
+              </p>
             </div>
 
-            <div v-for="(line, index) in form.items" :key="index" class="invoice-line">
+            <div
+              v-for="(line, index) in form.items"
+              :key="index"
+              class="invoice-line"
+            >
               <div class="grid grid-cols-12 gap-3 items-start">
                 <!-- Producto -->
                 <div class="col-span-3">
@@ -317,7 +394,10 @@
 
                 <!-- Eliminar línea -->
                 <div class="col-span-1 flex items-center justify-center pt-6">
-                  <button class="icon-btn !text-red-400 hover:!bg-red-500/10" @click="removeLine(index)">
+                  <button
+                    class="icon-btn !text-red-400 hover:!bg-red-500/10"
+                    @click="removeLine(index)"
+                  >
                     <v-icon size="16">mdi-delete-outline</v-icon>
                   </button>
                 </div>
@@ -326,7 +406,10 @@
               <!-- Total de línea -->
               <div class="flex justify-end mt-2">
                 <span class="text-xs text-zinc-500">
-                  Total línea: <strong class="text-zinc-300 font-mono">{{ formatPrice(line.line_total) }}</strong>
+                  Total línea:
+                  <strong class="text-zinc-300 font-mono">{{
+                    formatPrice(line.line_total)
+                  }}</strong>
                 </span>
               </div>
             </div>
@@ -350,23 +433,39 @@
           <div class="invoice-summary">
             <div class="flex justify-between py-1">
               <span class="text-zinc-400">Subtotal</span>
-              <span class="font-mono text-zinc-200">{{ formatPrice(invoiceSubtotal) }}</span>
+              <span class="font-mono text-zinc-200">{{
+                formatPrice(invoiceSubtotal)
+              }}</span>
             </div>
             <div class="flex justify-between py-1">
               <span class="text-zinc-400">Impuestos</span>
-              <span class="font-mono text-zinc-200">{{ formatPrice(invoiceTax) }}</span>
+              <span class="font-mono text-zinc-200">{{
+                formatPrice(invoiceTax)
+              }}</span>
             </div>
-            <div class="flex justify-between pt-2 mt-2 border-t border-zinc-800">
+            <div
+              class="flex justify-between pt-2 mt-2 border-t border-zinc-800"
+            >
               <span class="font-semibold text-zinc-100">TOTAL</span>
-              <span class="font-mono font-bold text-lg text-indigo-400">{{ formatPrice(invoiceTotal) }}</span>
+              <span class="font-mono font-bold text-lg text-indigo-400">{{
+                formatPrice(invoiceTotal)
+              }}</span>
             </div>
           </div>
         </div>
 
         <div class="dialog-footer">
-          <button class="btn-secondary" @click="dialogOpen = false">Cancelar</button>
+          <button class="btn-secondary" @click="dialogOpen = false">
+            Cancelar
+          </button>
           <button class="btn-primary" @click="saveInvoice" :disabled="saving">
-            <v-progress-circular v-if="saving" indeterminate size="16" color="white" class="mr-2" />
+            <v-progress-circular
+              v-if="saving"
+              indeterminate
+              size="16"
+              color="white"
+              class="mr-2"
+            />
             Crear factura
           </button>
         </div>
@@ -380,7 +479,9 @@
       <div class="dialog-card dialog-card-scrollable" v-if="selectedInvoice">
         <div class="dialog-header">
           <div>
-            <h3 class="text-lg font-semibold text-zinc-100">Factura {{ selectedInvoice.number }}</h3>
+            <h3 class="text-lg font-semibold text-zinc-100">
+              Factura {{ selectedInvoice.number }}
+            </h3>
             <p class="text-xs text-zinc-500 mt-1">
               Emitida el {{ formatDate(selectedInvoice.issue_date) }}
             </p>
@@ -395,9 +496,15 @@
           <div class="grid grid-cols-2 gap-4 mb-5">
             <div>
               <div class="text-xs text-zinc-500 mb-1">Cliente</div>
-              <div class="text-sm font-medium text-zinc-200">{{ selectedInvoice.customer_detail.name }}</div>
-              <div class="text-xs text-zinc-500">{{ selectedInvoice.customer_detail.email }}</div>
-              <div class="text-xs text-zinc-500">{{ selectedInvoice.customer_detail.phone }}</div>
+              <div class="text-sm font-medium text-zinc-200">
+                {{ selectedInvoice.customer_detail.name }}
+              </div>
+              <div class="text-xs text-zinc-500">
+                {{ selectedInvoice.customer_detail.email }}
+              </div>
+              <div class="text-xs text-zinc-500">
+                {{ selectedInvoice.customer_detail.phone }}
+              </div>
             </div>
             <div class="text-right">
               <div class="text-xs text-zinc-500 mb-1">Estado</div>
@@ -421,10 +528,18 @@
             <tbody>
               <tr v-for="line in selectedInvoice.items" :key="line.id">
                 <td class="text-sm text-zinc-200">{{ line.product.name }}</td>
-                <td class="text-sm text-zinc-400">{{ line.presentation.measure_unit.short_name }}</td>
-                <td class="text-right text-sm font-mono">{{ line.quantity }}</td>
-                <td class="text-right text-sm font-mono">{{ formatPrice(line.unit_price) }}</td>
-                <td class="text-right text-sm font-mono font-semibold">{{ formatPrice(line.line_total) }}</td>
+                <td class="text-sm text-zinc-400">
+                  {{ line.presentation.measure_unit.short_name }}
+                </td>
+                <td class="text-right text-sm font-mono">
+                  {{ line.quantity }}
+                </td>
+                <td class="text-right text-sm font-mono">
+                  {{ formatPrice(line.unit_price) }}
+                </td>
+                <td class="text-right text-sm font-mono font-semibold">
+                  {{ formatPrice(line.line_total) }}
+                </td>
               </tr>
             </tbody>
           </table>
@@ -433,27 +548,40 @@
           <div class="invoice-summary">
             <div class="flex justify-between py-1">
               <span class="text-zinc-400">Subtotal</span>
-              <span class="font-mono text-zinc-200">{{ formatPrice(selectedInvoice.subtotal) }}</span>
+              <span class="font-mono text-zinc-200">{{
+                formatPrice(selectedInvoice.subtotal)
+              }}</span>
             </div>
             <div class="flex justify-between py-1">
               <span class="text-zinc-400">Impuestos</span>
-              <span class="font-mono text-zinc-200">{{ formatPrice(selectedInvoice.tax_total) }}</span>
+              <span class="font-mono text-zinc-200">{{
+                formatPrice(selectedInvoice.tax_total)
+              }}</span>
             </div>
-            <div class="flex justify-between pt-2 mt-2 border-t border-zinc-800">
+            <div
+              class="flex justify-between pt-2 mt-2 border-t border-zinc-800"
+            >
               <span class="font-semibold text-zinc-100">TOTAL</span>
-              <span class="font-mono font-bold text-lg text-indigo-400">{{ formatPrice(selectedInvoice.total) }}</span>
+              <span class="font-mono font-bold text-lg text-indigo-400">{{
+                formatPrice(selectedInvoice.total)
+              }}</span>
             </div>
           </div>
 
           <!-- Notas -->
-          <div v-if="selectedInvoice.notes" class="mt-4 p-3 bg-zinc-900/50 rounded-lg">
+          <div
+            v-if="selectedInvoice.notes"
+            class="mt-4 p-3 bg-zinc-900/50 rounded-lg"
+          >
             <div class="text-xs text-zinc-500 mb-1">Notas</div>
             <div class="text-sm text-zinc-300">{{ selectedInvoice.notes }}</div>
           </div>
         </div>
 
         <div class="dialog-footer">
-          <button class="btn-secondary" @click="detailDialogOpen = false">Cerrar</button>
+          <button class="btn-secondary" @click="detailDialogOpen = false">
+            Cerrar
+          </button>
         </div>
       </div>
     </v-dialog>
@@ -470,17 +598,37 @@
         <div class="dialog-body">
           <div class="alert-warning mb-4">
             <v-icon size="18" class="mr-2 flex-shrink-0">mdi-alert</v-icon>
-            <span><strong>Advertencia:</strong> Al cancelar la factura, el stock será <strong>restaurado automáticamente</strong> al inventario.</span>
+            <span
+              ><strong>Advertencia:</strong> Al cancelar la factura, el stock
+              será <strong>restaurado automáticamente</strong> al
+              inventario.</span
+            >
           </div>
           <p class="text-sm text-zinc-400">
-            ¿Cancelar la factura <strong class="text-zinc-200">{{ invoiceToCancel?.number }}</strong>
-            de <strong class="text-zinc-200">{{ invoiceToCancel?.customer_detail?.name }}</strong>?
+            ¿Cancelar la factura
+            <strong class="text-zinc-200">{{ invoiceToCancel?.number }}</strong>
+            de
+            <strong class="text-zinc-200">{{
+              invoiceToCancel?.customer_detail?.name
+            }}</strong
+            >?
           </p>
         </div>
         <div class="dialog-footer">
-          <button class="btn-secondary" @click="cancelDialogOpen = false">Volver</button>
-          <button class="btn-danger" @click="executeCancel" :disabled="cancelling">
-            <v-progress-circular v-if="cancelling" indeterminate size="16" class="mr-2" />
+          <button class="btn-secondary" @click="cancelDialogOpen = false">
+            Volver
+          </button>
+          <button
+            class="btn-danger"
+            @click="executeCancel"
+            :disabled="cancelling"
+          >
+            <v-progress-circular
+              v-if="cancelling"
+              indeterminate
+              size="16"
+              class="mr-2"
+            />
             Cancelar factura
           </button>
         </div>
@@ -488,48 +636,74 @@
     </v-dialog>
 
     <!-- Snackbar -->
-    <v-snackbar v-model="snackbar.show" :color="snackbar.color" location="top right" timeout="3000">
+    <v-snackbar
+      v-model="snackbar.show"
+      :color="snackbar.color"
+      location="top right"
+      timeout="3000"
+    >
       {{ snackbar.message }}
     </v-snackbar>
   </div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue';
-import api from '@/utils/axios';
-import { useTable } from '@/composables/useTable';
-import TablePagination from '@/components/TablePagination.vue';
-import DarkSelect from '@/components/DarkSelect.vue';
+import { ref, computed, onMounted } from "vue";
+import api from "@/utils/axios";
+import { useTable } from "@/composables/useTable";
+import TablePagination from "@/components/TablePagination.vue";
+import DarkSelect from "@/components/DarkSelect.vue";
 
-const API_URL = 'sales/invoices/';
-const CUSTOMERS_URL = 'sales/customers/';
-const PRODUCTS_URL = 'inventory/products/enabled/?is_service=false';
-const WAREHOUSES_URL = 'inventory/warehouses/enabled/';
+const API_URL = "sales/invoices/";
+const CUSTOMERS_URL = "sales/customers/";
+const PRODUCTS_URL = "inventory/products/enabled/?is_service=false";
+const WAREHOUSES_URL = "inventory/warehouses/enabled/";
 
 // ===== Opciones de estado =====
 const statusOptions = {
-  DRAFT: { label: 'Borrador', icon: 'mdi-file-document-edit-outline', badge: 'badge-neutral' },
-  SENT: { label: 'Enviada', icon: 'mdi-send-outline', badge: 'badge-info' },
-  PAID: { label: 'Pagada', icon: 'mdi-cash-check', badge: 'badge-success' },
-  PARTIAL: { label: 'Parcial', icon: 'mdi-cash-half', badge: 'badge-warning' },
-  OVERDUE: { label: 'Vencida', icon: 'mdi-clock-alert-outline', badge: 'badge-error' },
-  CANCELLED: { label: 'Cancelada', icon: 'mdi-cancel', badge: 'badge-neutral' },
+  DRAFT: {
+    label: "Borrador",
+    icon: "mdi-file-document-edit-outline",
+    badge: "badge-neutral",
+  },
+  SENT: { label: "Enviada", icon: "mdi-send-outline", badge: "badge-info" },
+  PAID: { label: "Pagada", icon: "mdi-cash-check", badge: "badge-success" },
+  PARTIAL: { label: "Parcial", icon: "mdi-cash-half", badge: "badge-warning" },
+  OVERDUE: {
+    label: "Vencida",
+    icon: "mdi-clock-alert-outline",
+    badge: "badge-error",
+  },
+  CANCELLED: { label: "Cancelada", icon: "mdi-cancel", badge: "badge-neutral" },
 };
 
 const statusFilterOptions = [
-  { value: '', label: 'Todos los estados' },
-  ...Object.entries(statusOptions).map(([value, { label }]) => ({ value, label })),
+  { value: "", label: "Todos los estados" },
+  ...Object.entries(statusOptions).map(([value, { label }]) => ({
+    value,
+    label,
+  })),
 ];
 
 // ===== Tabla =====
 const {
-  items, loading, total, page, pageSize,
-  search, filters,
-  loadData, onSearch, clearSearch, clearFilters,
+  items,
+  loading,
+  total,
+  page,
+  pageSize,
+  search,
+  filters,
+  loadData,
+  onSearch,
+  clearSearch,
+  clearFilters,
+  changePage,
+  changePageSize,
 } = useTable({
   apiUrl: API_URL,
-  defaultOrdering: '-created_at',
-  defaultFilters: { status: '' },
+  defaultOrdering: "-created_at",
+  defaultFilters: { status: "" },
 });
 
 // ===== Estado =====
@@ -548,23 +722,26 @@ const cancelling = ref(false);
 const invoiceToCancel = ref(null);
 
 const emptyForm = () => ({
-  customer_id: '',
-  due_date: '',
-  notes: '',
+  customer_id: "",
+  due_date: "",
+  notes: "",
   items: [],
 });
 
 const form = ref(emptyForm());
 const formErrors = ref({});
-const snackbar = ref({ show: false, message: '', color: 'success' });
+const snackbar = ref({ show: false, message: "", color: "success" });
 
 // ===== Computed =====
 const hasActiveFilters = computed(() => {
-  return search.value.trim() !== '' || filters.value.status !== '';
+  return search.value.trim() !== "" || filters.value.status !== "";
 });
 
 const invoiceSubtotal = computed(() => {
-  return form.value.items.reduce((sum, line) => sum + (parseFloat(line.line_total) || 0), 0);
+  return form.value.items.reduce(
+    (sum, line) => sum + (parseFloat(line.line_total) || 0),
+    0,
+  );
 });
 
 const invoiceTax = computed(() => 0); // TODO: impuestos cuando se implemente TaxRate
@@ -574,60 +751,77 @@ const invoiceTotal = computed(() => invoiceSubtotal.value + invoiceTax.value);
 // ===== Helpers =====
 const formatPrice = (price) => {
   const num = parseFloat(price);
-  return isNaN(num) ? '—' : num.toLocaleString('es-CU', { minimumFractionDigits: 2 });
+  return isNaN(num)
+    ? "—"
+    : num.toLocaleString("es-CU", { minimumFractionDigits: 2 });
 };
 
 const formatDate = (dateStr) => {
-  if (!dateStr) return '—';
+  if (!dateStr) return "—";
   const d = new Date(dateStr);
-  return d.toLocaleDateString('es-CU', { day: '2-digit', month: '2-digit', year: 'numeric' });
+  return d.toLocaleDateString("es-CU", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+  });
 };
 
 const getStatusLabel = (status) => statusOptions[status]?.label || status;
-const getStatusBadge = (status) => statusOptions[status]?.badge || 'badge-neutral';
-const getStatusIcon = (status) => statusOptions[status]?.icon || 'mdi-help-circle-outline';
+const getStatusBadge = (status) =>
+  statusOptions[status]?.badge || "badge-neutral";
+const getStatusIcon = (status) =>
+  statusOptions[status]?.icon || "mdi-help-circle-outline";
 
 const isOverdue = (item) => {
   if (!item.due_date) return false;
-  if (['PAID', 'CANCELLED'].includes(item.status)) return false;
+  if (["PAID", "CANCELLED"].includes(item.status)) return false;
   return new Date(item.due_date) < new Date();
 };
 
 // ===== Cargar opciones =====
 const loadCustomers = async () => {
   try {
-    const response = await api.get('sales/customers/', {
-      params: { page_size: 1000 }
+    const response = await api.get("sales/customers/", {
+      params: { page_size: 1000 },
     });
     // Manejar ambos formatos: lista plana o paginada
-    const data = Array.isArray(response.data) ? response.data : (response.data.results || []);
-    customerOptions.value = data.map(c => ({ value: c.id, label: c.name }));
+    const data = Array.isArray(response.data)
+      ? response.data
+      : response.data.results || [];
+    customerOptions.value = data.map((c) => ({ value: c.id, label: c.name }));
   } catch (error) {
-    console.error('Error cargando clientes:', error);
+    console.error("Error cargando clientes:", error);
   }
 };
 
 const loadProducts = async () => {
   try {
-    const response = await api.get('inventory/products/enabled/', {
-      params: { is_service: 'false', page_size: 1000 }
+    const response = await api.get("inventory/products/enabled/", {
+      params: { is_service: "false", page_size: 1000 },
     });
     // Manejar ambos formatos: lista plana o paginada
-    const data = Array.isArray(response.data) ? response.data : (response.data.results || []);
-    productOptions.value = data.map(p => ({ value: p.id, label: `${p.sku} - ${p.name}` }));
+    const data = Array.isArray(response.data)
+      ? response.data
+      : response.data.results || [];
+    productOptions.value = data.map((p) => ({
+      value: p.id,
+      label: `${p.sku} - ${p.name}`,
+    }));
   } catch (error) {
-    console.error('Error cargando productos:', error);
+    console.error("Error cargando productos:", error);
   }
 };
 
 const loadWarehouses = async () => {
   try {
-    const response = await api.get('inventory/warehouses/enabled/');
+    const response = await api.get("inventory/warehouses/enabled/");
     // Manejar ambos formatos: lista plana o paginada
-    const data = Array.isArray(response.data) ? response.data : (response.data.results || []);
-    warehouseOptions.value = data.map(w => ({ value: w.id, label: w.name }));
+    const data = Array.isArray(response.data)
+      ? response.data
+      : response.data.results || [];
+    warehouseOptions.value = data.map((w) => ({ value: w.id, label: w.name }));
   } catch (error) {
-    console.error('Error cargando almacenes:', error);
+    console.error("Error cargando almacenes:", error);
   }
 };
 
@@ -636,7 +830,7 @@ const loadSummary = async () => {
     const response = await api.get(`${API_URL}summary/`);
     summary.value = response.data;
   } catch (error) {
-    console.error('Error cargando resumen:', error);
+    console.error("Error cargando resumen:", error);
   }
 };
 
@@ -650,11 +844,11 @@ const openDialog = () => {
 
 const addLine = () => {
   form.value.items.push({
-    product_id: '',
-    presentation_id: '',
-    warehouse_id: '',
-    quantity: '',
-    unit_price: '',
+    product_id: "",
+    presentation_id: "",
+    warehouse_id: "",
+    quantity: "",
+    unit_price: "",
     line_total: 0,
     presentationOptions: [],
   });
@@ -666,8 +860,8 @@ const removeLine = (index) => {
 
 const onLineProductChange = async (index) => {
   const line = form.value.items[index];
-  line.presentation_id = '';
-  line.unit_price = '';
+  line.presentation_id = "";
+  line.unit_price = "";
   line.presentationOptions = [];
 
   if (!line.product_id) return;
@@ -676,27 +870,31 @@ const onLineProductChange = async (index) => {
     const response = await api.get(`inventory/products/${line.product_id}/`);
     const product = response.data;
 
-    line.presentationOptions = product.presentations.map(p => ({
+    line.presentationOptions = product.presentations.map((p) => ({
       value: p.id,
       label: `${p.measure_unit.name} (x${p.conversion_factor})`,
       sale_price: p.sale_price,
     }));
 
     // Auto-seleccionar presentación por defecto si existe
-    const defaultPres = product.presentations.find(p => p.is_default) || product.presentations[0];
+    const defaultPres =
+      product.presentations.find((p) => p.is_default) ||
+      product.presentations[0];
     if (defaultPres) {
       line.presentation_id = defaultPres.id;
       line.unit_price = defaultPres.sale_price;
       calculateLineTotal(index);
     }
   } catch (error) {
-    console.error('Error cargando presentaciones:', error);
+    console.error("Error cargando presentaciones:", error);
   }
 };
 
 const onLinePresentationChange = (index) => {
   const line = form.value.items[index];
-  const pres = line.presentationOptions.find(p => p.value === line.presentation_id);
+  const pres = line.presentationOptions.find(
+    (p) => p.value === line.presentation_id,
+  );
   if (pres) {
     line.unit_price = pres.sale_price;
     calculateLineTotal(index);
@@ -716,24 +914,27 @@ const saveInvoice = async () => {
   let hasErrors = false;
 
   if (!form.value.customer_id) {
-    formErrors.value.customer_id = 'Selecciona un cliente';
+    formErrors.value.customer_id = "Selecciona un cliente";
     hasErrors = true;
   }
 
   if (form.value.items.length === 0) {
-    showSnackbar('Agrega al menos una línea a la factura', 'error');
+    showSnackbar("Agrega al menos una línea a la factura", "error");
     hasErrors = true;
   }
 
   for (let i = 0; i < form.value.items.length; i++) {
     const line = form.value.items[i];
     if (!line.product_id || !line.presentation_id || !line.warehouse_id) {
-      showSnackbar(`Línea ${i + 1}: completa producto, presentación y almacén`, 'error');
+      showSnackbar(
+        `Línea ${i + 1}: completa producto, presentación y almacén`,
+        "error",
+      );
       hasErrors = true;
       break;
     }
     if (!line.quantity || parseFloat(line.quantity) <= 0) {
-      showSnackbar(`Línea ${i + 1}: la cantidad debe ser mayor a 0`, 'error');
+      showSnackbar(`Línea ${i + 1}: la cantidad debe ser mayor a 0`, "error");
       hasErrors = true;
       break;
     }
@@ -747,7 +948,7 @@ const saveInvoice = async () => {
       customer_id: parseInt(form.value.customer_id),
       due_date: form.value.due_date || null,
       notes: form.value.notes,
-      items: form.value.items.map(line => ({
+      items: form.value.items.map((line) => ({
         product_id: parseInt(line.product_id),
         presentation_id: parseInt(line.presentation_id),
         warehouse_id: parseInt(line.warehouse_id),
@@ -757,13 +958,13 @@ const saveInvoice = async () => {
     };
 
     await api.post(`${API_URL}create-with-items/`, payload);
-    showSnackbar('Factura creada correctamente. Stock descontado.');
+    showSnackbar("Factura creada correctamente. Stock descontado.");
     dialogOpen.value = false;
     await loadData();
     await loadSummary();
   } catch (error) {
-    const msg = error.response?.data?.error || 'Error al crear factura';
-    showSnackbar(msg, 'error');
+    const msg = error.response?.data?.error || "Error al crear factura";
+    showSnackbar(msg, "error");
   } finally {
     saving.value = false;
   }
@@ -778,13 +979,17 @@ const viewInvoice = (invoice) => {
 // ===== Cambiar estado =====
 const changeStatus = async (invoice, newStatus) => {
   try {
-    await api.post(`${API_URL}${invoice.id}/change-status/`, { status: newStatus });
-    showSnackbar(`Factura ${getStatusLabel(newStatus).toLowerCase()} correctamente`);
+    await api.post(`${API_URL}${invoice.id}/change-status/`, {
+      status: newStatus,
+    });
+    showSnackbar(
+      `Factura ${getStatusLabel(newStatus).toLowerCase()} correctamente`,
+    );
     await loadData();
     await loadSummary();
   } catch (error) {
-    const msg = error.response?.data?.error || 'Error al cambiar estado';
-    showSnackbar(msg, 'error');
+    const msg = error.response?.data?.error || "Error al cambiar estado";
+    showSnackbar(msg, "error");
   }
 };
 
@@ -797,15 +1002,17 @@ const confirmCancel = (invoice) => {
 const executeCancel = async () => {
   cancelling.value = true;
   try {
-    await api.post(`${API_URL}${invoiceToCancel.value.id}/change-status/`, { status: 'CANCELLED' });
-    showSnackbar('Factura cancelada. Stock restaurado.');
+    await api.post(`${API_URL}${invoiceToCancel.value.id}/change-status/`, {
+      status: "CANCELLED",
+    });
+    showSnackbar("Factura cancelada. Stock restaurado.");
     cancelDialogOpen.value = false;
     invoiceToCancel.value = null;
     await loadData();
     await loadSummary();
   } catch (error) {
-    const msg = error.response?.data?.error || 'Error al cancelar factura';
-    showSnackbar(msg, 'error');
+    const msg = error.response?.data?.error || "Error al cancelar factura";
+    showSnackbar(msg, "error");
   } finally {
     cancelling.value = false;
   }
@@ -813,11 +1020,11 @@ const executeCancel = async () => {
 
 // ===== Utilidades =====
 const resetAll = () => {
-  search.value = '';
+  search.value = "";
   clearFilters();
 };
 
-const showSnackbar = (message, color = 'success') => {
+const showSnackbar = (message, color = "success") => {
   snackbar.value = { show: true, message, color };
 };
 
