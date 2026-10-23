@@ -81,7 +81,6 @@
             <v-icon size="14">mdi-close</v-icon>
           </button>
         </div>
-
         <div class="flex gap-3">
           <DarkSelect
             v-model="filters.status"
@@ -98,7 +97,6 @@
         <v-progress-circular indeterminate color="indigo" />
         <p class="text-sm text-zinc-500 mt-4">Cargando facturas...</p>
       </div>
-
       <div v-else-if="!items.length" class="empty-state">
         <div class="empty-state-icon">
           <v-icon size="32" color="zinc-600">mdi-file-document-outline</v-icon>
@@ -126,7 +124,6 @@
           Limpiar filtros
         </button>
       </div>
-
       <template v-else>
         <div class="overflow-x-auto">
           <table class="custom-table">
@@ -191,8 +188,6 @@
                     >
                       <v-icon size="16">mdi-eye-outline</v-icon>
                     </button>
-
-                    <!-- Acciones según estado -->
                     <template v-if="item.status === 'DRAFT'">
                       <button
                         class="icon-btn !text-blue-400 hover:!bg-blue-500/10"
@@ -232,11 +227,10 @@
             </tbody>
           </table>
         </div>
-
         <TablePagination
-          v-model:page="page"
-          :total="total"
+          :page="page"
           :page-size="pageSize"
+          :total="total"
           @update:page="changePage"
           @update:page-size="changePageSize"
         />
@@ -264,10 +258,9 @@
             <v-icon size="20">mdi-close</v-icon>
           </button>
         </div>
-
         <div class="dialog-body">
-          <!-- Grid: Cliente + Fecha vencimiento -->
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-5">
+          <!-- Grid: Cliente + Fecha emisión + Fecha vencimiento -->
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-5">
             <div>
               <label class="input-label">Cliente</label>
               <DarkSelect
@@ -283,7 +276,18 @@
               </p>
             </div>
             <div>
-              <label class="input-label">Fecha de vencimiento (opcional)</label>
+              <label class="input-label">Fecha de emisión</label>
+              <v-text-field
+                v-model="form.issue_date"
+                type="date"
+                variant="outlined"
+                density="comfortable"
+                hide-details
+                class="dark-input"
+              />
+            </div>
+            <div>
+              <label class="input-label">Fecha de vencimiento</label>
               <v-text-field
                 v-model="form.due_date"
                 type="date"
@@ -295,6 +299,21 @@
             </div>
           </div>
 
+          <!-- Selección de Almacén / PV (principal) -->
+          <div class="mb-5">
+            <label class="input-label">Almacén / Punto de Venta</label>
+            <DarkSelect
+              v-model="form.warehouse_id"
+              :options="warehouseOptions"
+              placeholder="Seleccionar almacén para filtrar productos..."
+              class="full-width-select"
+            />
+            <p v-if="!form.warehouse_id" class="text-xs text-yellow-400 mt-1 flex items-center">
+              <v-icon size="12" class="mr-1">mdi-alert</v-icon>
+              Selecciona un almacén para ver solo los productos con existencias.
+            </p>
+          </div>
+
           <!-- Líneas de factura -->
           <div class="mb-5">
             <div class="flex items-center justify-between mb-3">
@@ -302,41 +321,65 @@
               <button
                 class="btn-secondary !px-3 !py-1.5 !text-xs"
                 @click="addLine"
+                :disabled="!form.warehouse_id || productOptions.length === 0"
               >
                 <v-icon size="14" class="mr-1">mdi-plus</v-icon>
                 Agregar línea
               </button>
             </div>
 
-            <div v-if="form.items.length === 0" class="empty-lines">
-              <v-icon size="32" class="text-zinc-600 mb-2"
-                >mdi-format-list-bulleted-type</v-icon
-              >
+            <!-- Mensaje si no hay almacén seleccionado -->
+            <div v-if="!form.warehouse_id" class="empty-lines">
+              <v-icon size="32" class="text-zinc-600 mb-2">mdi-warehouse</v-icon>
+              <p class="text-sm text-zinc-500">
+                Selecciona un almacén arriba para ver los productos disponibles.
+              </p>
+            </div>
+
+            <!-- Mensaje si no hay productos con stock en el almacén -->
+            <div v-else-if="productOptions.length === 0 && !loadingProducts" class="empty-lines">
+              <v-icon size="32" class="text-zinc-600 mb-2">mdi-package-variant</v-icon>
+              <p class="text-sm text-zinc-500">
+                No hay productos con stock disponible en este almacén.
+              </p>
+            </div>
+
+            <!-- Cargando productos -->
+            <div v-else-if="loadingProducts" class="empty-lines">
+              <v-progress-circular indeterminate color="indigo" size="24" />
+              <p class="text-sm text-zinc-500 mt-2">
+                Cargando productos del almacén...
+              </p>
+            </div>
+
+            <!-- Sin líneas agregadas aún -->
+            <div v-else-if="form.items.length === 0" class="empty-lines">
+              <v-icon size="32" class="text-zinc-600 mb-2">mdi-format-list-bulleted-type</v-icon>
               <p class="text-sm text-zinc-500">
                 No hay líneas. Agrega al menos un producto a la factura.
               </p>
             </div>
 
+            <!-- Lista de líneas -->
             <div
               v-for="(line, index) in form.items"
               :key="index"
               class="invoice-line"
             >
               <div class="grid grid-cols-12 gap-3 items-start">
-                <!-- Producto -->
-                <div class="col-span-3">
+                <!-- Producto (filtrado por almacén) -->
+                <div class="col-span-4">
                   <label class="input-label">Producto</label>
                   <DarkSelect
                     v-model="line.product_id"
                     :options="productOptions"
                     :searchable="true"
-                    search-placeholder="Buscar..."
+                    search-placeholder="Buscar en este almacén..."
                     placeholder="Seleccionar"
                     class="full-width-select"
                     @change="onLineProductChange(index)"
                   />
                 </div>
-
                 <!-- Presentación -->
                 <div class="col-span-2">
                   <label class="input-label">Presentación</label>
@@ -348,18 +391,6 @@
                     @change="onLinePresentationChange(index)"
                   />
                 </div>
-
-                <!-- Almacén -->
-                <div class="col-span-2">
-                  <label class="input-label">Almacén</label>
-                  <DarkSelect
-                    v-model="line.warehouse_id"
-                    :options="warehouseOptions"
-                    placeholder="—"
-                    class="full-width-select"
-                  />
-                </div>
-
                 <!-- Cantidad -->
                 <div class="col-span-2">
                   <label class="input-label">Cantidad</label>
@@ -375,9 +406,8 @@
                     @update:model-value="calculateLineTotal(index)"
                   />
                 </div>
-
                 <!-- Precio -->
-                <div class="col-span-2">
+                <div class="col-span-3">
                   <label class="input-label">Precio unit.</label>
                   <v-text-field
                     v-model="line.unit_price"
@@ -391,7 +421,6 @@
                     @update:model-value="calculateLineTotal(index)"
                   />
                 </div>
-
                 <!-- Eliminar línea -->
                 <div class="col-span-1 flex items-center justify-center pt-6">
                   <button
@@ -402,7 +431,6 @@
                   </button>
                 </div>
               </div>
-
               <!-- Total de línea -->
               <div class="flex justify-end mt-2">
                 <span class="text-xs text-zinc-500">
@@ -453,7 +481,6 @@
             </div>
           </div>
         </div>
-
         <div class="dialog-footer">
           <button class="btn-secondary" @click="dialogOpen = false">
             Cancelar
@@ -490,9 +517,7 @@
             <v-icon size="20">mdi-close</v-icon>
           </button>
         </div>
-
         <div class="dialog-body">
-          <!-- Info del cliente -->
           <div class="grid grid-cols-2 gap-4 mb-5">
             <div>
               <div class="text-xs text-zinc-500 mb-1">Cliente</div>
@@ -513,8 +538,6 @@
               </span>
             </div>
           </div>
-
-          <!-- Tabla de líneas -->
           <table class="custom-table mb-5">
             <thead>
               <tr>
@@ -543,8 +566,6 @@
               </tr>
             </tbody>
           </table>
-
-          <!-- Totales -->
           <div class="invoice-summary">
             <div class="flex justify-between py-1">
               <span class="text-zinc-400">Subtotal</span>
@@ -567,8 +588,6 @@
               }}</span>
             </div>
           </div>
-
-          <!-- Notas -->
           <div
             v-if="selectedInvoice.notes"
             class="mt-4 p-3 bg-zinc-900/50 rounded-lg"
@@ -577,7 +596,6 @@
             <div class="text-sm text-zinc-300">{{ selectedInvoice.notes }}</div>
           </div>
         </div>
-
         <div class="dialog-footer">
           <button class="btn-secondary" @click="detailDialogOpen = false">
             Cerrar
@@ -648,7 +666,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from "vue";
+import { ref, computed, onMounted, watch } from "vue";
 import api from "@/utils/axios";
 import { useTable } from "@/composables/useTable";
 import TablePagination from "@/components/TablePagination.vue";
@@ -656,7 +674,7 @@ import DarkSelect from "@/components/DarkSelect.vue";
 
 const API_URL = "sales/invoices/";
 const CUSTOMERS_URL = "sales/customers/";
-const PRODUCTS_URL = "inventory/products/enabled/?is_service=false";
+const PRODUCTS_WITH_STOCK_URL = "inventory/products/with-stock/";
 const WAREHOUSES_URL = "inventory/warehouses/enabled/";
 
 // ===== Opciones de estado =====
@@ -710,6 +728,7 @@ const {
 const summary = ref(null);
 const dialogOpen = ref(false);
 const saving = ref(false);
+const loadingProducts = ref(false);
 const customerOptions = ref([]);
 const productOptions = ref([]);
 const warehouseOptions = ref([]);
@@ -721,12 +740,34 @@ const cancelDialogOpen = ref(false);
 const cancelling = ref(false);
 const invoiceToCancel = ref(null);
 
-const emptyForm = () => ({
-  customer_id: "",
-  due_date: "",
-  notes: "",
-  items: [],
-});
+// Helper para formatear fecha a YYYY-MM-DD
+const toISODate = (date) => {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+};
+
+// Helper para sumar días a una fecha
+const addDays = (date, days) => {
+  const result = new Date(date);
+  result.setDate(result.getDate() + days);
+  return result;
+};
+
+const emptyForm = () => {
+  const today = new Date();
+  const dueDate = addDays(today, 30);
+
+  return {
+    customer_id: "",
+    issue_date: toISODate(today),
+    due_date: toISODate(dueDate),
+    warehouse_id: "",
+    notes: "",
+    items: [],
+  };
+};
 
 const form = ref(emptyForm());
 const formErrors = ref({});
@@ -740,11 +781,11 @@ const hasActiveFilters = computed(() => {
 const invoiceSubtotal = computed(() => {
   return form.value.items.reduce(
     (sum, line) => sum + (parseFloat(line.line_total) || 0),
-    0,
+    0
   );
 });
 
-const invoiceTax = computed(() => 0); // TODO: impuestos cuando se implemente TaxRate
+const invoiceTax = computed(() => 0);
 
 const invoiceTotal = computed(() => invoiceSubtotal.value + invoiceTax.value);
 
@@ -781,10 +822,9 @@ const isOverdue = (item) => {
 // ===== Cargar opciones =====
 const loadCustomers = async () => {
   try {
-    const response = await api.get("sales/customers/", {
+    const response = await api.get(CUSTOMERS_URL, {
       params: { page_size: 1000 },
     });
-    // Manejar ambos formatos: lista plana o paginada
     const data = Array.isArray(response.data)
       ? response.data
       : response.data.results || [];
@@ -794,28 +834,42 @@ const loadCustomers = async () => {
   }
 };
 
-const loadProducts = async () => {
+// Cargar productos filtrados por almacén
+const loadProducts = async (warehouseId) => {
+  if (!warehouseId) {
+    productOptions.value = [];
+    return;
+  }
+
+  loadingProducts.value = true;
   try {
-    const response = await api.get("inventory/products/enabled/", {
-      params: { is_service: "false", page_size: 1000 },
+    const response = await api.get(PRODUCTS_WITH_STOCK_URL, {
+      params: {
+        warehouse: warehouseId,
+        is_service: "false",
+        page_size: 1000,
+      },
     });
-    // Manejar ambos formatos: lista plana o paginada
     const data = Array.isArray(response.data)
       ? response.data
       : response.data.results || [];
+
     productOptions.value = data.map((p) => ({
       value: p.id,
       label: `${p.sku} - ${p.name}`,
+      presentations: p.presentations,
     }));
   } catch (error) {
     console.error("Error cargando productos:", error);
+    productOptions.value = [];
+  } finally {
+    loadingProducts.value = false;
   }
 };
 
 const loadWarehouses = async () => {
   try {
-    const response = await api.get("inventory/warehouses/enabled/");
-    // Manejar ambos formatos: lista plana o paginada
+    const response = await api.get(WAREHOUSES_URL);
     const data = Array.isArray(response.data)
       ? response.data
       : response.data.results || [];
@@ -834,11 +888,25 @@ const loadSummary = async () => {
   }
 };
 
+// Watcher: recargar productos cuando cambia el almacén
+watch(
+  () => form.value.warehouse_id,
+  (newWarehouseId) => {
+    form.value.items = [];
+
+    if (newWarehouseId) {
+      loadProducts(newWarehouseId);
+    } else {
+      productOptions.value = [];
+    }
+  }
+);
+
 // ===== Dialog: Crear =====
 const openDialog = () => {
   formErrors.value = {};
   form.value = emptyForm();
-  addLine(); // Agregar una línea vacía por defecto
+  productOptions.value = [];
   dialogOpen.value = true;
 };
 
@@ -846,7 +914,6 @@ const addLine = () => {
   form.value.items.push({
     product_id: "",
     presentation_id: "",
-    warehouse_id: "",
     quantity: "",
     unit_price: "",
     line_total: 0,
@@ -858,7 +925,7 @@ const removeLine = (index) => {
   form.value.items.splice(index, 1);
 };
 
-const onLineProductChange = async (index) => {
+const onLineProductChange = (index) => {
   const line = form.value.items[index];
   line.presentation_id = "";
   line.unit_price = "";
@@ -866,34 +933,33 @@ const onLineProductChange = async (index) => {
 
   if (!line.product_id) return;
 
-  try {
-    const response = await api.get(`inventory/products/${line.product_id}/`);
-    const product = response.data;
+  const selectedProduct = productOptions.value.find(
+    (p) => p.value == line.product_id
+  );
 
-    line.presentationOptions = product.presentations.map((p) => ({
+  if (selectedProduct && selectedProduct.presentations) {
+    line.presentationOptions = selectedProduct.presentations.map((p) => ({
       value: p.id,
       label: `${p.measure_unit.name} (x${p.conversion_factor})`,
       sale_price: p.sale_price,
     }));
 
-    // Auto-seleccionar presentación por defecto si existe
     const defaultPres =
-      product.presentations.find((p) => p.is_default) ||
-      product.presentations[0];
+      selectedProduct.presentations.find((p) => p.is_default) ||
+      selectedProduct.presentations[0];
+
     if (defaultPres) {
       line.presentation_id = defaultPres.id;
       line.unit_price = defaultPres.sale_price;
       calculateLineTotal(index);
     }
-  } catch (error) {
-    console.error("Error cargando presentaciones:", error);
   }
 };
 
 const onLinePresentationChange = (index) => {
   const line = form.value.items[index];
   const pres = line.presentationOptions.find(
-    (p) => p.value === line.presentation_id,
+    (p) => p.value === line.presentation_id
   );
   if (pres) {
     line.unit_price = pres.sale_price;
@@ -918,6 +984,11 @@ const saveInvoice = async () => {
     hasErrors = true;
   }
 
+  if (!form.value.warehouse_id) {
+    showSnackbar("Debes seleccionar un almacén", "error");
+    hasErrors = true;
+  }
+
   if (form.value.items.length === 0) {
     showSnackbar("Agrega al menos una línea a la factura", "error");
     hasErrors = true;
@@ -925,10 +996,10 @@ const saveInvoice = async () => {
 
   for (let i = 0; i < form.value.items.length; i++) {
     const line = form.value.items[i];
-    if (!line.product_id || !line.presentation_id || !line.warehouse_id) {
+    if (!line.product_id || !line.presentation_id) {
       showSnackbar(
-        `Línea ${i + 1}: completa producto, presentación y almacén`,
-        "error",
+        `Línea ${i + 1}: completa producto y presentación`,
+        "error"
       );
       hasErrors = true;
       break;
@@ -946,12 +1017,13 @@ const saveInvoice = async () => {
   try {
     const payload = {
       customer_id: parseInt(form.value.customer_id),
+      issue_date: form.value.issue_date,
       due_date: form.value.due_date || null,
       notes: form.value.notes,
       items: form.value.items.map((line) => ({
         product_id: parseInt(line.product_id),
         presentation_id: parseInt(line.presentation_id),
-        warehouse_id: parseInt(line.warehouse_id),
+        warehouse_id: parseInt(form.value.warehouse_id),
         quantity: parseFloat(line.quantity),
         unit_price: parseFloat(line.unit_price) || 0,
       })),
@@ -983,7 +1055,7 @@ const changeStatus = async (invoice, newStatus) => {
       status: newStatus,
     });
     showSnackbar(
-      `Factura ${getStatusLabel(newStatus).toLowerCase()} correctamente`,
+      `Factura ${getStatusLabel(newStatus).toLowerCase()} correctamente`
     );
     await loadData();
     await loadSummary();
@@ -1032,7 +1104,6 @@ onMounted(() => {
   loadData();
   loadSummary();
   loadCustomers();
-  loadProducts();
   loadWarehouses();
 });
 </script>
