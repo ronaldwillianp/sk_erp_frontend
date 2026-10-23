@@ -188,6 +188,8 @@
                     >
                       <v-icon size="16">mdi-eye-outline</v-icon>
                     </button>
+
+                    <!-- BORRADOR: Enviar + Cancelar + Eliminar -->
                     <template v-if="item.status === 'DRAFT'">
                       <button
                         class="icon-btn !text-blue-400 hover:!bg-blue-500/10"
@@ -196,7 +198,23 @@
                       >
                         <v-icon size="16">mdi-send-outline</v-icon>
                       </button>
+                      <button
+                        class="icon-btn !text-orange-400 hover:!bg-orange-500/10"
+                        title="Cancelar factura"
+                        @click="confirmCancel(item)"
+                      >
+                        <v-icon size="16">mdi-cancel</v-icon>
+                      </button>
+                      <button
+                        class="icon-btn !text-red-400 hover:!bg-red-500/10"
+                        title="Eliminar factura (Admin)"
+                        @click="confirmDelete(item)"
+                      >
+                        <v-icon size="16">mdi-delete-outline</v-icon>
+                      </button>
                     </template>
+
+                    <!-- ENVIADA / VENCIDA: Marcar pagada + Cancelar -->
                     <template
                       v-if="item.status === 'SENT' || item.status === 'OVERDUE'"
                     >
@@ -207,20 +225,34 @@
                       >
                         <v-icon size="16">mdi-cash-check</v-icon>
                       </button>
-                    </template>
-                    <template
-                      v-if="
-                        item.status !== 'CANCELLED' && item.status !== 'PAID'
-                      "
-                    >
                       <button
-                        class="icon-btn !text-red-400 hover:!bg-red-500/10"
+                        class="icon-btn !text-orange-400 hover:!bg-orange-500/10"
                         title="Cancelar factura"
                         @click="confirmCancel(item)"
                       >
                         <v-icon size="16">mdi-cancel</v-icon>
                       </button>
                     </template>
+
+                    <!-- PARCIAL: Marcar pagada + Cancelar -->
+                    <template v-if="item.status === 'PARTIAL'">
+                      <button
+                        class="icon-btn !text-green-400 hover:!bg-green-500/10"
+                        title="Marcar pagada"
+                        @click="changeStatus(item, 'PAID')"
+                      >
+                        <v-icon size="16">mdi-cash-check</v-icon>
+                      </button>
+                      <button
+                        class="icon-btn !text-orange-400 hover:!bg-orange-500/10"
+                        title="Cancelar factura"
+                        @click="confirmCancel(item)"
+                      >
+                        <v-icon size="16">mdi-cancel</v-icon>
+                      </button>
+                    </template>
+
+                    <!-- PAGADA / CANCELADA: Sin acciones -->
                   </div>
                 </td>
               </tr>
@@ -299,6 +331,32 @@
             </div>
           </div>
 
+          <!-- Estado inicial de la factura -->
+          <div class="mb-5">
+            <label class="input-label">Estado inicial</label>
+            <div class="flex gap-2">
+              <button
+                v-for="opt in initialStatusOptions"
+                :key="opt.value"
+                :class="[
+                  'px-3 py-1.5 rounded-md text-sm border transition-colors flex items-center gap-1.5',
+                  form.initial_status === opt.value
+                    ? 'bg-indigo-500/20 border-indigo-500 text-indigo-300'
+                    : 'bg-zinc-900/50 border-zinc-700 text-zinc-400 hover:bg-zinc-800',
+                ]"
+                @click="form.initial_status = opt.value"
+                type="button"
+              >
+                <v-icon size="14">{{ opt.icon }}</v-icon>
+                {{ opt.label }}
+              </button>
+            </div>
+            <p class="text-xs text-zinc-500 mt-2">
+              <v-icon size="12" class="mr-1">mdi-information-outline</v-icon>
+              El stock se descontará inmediatamente al crear la factura, sin importar el estado inicial.
+            </p>
+          </div>
+
           <!-- Selección de Almacén / PV (principal) -->
           <div class="mb-5">
             <label class="input-label">Almacén / Punto de Venta</label>
@@ -328,31 +386,25 @@
               </button>
             </div>
 
-            <!-- Mensaje si no hay almacén seleccionado -->
+            <!-- Mensajes de estado -->
             <div v-if="!form.warehouse_id" class="empty-lines">
               <v-icon size="32" class="text-zinc-600 mb-2">mdi-warehouse</v-icon>
               <p class="text-sm text-zinc-500">
                 Selecciona un almacén arriba para ver los productos disponibles.
               </p>
             </div>
-
-            <!-- Mensaje si no hay productos con stock en el almacén -->
             <div v-else-if="productOptions.length === 0 && !loadingProducts" class="empty-lines">
               <v-icon size="32" class="text-zinc-600 mb-2">mdi-package-variant</v-icon>
               <p class="text-sm text-zinc-500">
                 No hay productos con stock disponible en este almacén.
               </p>
             </div>
-
-            <!-- Cargando productos -->
             <div v-else-if="loadingProducts" class="empty-lines">
               <v-progress-circular indeterminate color="indigo" size="24" />
               <p class="text-sm text-zinc-500 mt-2">
                 Cargando productos del almacén...
               </p>
             </div>
-
-            <!-- Sin líneas agregadas aún -->
             <div v-else-if="form.items.length === 0" class="empty-lines">
               <v-icon size="32" class="text-zinc-600 mb-2">mdi-format-list-bulleted-type</v-icon>
               <p class="text-sm text-zinc-500">
@@ -367,7 +419,7 @@
               class="invoice-line"
             >
               <div class="grid grid-cols-12 gap-3 items-start">
-                <!-- Producto (filtrado por almacén) -->
+                <!-- Producto -->
                 <div class="col-span-4">
                   <label class="input-label">Producto</label>
                   <DarkSelect
@@ -391,20 +443,27 @@
                     @change="onLinePresentationChange(index)"
                   />
                 </div>
-                <!-- Cantidad -->
+                <!-- Cantidad + Badge de stock -->
                 <div class="col-span-2">
                   <label class="input-label">Cantidad</label>
-                  <v-text-field
-                    v-model="line.quantity"
-                    type="number"
-                    min="0"
-                    placeholder="0"
-                    variant="outlined"
-                    density="comfortable"
-                    hide-details
-                    class="dark-input"
-                    @update:model-value="calculateLineTotal(index)"
-                  />
+                  <div class="relative">
+                    <v-text-field
+                      v-model="line.quantity"
+                      type="number"
+                      min="0"
+                      placeholder="0"
+                      variant="outlined"
+                      density="comfortable"
+                      hide-details
+                      class="dark-input"
+                      @update:model-value="calculateLineTotal(index)"
+                    />
+                    <div v-if="line.available_stock !== null" class="absolute -top-2 -right-2">
+                      <span class="text-[10px] px-1.5 py-0.5 rounded-full font-bold bg-green-500/20 text-green-400 border border-green-500/30">
+                        Stock: {{ line.available_stock }}
+                      </span>
+                    </div>
+                  </div>
                 </div>
                 <!-- Precio -->
                 <div class="col-span-3">
@@ -618,8 +677,8 @@
             <v-icon size="18" class="mr-2 flex-shrink-0">mdi-alert</v-icon>
             <span
               ><strong>Advertencia:</strong> Al cancelar la factura, el stock
-              será <strong>restaurado automáticamente</strong> al
-              inventario.</span
+              será <strong>restaurado automáticamente</strong> al inventario. La
+              factura quedará registrada como <strong>Cancelada</strong>.</span
             >
           </div>
           <p class="text-sm text-zinc-400">
@@ -648,6 +707,60 @@
               class="mr-2"
             />
             Cancelar factura
+          </button>
+        </div>
+      </div>
+    </v-dialog>
+
+    <!-- Dialog: Confirmar eliminación (Admin) -->
+    <v-dialog v-model="deleteDialogOpen" max-width="500" class="dark-dialog">
+      <div class="dialog-card">
+        <div class="dialog-header">
+          <h3 class="text-lg font-semibold text-red-400 flex items-center">
+            <v-icon size="20" class="mr-2 text-red-400">mdi-alert-octagon</v-icon>
+            Eliminar factura (Admin)
+          </h3>
+          <button class="icon-btn" @click="deleteDialogOpen = false">
+            <v-icon size="20">mdi-close</v-icon>
+          </button>
+        </div>
+        <div class="dialog-body">
+          <div class="alert-error mb-4">
+            <v-icon size="18" class="mr-2 flex-shrink-0">mdi-alert-octagon</v-icon>
+            <span
+              ><strong>Peligro extremo:</strong> Esta acción eliminará
+              <strong>permanentemente</strong> la factura, sus líneas, los
+              movimientos de stock asociados y el vale de inventario. El stock
+              será restaurado. Esta acción <strong>no se puede deshacer</strong>
+              y no dejará rastro histórico.</span
+            >
+          </div>
+          <p class="text-sm text-zinc-400">
+            ¿Eliminar definitivamente la factura
+            <strong class="text-zinc-200">{{ invoiceToDelete?.number }}</strong>
+            de
+            <strong class="text-zinc-200">{{
+              invoiceToDelete?.customer_detail?.name
+            }}</strong
+            >?
+          </p>
+        </div>
+        <div class="dialog-footer">
+          <button class="btn-secondary" @click="deleteDialogOpen = false">
+            Volver
+          </button>
+          <button
+            class="btn-danger"
+            @click="executeDelete"
+            :disabled="deleting"
+          >
+            <v-progress-circular
+              v-if="deleting"
+              indeterminate
+              size="16"
+              class="mr-2"
+            />
+            Eliminar definitivamente
           </button>
         </div>
       </div>
@@ -703,6 +816,12 @@ const statusFilterOptions = [
   })),
 ];
 
+const initialStatusOptions = [
+  { value: "DRAFT", label: "Borrador", icon: "mdi-file-document-edit-outline" },
+  { value: "SENT", label: "Enviada", icon: "mdi-send-outline" },
+  { value: "PAID", label: "Pagada", icon: "mdi-cash-check" },
+];
+
 // ===== Tabla =====
 const {
   items,
@@ -740,6 +859,10 @@ const cancelDialogOpen = ref(false);
 const cancelling = ref(false);
 const invoiceToCancel = ref(null);
 
+const deleteDialogOpen = ref(false);
+const deleting = ref(false);
+const invoiceToDelete = ref(null);
+
 // Helper para formatear fecha a YYYY-MM-DD
 const toISODate = (date) => {
   const year = date.getFullYear();
@@ -748,7 +871,6 @@ const toISODate = (date) => {
   return `${year}-${month}-${day}`;
 };
 
-// Helper para sumar días a una fecha
 const addDays = (date, days) => {
   const result = new Date(date);
   result.setDate(result.getDate() + days);
@@ -764,6 +886,7 @@ const emptyForm = () => {
     issue_date: toISODate(today),
     due_date: toISODate(dueDate),
     warehouse_id: "",
+    initial_status: "DRAFT",
     notes: "",
     items: [],
   };
@@ -786,7 +909,6 @@ const invoiceSubtotal = computed(() => {
 });
 
 const invoiceTax = computed(() => 0);
-
 const invoiceTotal = computed(() => invoiceSubtotal.value + invoiceTax.value);
 
 // ===== Helpers =====
@@ -834,7 +956,6 @@ const loadCustomers = async () => {
   }
 };
 
-// Cargar productos filtrados por almacén
 const loadProducts = async (warehouseId) => {
   if (!warehouseId) {
     productOptions.value = [];
@@ -844,11 +965,7 @@ const loadProducts = async (warehouseId) => {
   loadingProducts.value = true;
   try {
     const response = await api.get(PRODUCTS_WITH_STOCK_URL, {
-      params: {
-        warehouse: warehouseId,
-        is_service: "false",
-        page_size: 1000,
-      },
+      params: { warehouse: warehouseId, is_service: "false", page_size: 1000 },
     });
     const data = Array.isArray(response.data)
       ? response.data
@@ -858,6 +975,7 @@ const loadProducts = async (warehouseId) => {
       value: p.id,
       label: `${p.sku} - ${p.name}`,
       presentations: p.presentations,
+      warehouse_stock: p.warehouse_stock || 0,
     }));
   } catch (error) {
     console.error("Error cargando productos:", error);
@@ -893,7 +1011,6 @@ watch(
   () => form.value.warehouse_id,
   (newWarehouseId) => {
     form.value.items = [];
-
     if (newWarehouseId) {
       loadProducts(newWarehouseId);
     } else {
@@ -918,6 +1035,7 @@ const addLine = () => {
     unit_price: "",
     line_total: 0,
     presentationOptions: [],
+    available_stock: null,
   });
 };
 
@@ -930,6 +1048,7 @@ const onLineProductChange = (index) => {
   line.presentation_id = "";
   line.unit_price = "";
   line.presentationOptions = [];
+  line.available_stock = null;
 
   if (!line.product_id) return;
 
@@ -951,6 +1070,10 @@ const onLineProductChange = (index) => {
     if (defaultPres) {
       line.presentation_id = defaultPres.id;
       line.unit_price = defaultPres.sale_price;
+      line.available_stock =
+        selectedProduct.warehouse_stock !== undefined
+          ? selectedProduct.warehouse_stock
+          : 0;
       calculateLineTotal(index);
     }
   }
@@ -1019,6 +1142,7 @@ const saveInvoice = async () => {
       customer_id: parseInt(form.value.customer_id),
       issue_date: form.value.issue_date,
       due_date: form.value.due_date || null,
+      status: form.value.initial_status,
       notes: form.value.notes,
       items: form.value.items.map((line) => ({
         product_id: parseInt(line.product_id),
@@ -1035,7 +1159,10 @@ const saveInvoice = async () => {
     await loadData();
     await loadSummary();
   } catch (error) {
-    const msg = error.response?.data?.error || "Error al crear factura";
+    const msg =
+      error.response?.data?.error ||
+      error.response?.data?.detail ||
+      "Error al crear factura";
     showSnackbar(msg, "error");
   } finally {
     saving.value = false;
@@ -1065,7 +1192,7 @@ const changeStatus = async (invoice, newStatus) => {
   }
 };
 
-// ===== Cancelar factura =====
+// ===== Cancelar factura (usuarios) =====
 const confirmCancel = (invoice) => {
   invoiceToCancel.value = invoice;
   cancelDialogOpen.value = true;
@@ -1087,6 +1214,37 @@ const executeCancel = async () => {
     showSnackbar(msg, "error");
   } finally {
     cancelling.value = false;
+  }
+};
+
+// ===== Eliminar factura (Admin) =====
+const confirmDelete = (invoice) => {
+  invoiceToDelete.value = invoice;
+  deleteDialogOpen.value = true;
+};
+
+const executeDelete = async () => {
+  deleting.value = true;
+  try {
+    const response = await api.delete(
+      `${API_URL}${invoiceToDelete.value.id}/`
+    );
+    const msg =
+      response.data?.message ||
+      "Factura eliminada correctamente. Stock restaurado.";
+    showSnackbar(msg);
+    deleteDialogOpen.value = false;
+    invoiceToDelete.value = null;
+    await loadData();
+    await loadSummary();
+  } catch (error) {
+    const msg =
+      error.response?.data?.error ||
+      error.response?.data?.detail ||
+      "Error al eliminar factura";
+    showSnackbar(msg, "error");
+  } finally {
+    deleting.value = false;
   }
 };
 
@@ -1116,19 +1274,16 @@ onMounted(() => {
   border-radius: var(--radius-lg);
   overflow: hidden;
 }
-
 .dialog-card-scrollable {
   display: flex;
   flex-direction: column;
   max-height: 90vh;
 }
-
 .dialog-card-scrollable .dialog-body {
   overflow-y: auto;
   flex: 1;
   min-height: 0;
 }
-
 .dialog-header {
   display: flex;
   align-items: center;
@@ -1137,11 +1292,9 @@ onMounted(() => {
   border-bottom: 1px solid var(--border-subtle);
   flex-shrink: 0;
 }
-
 .dialog-body {
   padding: 24px;
 }
-
 .dialog-footer {
   display: flex;
   justify-content: flex-end;
@@ -1150,20 +1303,17 @@ onMounted(() => {
   border-top: 1px solid var(--border-subtle);
   flex-shrink: 0;
 }
-
 .full-width-select {
   width: 100%;
 }
 .full-width-select :deep(.dark-select-wrapper) {
   width: 100%;
 }
-
 .field-error {
   color: var(--error);
   font-size: 12px;
   margin-top: 6px;
 }
-
 .empty-lines {
   display: flex;
   flex-direction: column;
@@ -1175,7 +1325,6 @@ onMounted(() => {
   border: 1px dashed var(--border-default);
   border-radius: var(--radius-md);
 }
-
 .invoice-line {
   padding: 12px;
   border-radius: var(--radius-md);
@@ -1183,7 +1332,6 @@ onMounted(() => {
   border: 1px solid var(--border-subtle);
   margin-bottom: 12px;
 }
-
 .invoice-summary {
   background: rgba(255, 255, 255, 0.02);
   border: 1px solid var(--border-subtle);
