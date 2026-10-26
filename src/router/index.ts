@@ -132,6 +132,16 @@ const router = createRouter({
         name: 'Vales de Inventario',
         component: () => import('@/views/inventory/StockDocumentsView.vue'),
       },
+      {
+        path: '/pos',
+        name: 'Punto de Venta',
+        component: () => import('@/views/pos/POSView.vue'),
+      },
+      {
+        path: '/pos/cash-registers',
+        name: 'Gestión de Caja',
+        component: () => import('@/views/pos/CashRegisterView.vue'),
+      },
     ],
   },
   {

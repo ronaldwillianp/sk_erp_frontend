@@ -99,6 +99,22 @@
               :active="currentPath === item.to"
             />
           </v-list-group>
+
+          <!-- Sección: Punto de Venta -->
+          <div v-if="!rail" class="menu-section-label mt-5">Punto de Venta</div>
+          <v-list-group value="Punto de Venta" v-if="!rail">
+            <template v-slot:activator="{ props }">
+              <v-list-item v-bind="props" prepend-icon="mdi-file-document-outline" title="Punto de Venta" />
+            </template>
+            <v-list-item
+              v-for="item in posItems"
+              :key="item.to"
+              :prepend-icon="item.icon"
+              :title="item.title"
+              :to="item.to"
+              :active="currentPath === item.to"
+            />
+          </v-list-group>
         </v-list>
       </div>
     </v-navigation-drawer>
@@ -308,6 +324,21 @@ const salesItems = [
     title: 'Facturas',
     icon: 'mdi-file-document-outline',
     to: '/sales/invoices'
+  }
+  // { title: 'Cotizaciones', icon: 'mdi-file-sign', to: '/sales/quotes' }, ← futuro
+]
+
+// Sección: Point of Sale (POS)
+const posItems = [
+  {
+    title: 'Punto de Venta',
+    icon: 'mdi-cash-register',
+    to: '/pos'
+  },
+  {
+    title: 'Gestión de Caja',
+    icon: 'mdi-cash-register',
+    to: '/pos/cash-registers'
   }
   // { title: 'Cotizaciones', icon: 'mdi-file-sign', to: '/sales/quotes' }, ← futuro
 ]
