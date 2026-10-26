@@ -12,6 +12,15 @@
             <v-icon size="18" class="mr-2">mdi-refresh</v-icon>
             Actualizar
           </button>
+          <button 
+            class="btn-danger" 
+            @click="confirmPurge" 
+            :disabled="!items.length || purging"
+          >
+            <v-progress-circular v-if="purging" indeterminate size="16" class="mr-2" />
+            <v-icon v-else size="18" class="mr-2">mdi-delete-sweep</v-icon>
+            {{ purgeButtonText }}
+          </button>
           <button class="btn-primary" @click="openDialog()">
             <v-icon size="18" class="mr-2">mdi-plus</v-icon>
             Nuevo vale
@@ -197,9 +206,6 @@
                 class="full-width-select"
                 :error-messages="formErrors.warehouse_id"
               />
-              <!-- <p v-if="formErrors.warehouse_id" class="field-error">
-                {{ formErrors.warehouse_id }}
-              </p> -->
             </div>
             <div v-if="form.document_type === 'TRANSFER'">
               <label class="input-label">Almacén destino</label>
@@ -459,13 +465,13 @@
             <tbody>
               <tr v-for="line in selectedDocument.lines" :key="line.id">
                 <td class="text-sm text-zinc-200">
-                  <div>{{ line.product_detail?.name }}</div>
+                  <div>{{ line.product_detail?.product_name_snapshot || line.product_detail?.name }}</div>
                   <div class="text-xs text-zinc-500 font-mono">
                     {{ line.product_detail?.sku }}
                   </div>
                 </td>
                 <td class="text-sm text-zinc-400">
-                  {{ line.presentation_detail?.measure_unit?.short_name }}
+                  {{ line.presentation_detail?.presentation_name_snapshot || line.presentation_detail?.measure_unit?.short_name }}
                 </td>
                 <td class="text-right text-sm font-mono">
                   {{ line.quantity }}
@@ -490,6 +496,51 @@
       </div>
     </v-dialog>
 
+    <!-- ============================================ -->
+    <!-- Dialog: Confirmar vaciado total (Purge)      -->
+    <!-- ============================================ -->
+    <v-dialog v-model="purgeDialogOpen" max-width="500" class="dark-dialog">
+      <div class="dialog-card">
+        <div class="dialog-header">
+          <h3 class="text-lg font-semibold text-red-400 flex items-center">
+            <v-icon size="20" class="mr-2 text-red-400">mdi-alert-octagon</v-icon>
+            Vaciar historial de vales
+          </h3>
+          <button class="icon-btn" @click="cancelPurge">
+            <v-icon size="20">mdi-close</v-icon>
+          </button>
+        </div>
+        <div class="dialog-body">
+          <div class="alert-error mb-4">
+            <v-icon size="18" class="mr-2 flex-shrink-0">mdi-alert-octagon</v-icon>
+            <span
+              ><strong>Peligro:</strong> Esta acción eliminará <strong>TODOS</strong> los vales de inventario y reiniciará los IDs desde 1. 
+              <br><br>
+              <strong>Nota:</strong> Esto NO restaura el stock ni borra los movimientos asociados, solo limpia los documentos padre.</span
+            >
+          </div>
+          <p class="text-sm text-zinc-400 mb-2">
+            Se eliminarán
+            <strong class="text-zinc-200">{{ total }}</strong> vales de forma permanente.
+          </p>
+          <p class="text-xs text-zinc-500">
+            Esta acción no se puede deshacer. Los IDs se reiniciarán a 1.
+          </p>
+        </div>
+        <div class="dialog-footer">
+          <button class="btn-secondary" @click="cancelPurge">Cancelar</button>
+          <button
+            class="btn-danger"
+            @click="executePurge"
+            :disabled="purgeCountdown > 0 || purging"
+          >
+            <v-progress-circular v-if="purging" indeterminate size="16" class="mr-2" />
+            {{ purgeCountdown > 0 ? `Espera ${purgeCountdown}s...` : 'Eliminar todo' }}
+          </button>
+        </div>
+      </div>
+    </v-dialog>
+
     <!-- Snackbar -->
     <v-snackbar v-model="snackbar.show" :color="snackbar.color" location="top right" timeout="3000">
       {{ snackbar.message }}
@@ -498,7 +549,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import api from '@/utils/axios'
 import { useTable } from '@/composables/useTable'
 import TablePagination from '@/components/TablePagination.vue'
@@ -552,6 +603,12 @@ const productOptions = ref([])
 const warehouseOptions = ref([])
 const supplierOptions = ref([])
 
+// Estado para Purga
+const purgeDialogOpen = ref(false)
+const purging = ref(false)
+const purgeCountdown = ref(0)
+let purgeTimer = null
+
 const emptyForm = () => ({
   document_type: 'ENTRY',
   warehouse_id: '',
@@ -586,6 +643,11 @@ const destinationWarehouseOptions = computed(() => {
 
 const showUnitCost = computed(() => {
   return form.value.document_type === 'ENTRY' || form.value.document_type === 'ADJUSTMENT'
+})
+
+const purgeButtonText = computed(() => {
+  if (purging.value) return 'Vaciando...'
+  return 'Vaciar vales'
 })
 
 // ===== Helpers =====
@@ -829,11 +891,54 @@ const showSnackbar = (message, color = 'success') => {
   snackbar.value = { show: true, message, color }
 }
 
+// ===== Lógica de Purga =====
+const confirmPurge = () => {
+  purgeCountdown.value = 10
+  purgeDialogOpen.value = true
+
+  purgeTimer = setInterval(() => {
+    purgeCountdown.value--
+    if (purgeCountdown.value <= 0) {
+      clearInterval(purgeTimer)
+      purgeTimer = null
+    }
+  }, 1000)
+}
+
+const cancelPurge = () => {
+  if (purgeTimer) {
+    clearInterval(purgeTimer)
+    purgeTimer = null
+  }
+  purgeCountdown.value = 0
+  purgeDialogOpen.value = false
+}
+
+const executePurge = async () => {
+  purging.value = true
+  try {
+    const response = await api.delete(`${API_URL}purge/`)
+    showSnackbar(response.data.message || 'Historial de vales vaciado correctamente')
+    purgeDialogOpen.value = false
+    page.value = 1
+    await loadData()
+  } catch (error) {
+    const msg = error.response?.data?.error || 'Error al vaciar los vales'
+    showSnackbar(msg, 'error')
+  } finally {
+    purging.value = false
+  }
+}
+
 onMounted(() => {
   loadData()
   loadProducts()
   loadWarehouses()
   loadSuppliers()
+})
+
+onUnmounted(() => {
+  if (purgeTimer) clearInterval(purgeTimer)
 })
 </script>
 

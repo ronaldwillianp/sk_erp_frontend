@@ -119,7 +119,7 @@
 
             <div class="product-info">
               <div class="product-name" :title="product.name">{{ product.name }}</div>
-              <div class="flex">
+              <div class="flex items-center justify-between text-xs text-zinc-400 mb-1">
                 <div class="product-sku">{{ product.sku }}</div>
                 <div class="product-sku">{{ product.barcode }}</div>
               </div>

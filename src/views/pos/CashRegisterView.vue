@@ -16,6 +16,16 @@
             <v-icon size="18" class="mr-2">mdi-cash-register</v-icon>
             Abrir caja
           </button>
+          <!-- Botón de Purga (Estilo Movimientos) -->
+          <button 
+            class="btn-danger" 
+            @click="confirmPurge" 
+            :disabled="!items.length || purging"
+          >
+            <v-progress-circular v-if="purging" indeterminate size="16" class="mr-2" />
+            <v-icon v-else size="18" class="mr-2">mdi-delete-sweep</v-icon>
+            {{ purgeButtonText }}
+          </button>
         </div>
       </div>
     </div>
@@ -58,23 +68,38 @@
             <tbody>
               <tr v-for="item in items" :key="item.id">
                 <td>
-                  <span :class="['badge', item.status === 'OPEN' ? 'badge-success' : 'badge-neutral']">
+                  <span
+                    :class="['badge', item.status === 'OPEN' ? 'badge-success' : 'badge-neutral']"
+                  >
                     <v-icon size="12" class="mr-1">mdi-circle-medium</v-icon>
                     {{ item.status === 'OPEN' ? 'Abierta' : 'Cerrada' }}
                   </span>
                 </td>
                 <td class="text-sm text-zinc-200">{{ item.warehouse_name }}</td>
                 <td class="text-sm text-zinc-400">{{ item.user_name }}</td>
-                <td class="text-sm text-zinc-400 whitespace-nowrap">{{ formatDateTime(item.opening_date) }}</td>
+                <td class="text-sm text-zinc-400 whitespace-nowrap">
+                  {{ formatDateTime(item.opening_date) }}
+                </td>
                 <td class="text-sm text-zinc-400 whitespace-nowrap">
                   {{ item.closing_date ? formatDateTime(item.closing_date) : '—' }}
                 </td>
-                <td class="text-right text-sm font-mono text-zinc-300">{{ formatPrice(item.opening_balance) }}</td>
-                <td class="text-right text-sm font-mono text-zinc-300">{{ formatPrice(item.total_sales) }}</td>
-                <td class="text-right text-sm font-mono text-zinc-300">{{ formatPrice(item.expected_balance) }}</td>
-                <td class="text-right text-sm font-mono text-zinc-300">{{ formatPrice(item.closing_balance) }}</td>
+                <td class="text-right text-sm font-mono text-zinc-300">
+                  {{ formatPrice(item.opening_balance) }}
+                </td>
+                <td class="text-right text-sm font-mono text-zinc-300">
+                  {{ formatPrice(item.total_sales) }}
+                </td>
+                <td class="text-right text-sm font-mono text-zinc-300">
+                  {{ formatPrice(item.expected_balance) }}
+                </td>
+                <td class="text-right text-sm font-mono text-zinc-300">
+                  {{ formatPrice(item.closing_balance) }}
+                </td>
                 <td class="text-right">
-                  <span v-if="item.difference !== null" :class="['font-mono', getDifferenceClass(item.difference)]">
+                  <span
+                    v-if="item.difference !== null"
+                    :class="['font-mono', getDifferenceClass(item.difference)]"
+                  >
                     {{ formatPrice(item.difference) }}
                   </span>
                   <span v-else class="text-zinc-600">—</span>
@@ -149,7 +174,13 @@
         <div class="dialog-footer">
           <button class="btn-secondary" @click="openCashDialog = false">Cancelar</button>
           <button class="btn-primary" @click="openCash" :disabled="openingCash">
-            <v-progress-circular v-if="openingCash" indeterminate size="16" color="white" class="mr-2" />
+            <v-progress-circular
+              v-if="openingCash"
+              indeterminate
+              size="16"
+              color="white"
+              class="mr-2"
+            />
             Abrir caja
           </button>
         </div>
@@ -169,8 +200,8 @@
           <div class="alert-info mb-4">
             <v-icon size="18" class="mr-2 flex-shrink-0">mdi-information</v-icon>
             <span>
-              <strong>Resumen de la sesión:</strong><br>
-              Ventas: {{ registerToClose?.invoices_count || 0 }}<br>
+              <strong>Resumen de la sesión:</strong><br />
+              Ventas: {{ registerToClose?.invoices_count || 0 }}<br />
               Total vendido: {{ formatPrice(registerToClose?.total_sales || 0) }}
             </span>
           </div>
@@ -202,7 +233,13 @@
         <div class="dialog-footer">
           <button class="btn-secondary" @click="closeCashDialog = false">Cancelar</button>
           <button class="btn-primary" @click="closeCash" :disabled="closingCash">
-            <v-progress-circular v-if="closingCash" indeterminate size="16" color="white" class="mr-2" />
+            <v-progress-circular
+              v-if="closingCash"
+              indeterminate
+              size="16"
+              color="white"
+              class="mr-2"
+            />
             Cerrar caja
           </button>
         </div>
@@ -230,11 +267,15 @@
             </div>
             <div>
               <div class="text-xs text-zinc-500 mb-1">Apertura</div>
-              <div class="text-sm text-zinc-200">{{ formatDateTime(reportData.register.opening_date) }}</div>
+              <div class="text-sm text-zinc-200">
+                {{ formatDateTime(reportData.register.opening_date) }}
+              </div>
             </div>
             <div>
               <div class="text-xs text-zinc-500 mb-1">Cierre</div>
-              <div class="text-sm text-zinc-200">{{ formatDateTime(reportData.register.closing_date) }}</div>
+              <div class="text-sm text-zinc-200">
+                {{ formatDateTime(reportData.register.closing_date) }}
+              </div>
             </div>
           </div>
 
@@ -247,7 +288,9 @@
               </div>
               <div>
                 <div class="text-xs text-zinc-500">Total</div>
-                <div class="text-lg font-mono text-indigo-400">{{ formatPrice(reportData.total_sales) }}</div>
+                <div class="text-lg font-mono text-indigo-400">
+                  {{ formatPrice(reportData.total_sales) }}
+                </div>
               </div>
             </div>
           </div>
@@ -264,7 +307,9 @@
                 class="flex justify-between p-2 bg-zinc-900/50 rounded"
               >
                 <span class="text-sm text-zinc-300">{{ payment.method }}</span>
-                <span class="text-sm font-mono text-zinc-200">{{ formatPrice(payment.total) }}</span>
+                <span class="text-sm font-mono text-zinc-200">{{
+                  formatPrice(payment.total)
+                }}</span>
               </div>
             </div>
           </div>
@@ -274,7 +319,9 @@
             <div class="space-y-2">
               <div class="flex justify-between">
                 <span class="text-sm text-zinc-400">Efectivo inicial</span>
-                <span class="text-sm font-mono text-zinc-200">{{ formatPrice(reportData.register.opening_balance) }}</span>
+                <span class="text-sm font-mono text-zinc-200">{{
+                  formatPrice(reportData.register.opening_balance)
+                }}</span>
               </div>
               <div class="flex justify-between">
                 <span class="text-sm text-zinc-400">Ventas en efectivo</span>
@@ -290,13 +337,21 @@
               </div>
               <div class="flex justify-between">
                 <span class="text-sm text-zinc-400">Efectivo contado</span>
-                <span class="text-sm font-mono text-zinc-200">{{ formatPrice(reportData.register.closing_balance) }}</span>
+                <span class="text-sm font-mono text-zinc-200">{{
+                  formatPrice(reportData.register.closing_balance)
+                }}</span>
               </div>
               <div class="flex justify-between border-t border-zinc-700 pt-2">
-                <span class="text-sm font-semibold" :class="getDifferenceClass(reportData.register.difference)">
+                <span
+                  class="text-sm font-semibold"
+                  :class="getDifferenceClass(reportData.register.difference)"
+                >
                   Diferencia
                 </span>
-                <span class="text-sm font-mono font-bold" :class="getDifferenceClass(reportData.register.difference)">
+                <span
+                  class="text-sm font-mono font-bold"
+                  :class="getDifferenceClass(reportData.register.difference)"
+                >
                   {{ formatPrice(reportData.register.difference) }}
                 </span>
               </div>
@@ -309,6 +364,51 @@
       </div>
     </v-dialog>
 
+    <!-- ============================================ -->
+    <!-- Dialog: Confirmar vaciado total (Purge)      -->
+    <!-- ============================================ -->
+    <v-dialog v-model="purgeDialogOpen" max-width="500" class="dark-dialog">
+      <div class="dialog-card">
+        <div class="dialog-header">
+          <h3 class="text-lg font-semibold text-red-400 flex items-center">
+            <v-icon size="20" class="mr-2 text-red-400">mdi-alert-octagon</v-icon>
+            Vaciar historial de cajas
+          </h3>
+          <button class="icon-btn" @click="cancelPurge">
+            <v-icon size="20">mdi-close</v-icon>
+          </button>
+        </div>
+        <div class="dialog-body">
+          <div class="alert-error mb-4">
+            <v-icon size="18" class="mr-2 flex-shrink-0">mdi-alert-octagon</v-icon>
+            <span
+              ><strong>Peligro:</strong> Esta acción eliminará <strong>TODOS</strong> los registros de caja (abiertos y cerrados) y reiniciará los IDs desde 1. 
+              <br><br>
+              <strong>Nota:</strong> Esto NO borra las facturas ni restaura el stock, solo limpia el módulo de cajas.</span
+            >
+          </div>
+          <p class="text-sm text-zinc-400 mb-2">
+            Se eliminarán
+            <strong class="text-zinc-200">{{ total }}</strong> sesiones de forma permanente.
+          </p>
+          <p class="text-xs text-zinc-500">
+            Esta acción no se puede deshacer. Los IDs se reiniciarán a 1.
+          </p>
+        </div>
+        <div class="dialog-footer">
+          <button class="btn-secondary" @click="cancelPurge">Cancelar</button>
+          <button
+            class="btn-danger"
+            @click="executePurge"
+            :disabled="purgeCountdown > 0 || purging"
+          >
+            <v-progress-circular v-if="purging" indeterminate size="16" class="mr-2" />
+            {{ purgeCountdown > 0 ? `Espera ${purgeCountdown}s...` : 'Eliminar todo' }}
+          </button>
+        </div>
+      </div>
+    </v-dialog>
+
     <!-- Snackbar -->
     <v-snackbar v-model="snackbar.show" :color="snackbar.color" location="top right" timeout="3000">
       {{ snackbar.message }}
@@ -317,167 +417,213 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from "vue";
-import api from "@/utils/axios";
-import { useTable } from "@/composables/useTable";
-import TablePagination from "@/components/TablePagination.vue";
-import DarkSelect from "@/components/DarkSelect.vue";
+import { ref, computed, onMounted, onUnmounted } from 'vue'
+import api from '@/utils/axios'
+import { useTable } from '@/composables/useTable'
+import TablePagination from '@/components/TablePagination.vue'
+import DarkSelect from '@/components/DarkSelect.vue'
 
-const API_URL = "pos/cash-registers/";
-const WAREHOUSES_URL = "inventory/warehouses/enabled/";
+const API_URL = 'pos/cash-registers/'
+const WAREHOUSES_URL = 'inventory/warehouses/enabled/'
 
 // ===== Tabla =====
-const {
-  items,
-  loading,
-  total,
-  page,
-  pageSize,
-  loadData,
-  changePage,
-  changePageSize,
-} = useTable({
+const { items, loading, total, page, pageSize, loadData, changePage, changePageSize } = useTable({
   apiUrl: API_URL,
-  defaultOrdering: "-opening_date",
-});
+  defaultOrdering: '-opening_date'
+})
 
 // ===== Estado =====
-const warehouseOptions = ref([]);
-const openCashDialog = ref(false);
-const openingCash = ref(false);
+const warehouseOptions = ref([])
+const openCashDialog = ref(false)
+const openingCash = ref(false)
 const openCashForm = ref({
-  warehouse_id: "",
-  opening_balance: 0,
-});
+  warehouse_id: '',
+  opening_balance: 0
+})
 
-const closeCashDialog = ref(false);
-const closingCash = ref(false);
-const registerToClose = ref(null);
+const closeCashDialog = ref(false)
+const closingCash = ref(false)
+const registerToClose = ref(null)
 const closeCashForm = ref({
   closing_balance: 0,
-  notes: "",
-});
+  notes: ''
+})
 
-const reportDialog = ref(false);
-const reportData = ref(null);
+const reportDialog = ref(false)
+const reportData = ref(null)
 
-const snackbar = ref({ show: false, message: "", color: "success" });
+const snackbar = ref({ show: false, message: '', color: 'success' })
+
+// ===== Estado para Purga =====
+const purgeDialogOpen = ref(false)
+const purging = ref(false)
+const purgeCountdown = ref(0)
+let purgeTimer = null
 
 // ===== Computed =====
 const hasOpenRegister = computed(() => {
-  return items.value.some(item => item.status === "OPEN");
-});
+  return items.value.some(item => item.status === 'OPEN')
+})
+
+const purgeButtonText = computed(() => {
+  if (purging.value) return 'Vaciando...'
+  return 'Vaciar cierres'
+})
 
 // ===== Helpers =====
-const formatPrice = (price) => {
-  const num = parseFloat(price);
-  return isNaN(num) ? "—" : num.toLocaleString("es-CU", { minimumFractionDigits: 2 });
-};
+const formatPrice = price => {
+  const num = parseFloat(price)
+  return isNaN(num) ? '—' : num.toLocaleString('es-CU', { minimumFractionDigits: 2 })
+}
 
-const formatDateTime = (dateStr) => {
-  if (!dateStr) return "—";
-  const d = new Date(dateStr);
-  return d.toLocaleDateString("es-CU", {
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
-};
+const formatDateTime = dateStr => {
+  if (!dateStr) return '—'
+  const d = new Date(dateStr)
+  return d.toLocaleDateString('es-CU', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit'
+  })
+}
 
-const getDifferenceClass = (difference) => {
-  const num = parseFloat(difference);
-  if (num === 0) return "text-green-400";
-  if (num > 0) return "text-blue-400";
-  return "text-red-400";
-};
+const getDifferenceClass = difference => {
+  const num = parseFloat(difference)
+  if (num === 0) return 'text-green-400'
+  if (num > 0) return 'text-blue-400'
+  return 'text-red-400'
+}
 
-const getCashSales = (payments) => {
-  const cashPayment = payments.find(p => p.method.toLowerCase().includes("efectivo"));
-  return cashPayment ? cashPayment.total : 0;
-};
+const getCashSales = payments => {
+  const cashPayment = payments.find(p => p.method.toLowerCase().includes('efectivo'))
+  return cashPayment ? cashPayment.total : 0
+}
 
 // ===== Cargar opciones =====
 const loadWarehouses = async () => {
   try {
-    const response = await api.get(WAREHOUSES_URL);
-    const data = Array.isArray(response.data) ? response.data : response.data.results || [];
-    warehouseOptions.value = data.map((w) => ({ value: w.id, label: w.name }));
+    const response = await api.get(WAREHOUSES_URL)
+    const data = Array.isArray(response.data) ? response.data : response.data.results || []
+    warehouseOptions.value = data.map(w => ({ value: w.id, label: w.name }))
   } catch (error) {
-    console.error("Error cargando almacenes:", error);
+    console.error('Error cargando almacenes:', error)
   }
-};
+}
 
 // ===== Abrir caja =====
 const openCash = async () => {
   if (!openCashForm.value.warehouse_id) {
-    showSnackbar("Selecciona un almacén", "error");
-    return;
+    showSnackbar('Selecciona un almacén', 'error')
+    return
   }
 
-  openingCash.value = true;
+  openingCash.value = true
   try {
     await api.post(`${API_URL}open/`, {
       warehouse_id: parseInt(openCashForm.value.warehouse_id),
-      opening_balance: parseFloat(openCashForm.value.opening_balance) || 0,
-    });
-    showSnackbar("Caja abierta correctamente", "success");
-    openCashDialog.value = false;
-    openCashForm.value = { warehouse_id: "", opening_balance: 0 };
-    await loadData();
+      opening_balance: parseFloat(openCashForm.value.opening_balance) || 0
+    })
+    showSnackbar('Caja abierta correctamente', 'success')
+    openCashDialog.value = false
+    openCashForm.value = { warehouse_id: '', opening_balance: 0 }
+    await loadData()
   } catch (error) {
-    const msg = error.response?.data?.error || "Error al abrir caja";
-    showSnackbar(msg, "error");
+    const msg = error.response?.data?.error || 'Error al abrir caja'
+    showSnackbar(msg, 'error')
   } finally {
-    openingCash.value = false;
+    openingCash.value = false
   }
-};
+}
 
 // ===== Cerrar caja =====
-const confirmClose = (register) => {
-  registerToClose.value = register;
-  closeCashForm.value = { closing_balance: 0, notes: "" };
-  closeCashDialog.value = true;
-};
+const confirmClose = register => {
+  registerToClose.value = register
+  closeCashForm.value = { closing_balance: 0, notes: '' }
+  closeCashDialog.value = true
+}
 
 const closeCash = async () => {
-  closingCash.value = true;
+  closingCash.value = true
   try {
     await api.post(`${API_URL}${registerToClose.value.id}/close/`, {
       closing_balance: parseFloat(closeCashForm.value.closing_balance) || 0,
-      notes: closeCashForm.value.notes,
-    });
-    showSnackbar("Caja cerrada correctamente", "success");
-    closeCashDialog.value = false;
-    registerToClose.value = null;
-    await loadData();
+      notes: closeCashForm.value.notes
+    })
+    showSnackbar('Caja cerrada correctamente', 'success')
+    closeCashDialog.value = false
+    registerToClose.value = null
+    await loadData()
   } catch (error) {
-    const msg = error.response?.data?.error || "Error al cerrar caja";
-    showSnackbar(msg, "error");
+    const msg = error.response?.data?.error || 'Error al cerrar caja'
+    showSnackbar(msg, 'error')
   } finally {
-    closingCash.value = false;
+    closingCash.value = false
   }
-};
+}
 
 // ===== Ver reporte =====
-const viewReport = async (register) => {
+const viewReport = async register => {
   try {
-    const response = await api.get(`${API_URL}${register.id}/report/`);
-    reportData.value = response.data;
-    reportDialog.value = true;
+    const response = await api.get(`${API_URL}${register.id}/report/`)
+    reportData.value = response.data
+    reportDialog.value = true
   } catch (error) {
-    showSnackbar("Error al cargar reporte", "error");
+    showSnackbar('Error al cargar reporte', 'error')
   }
-};
+}
 
-const showSnackbar = (message, color = "success") => {
-  snackbar.value = { show: true, message, color };
-};
+const showSnackbar = (message, color = 'success') => {
+  snackbar.value = { show: true, message, color }
+}
 
+// ===== Lógica de Purga (Igual que Movimientos) =====
+const confirmPurge = () => {
+  purgeCountdown.value = 10
+  purgeDialogOpen.value = true
+
+  purgeTimer = setInterval(() => {
+    purgeCountdown.value--
+    if (purgeCountdown.value <= 0) {
+      clearInterval(purgeTimer)
+      purgeTimer = null
+    }
+  }, 1000)
+}
+
+const cancelPurge = () => {
+  if (purgeTimer) {
+    clearInterval(purgeTimer)
+    purgeTimer = null
+  }
+  purgeCountdown.value = 0
+  purgeDialogOpen.value = false
+}
+
+const executePurge = async () => {
+  purging.value = true
+  try {
+    const response = await api.delete(`${API_URL}purge/`)
+    showSnackbar(response.data.message || 'Historial de cajas vaciado correctamente')
+    purgeDialogOpen.value = false
+    page.value = 1
+    await loadData()
+  } catch (error) {
+    const msg = error.response?.data?.error || 'Error al vaciar los cierres de caja'
+    showSnackbar(msg, 'error')
+  } finally {
+    purging.value = false
+  }
+}
+
+// ===== Lifecycle =====
 onMounted(() => {
-  loadWarehouses();
-});
+  loadWarehouses()
+})
+
+onUnmounted(() => {
+  if (purgeTimer) clearInterval(purgeTimer)
+})
 </script>
 
 <style scoped>
