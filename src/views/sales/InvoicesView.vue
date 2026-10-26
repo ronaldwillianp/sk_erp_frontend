@@ -76,7 +76,6 @@
             <v-icon size="14">mdi-close</v-icon>
           </button>
         </div>
-
         <div class="flex gap-3">
           <DarkSelect v-model="filters.status" :options="statusFilterOptions" @change="onSearch" />
         </div>
@@ -89,7 +88,6 @@
         <v-progress-circular indeterminate color="indigo" />
         <p class="text-sm text-zinc-500 mt-4">Cargando facturas...</p>
       </div>
-
       <div v-else-if="!items.length" class="empty-state">
         <div class="empty-state-icon">
           <v-icon size="32" color="zinc-600">mdi-file-document-outline</v-icon>
@@ -113,7 +111,6 @@
           Limpiar filtros
         </button>
       </div>
-
       <template v-else>
         <div class="overflow-x-auto">
           <table class="custom-table">
@@ -173,7 +170,7 @@
                       <v-icon size="16">mdi-eye-outline</v-icon>
                     </button>
 
-                    <!-- Acciones según estado -->
+                    <!-- BORRADOR: Enviar + Cancelar + Eliminar -->
                     <template v-if="item.status === 'DRAFT'">
                       <button
                         class="icon-btn !text-blue-400 hover:!bg-blue-500/10"
@@ -182,7 +179,23 @@
                       >
                         <v-icon size="16">mdi-send-outline</v-icon>
                       </button>
+                      <button
+                        class="icon-btn !text-orange-400 hover:!bg-orange-500/10"
+                        title="Cancelar factura"
+                        @click="confirmCancel(item)"
+                      >
+                        <v-icon size="16">mdi-cancel</v-icon>
+                      </button>
+                      <button
+                        class="icon-btn !text-red-400 hover:!bg-red-500/10"
+                        title="Eliminar factura (Admin)"
+                        @click="confirmDelete(item)"
+                      >
+                        <v-icon size="16">mdi-delete-outline</v-icon>
+                      </button>
                     </template>
+
+                    <!-- ENVIADA / VENCIDA: Marcar pagada + Cancelar -->
                     <template v-if="item.status === 'SENT' || item.status === 'OVERDUE'">
                       <button
                         class="icon-btn !text-green-400 hover:!bg-green-500/10"
@@ -191,27 +204,44 @@
                       >
                         <v-icon size="16">mdi-cash-check</v-icon>
                       </button>
-                    </template>
-                    <template v-if="item.status !== 'CANCELLED' && item.status !== 'PAID'">
                       <button
-                        class="icon-btn !text-red-400 hover:!bg-red-500/10"
+                        class="icon-btn !text-orange-400 hover:!bg-orange-500/10"
                         title="Cancelar factura"
                         @click="confirmCancel(item)"
                       >
                         <v-icon size="16">mdi-cancel</v-icon>
                       </button>
                     </template>
+
+                    <!-- PARCIAL: Marcar pagada + Cancelar -->
+                    <template v-if="item.status === 'PARTIAL'">
+                      <button
+                        class="icon-btn !text-green-400 hover:!bg-green-500/10"
+                        title="Marcar pagada"
+                        @click="changeStatus(item, 'PAID')"
+                      >
+                        <v-icon size="16">mdi-cash-check</v-icon>
+                      </button>
+                      <button
+                        class="icon-btn !text-orange-400 hover:!bg-orange-500/10"
+                        title="Cancelar factura"
+                        @click="confirmCancel(item)"
+                      >
+                        <v-icon size="16">mdi-cancel</v-icon>
+                      </button>
+                    </template>
+
+                    <!-- PAGADA / CANCELADA: Sin acciones -->
                   </div>
                 </td>
               </tr>
             </tbody>
           </table>
         </div>
-
         <TablePagination
-          v-model:page="page"
-          :total="total"
+          :page="page"
           :page-size="pageSize"
+          :total="total"
           @update:page="changePage"
           @update:page-size="changePageSize"
         />
@@ -234,10 +264,9 @@
             <v-icon size="20">mdi-close</v-icon>
           </button>
         </div>
-
         <div class="dialog-body">
-          <!-- Grid: Cliente + Fecha vencimiento -->
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-5">
+          <!-- Grid: Cliente + Fecha emisión + Fecha vencimiento -->
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-5">
             <div>
               <label class="input-label">Cliente</label>
               <DarkSelect
@@ -253,7 +282,29 @@
               </p>
             </div>
             <div>
-              <label class="input-label">Fecha de vencimiento (opcional)</label>
+              <label class="input-label">Fecha de emisión</label>
+              <v-text-field
+                v-model="form.issue_date"
+                type="date"
+                variant="outlined"
+                density="comfortable"
+                hide-details
+                class="dark-input"
+              />
+            </div>
+            <div>
+              <label class="input-label">Fecha de vencimiento</label>
+              <v-text-field
+                v-model="form.issue_date"
+                type="date"
+                variant="outlined"
+                density="comfortable"
+                hide-details
+                class="dark-input"
+              />
+            </div>
+            <div>
+              <label class="input-label">Fecha de vencimiento</label>
               <v-text-field
                 v-model="form.due_date"
                 type="date"
@@ -264,39 +315,144 @@
             </div>
           </div>
 
+          <!-- Estado inicial de la factura -->
+          <div class="mb-5">
+            <label class="input-label">Estado inicial</label>
+            <div class="flex gap-2">
+              <button
+                v-for="opt in initialStatusOptions"
+                :key="opt.value"
+                :class="[
+                  'px-3 py-1.5 rounded-md text-sm border transition-colors flex items-center gap-1.5',
+                  form.initial_status === opt.value
+                    ? 'bg-indigo-500/20 border-indigo-500 text-indigo-300'
+                    : 'bg-zinc-900/50 border-zinc-700 text-zinc-400 hover:bg-zinc-800'
+                ]"
+                @click="form.initial_status = opt.value"
+                type="button"
+              >
+                <v-icon size="14">{{ opt.icon }}</v-icon>
+                {{ opt.label }}
+              </button>
+            </div>
+            <p class="text-xs text-zinc-500 mt-2">
+              <v-icon size="12" class="mr-1">mdi-information-outline</v-icon>
+              El stock se descontará inmediatamente al crear la factura, sin importar el estado
+              inicial.
+            </p>
+          </div>
+
+          <!-- Selección de Almacén / PV (principal) -->
+          <div class="mb-5">
+            <label class="input-label">Almacén / Punto de Venta</label>
+            <DarkSelect
+              v-model="form.warehouse_id"
+              :options="warehouseOptions"
+              placeholder="Seleccionar almacén para filtrar productos..."
+              class="full-width-select"
+            />
+            <p v-if="!form.warehouse_id" class="text-xs text-yellow-400 mt-1 flex items-center">
+              <v-icon size="12" class="mr-1">mdi-alert</v-icon>
+              Selecciona un almacén para ver solo los productos con existencias.
+            </p>
+          </div>
+
+          <!-- Estado inicial de la factura -->
+          <div class="mb-5">
+            <label class="input-label">Estado inicial</label>
+            <div class="flex gap-2">
+              <button
+                v-for="opt in initialStatusOptions"
+                :key="opt.value"
+                :class="[
+                  'px-3 py-1.5 rounded-md text-sm border transition-colors flex items-center gap-1.5',
+                  form.initial_status === opt.value
+                    ? 'bg-indigo-500/20 border-indigo-500 text-indigo-300'
+                    : 'bg-zinc-900/50 border-zinc-700 text-zinc-400 hover:bg-zinc-800'
+                ]"
+                @click="form.initial_status = opt.value"
+                type="button"
+              >
+                <v-icon size="14">{{ opt.icon }}</v-icon>
+                {{ opt.label }}
+              </button>
+            </div>
+            <p class="text-xs text-zinc-500 mt-2">
+              <v-icon size="12" class="mr-1">mdi-information-outline</v-icon>
+              El stock se descontará inmediatamente al crear la factura, sin importar el estado
+              inicial.
+            </p>
+          </div>
+
+          <!-- Selección de Almacén / PV (principal) -->
+          <div class="mb-5">
+            <label class="input-label">Almacén / Punto de Venta</label>
+            <DarkSelect
+              v-model="form.warehouse_id"
+              :options="warehouseOptions"
+              placeholder="Seleccionar almacén para filtrar productos..."
+              class="full-width-select"
+            />
+            <p v-if="!form.warehouse_id" class="text-xs text-yellow-400 mt-1 flex items-center">
+              <v-icon size="12" class="mr-1">mdi-alert</v-icon>
+              Selecciona un almacén para ver solo los productos con existencias.
+            </p>
+          </div>
+
           <!-- Líneas de factura -->
           <div class="mb-5">
             <div class="flex items-center justify-between mb-3">
               <label class="input-label !mb-0">Líneas de la factura</label>
-              <button class="btn-secondary !px-3 !py-1.5 !text-xs" @click="addLine">
+              <button
+                class="btn-secondary !px-3 !py-1.5 !text-xs"
+                @click="addLine"
+                :disabled="!form.warehouse_id || productOptions.length === 0"
+              >
                 <v-icon size="14" class="mr-1">mdi-plus</v-icon>
                 Agregar línea
               </button>
             </div>
 
-            <div v-if="form.items.length === 0" class="empty-lines">
+            <!-- Mensajes de estado -->
+            <div v-if="!form.warehouse_id" class="empty-lines">
+              <v-icon size="32" class="text-zinc-600 mb-2">mdi-warehouse</v-icon>
+              <p class="text-sm text-zinc-500">
+                Selecciona un almacén arriba para ver los productos disponibles.
+              </p>
+            </div>
+            <div v-else-if="productOptions.length === 0 && !loadingProducts" class="empty-lines">
+              <v-icon size="32" class="text-zinc-600 mb-2">mdi-package-variant</v-icon>
+              <p class="text-sm text-zinc-500">
+                No hay productos con stock disponible en este almacén.
+              </p>
+            </div>
+            <div v-else-if="loadingProducts" class="empty-lines">
+              <v-progress-circular indeterminate color="indigo" size="24" />
+              <p class="text-sm text-zinc-500 mt-2">Cargando productos del almacén...</p>
+            </div>
+            <div v-else-if="form.items.length === 0" class="empty-lines">
               <v-icon size="32" class="text-zinc-600 mb-2">mdi-format-list-bulleted-type</v-icon>
               <p class="text-sm text-zinc-500">
                 No hay líneas. Agrega al menos un producto a la factura.
               </p>
             </div>
 
+            <!-- Lista de líneas -->
             <div v-for="(line, index) in form.items" :key="index" class="invoice-line">
               <div class="grid grid-cols-12 gap-3 items-start">
                 <!-- Producto -->
-                <div class="col-span-3">
+                <div class="col-span-4">
                   <label class="input-label">Producto</label>
                   <DarkSelect
                     v-model="line.product_id"
                     :options="productOptions"
                     :searchable="true"
-                    search-placeholder="Buscar..."
+                    search-placeholder="Buscar en este almacén..."
                     placeholder="Seleccionar"
                     class="full-width-select"
                     @change="onLineProductChange(index)"
                   />
                 </div>
-
                 <!-- Presentación -->
                 <div class="col-span-2">
                   <label class="input-label">Presentación</label>
@@ -308,35 +464,32 @@
                     @change="onLinePresentationChange(index)"
                   />
                 </div>
-
-                <!-- Almacén -->
-                <div class="col-span-2">
-                  <label class="input-label">Almacén</label>
-                  <DarkSelect
-                    v-model="line.warehouse_id"
-                    :options="warehouseOptions"
-                    placeholder="—"
-                    class="full-width-select"
-                  />
-                </div>
-
-                <!-- Cantidad -->
+                <!-- Cantidad + Badge de stock -->
                 <div class="col-span-2">
                   <label class="input-label">Cantidad</label>
-                  <v-text-field
-                    v-model="line.quantity"
-                    type="number"
-                    min="0"
-                    placeholder="0"
-                    variant="outlined"
-                    hide-details
-                    class="dark-input"
-                    @update:model-value="calculateLineTotal(index)"
-                  />
+                  <div class="relative">
+                    <v-text-field
+                      v-model="line.quantity"
+                      type="number"
+                      min="0"
+                      placeholder="0"
+                      variant="outlined"
+                      density="comfortable"
+                      hide-details
+                      class="dark-input"
+                      @update:model-value="calculateLineTotal(index)"
+                    />
+                    <div v-if="line.available_stock !== null" class="absolute -top-2 -right-2">
+                      <span
+                        class="text-[10px] px-1.5 py-0.5 rounded-full font-bold bg-green-500/20 text-green-400 border border-green-500/30"
+                      >
+                        Stock: {{ line.available_stock }}
+                      </span>
+                    </div>
+                  </div>
                 </div>
-
                 <!-- Precio -->
-                <div class="col-span-2">
+                <div class="col-span-3">
                   <label class="input-label">Precio unit.</label>
                   <v-text-field
                     v-model="line.unit_price"
@@ -349,7 +502,6 @@
                     @update:model-value="calculateLineTotal(index)"
                   />
                 </div>
-
                 <!-- Eliminar línea -->
                 <div class="col-span-1 flex items-center justify-center pt-6">
                   <button
@@ -360,7 +512,6 @@
                   </button>
                 </div>
               </div>
-
               <!-- Total de línea -->
               <div class="flex justify-end mt-2">
                 <span class="text-xs text-zinc-500">
@@ -404,7 +555,6 @@
             </div>
           </div>
         </div>
-
         <div class="dialog-footer">
           <button class="btn-secondary" @click="dialogOpen = false">Cancelar</button>
           <button class="btn-primary" @click="saveInvoice" :disabled="saving">
@@ -433,9 +583,7 @@
             <v-icon size="20">mdi-close</v-icon>
           </button>
         </div>
-
         <div class="dialog-body">
-          <!-- Info del cliente -->
           <div class="grid grid-cols-2 gap-4 mb-5">
             <div>
               <div class="text-xs text-zinc-500 mb-1">Cliente</div>
@@ -456,8 +604,6 @@
               </span>
             </div>
           </div>
-
-          <!-- Tabla de líneas -->
           <table class="custom-table mb-5">
             <thead>
               <tr>
@@ -486,8 +632,6 @@
               </tr>
             </tbody>
           </table>
-
-          <!-- Totales -->
           <div class="invoice-summary">
             <div class="flex justify-between py-1">
               <span class="text-zinc-400">Subtotal</span>
@@ -508,14 +652,11 @@
               }}</span>
             </div>
           </div>
-
-          <!-- Notas -->
           <div v-if="selectedInvoice.notes" class="mt-4 p-3 bg-zinc-900/50 rounded-lg">
             <div class="text-xs text-zinc-500 mb-1">Notas</div>
             <div class="text-sm text-zinc-300">{{ selectedInvoice.notes }}</div>
           </div>
         </div>
-
         <div class="dialog-footer">
           <button class="btn-secondary" @click="detailDialogOpen = false">Cerrar</button>
         </div>
@@ -536,7 +677,8 @@
             <v-icon size="18" class="mr-2 flex-shrink-0">mdi-alert</v-icon>
             <span
               ><strong>Advertencia:</strong> Al cancelar la factura, el stock será
-              <strong>restaurado automáticamente</strong> al inventario.</span
+              <strong>restaurado automáticamente</strong> al inventario. La factura quedará
+              registrada como <strong>Cancelada</strong>.</span
             >
           </div>
           <p class="text-sm text-zinc-400">
@@ -557,6 +699,86 @@
       </div>
     </v-dialog>
 
+    <!-- Dialog: Confirmar eliminación (Admin) -->
+    <v-dialog v-model="deleteDialogOpen" max-width="500" class="dark-dialog">
+      <div class="dialog-card">
+        <div class="dialog-header">
+          <h3 class="text-lg font-semibold text-red-400 flex items-center">
+            <v-icon size="20" class="mr-2 text-red-400">mdi-alert-octagon</v-icon>
+            Eliminar factura (Admin)
+          </h3>
+          <button class="icon-btn" @click="deleteDialogOpen = false">
+            <v-icon size="20">mdi-close</v-icon>
+          </button>
+        </div>
+        <div class="dialog-body">
+          <div class="alert-error mb-4">
+            <v-icon size="18" class="mr-2 flex-shrink-0">mdi-alert-octagon</v-icon>
+            <span
+              ><strong>Peligro extremo:</strong> Esta acción eliminará
+              <strong>permanentemente</strong> la factura, sus líneas, los movimientos de stock
+              asociados y el vale de inventario. El stock será restaurado. Esta acción
+              <strong>no se puede deshacer</strong> y no dejará rastro histórico.</span
+            >
+          </div>
+          <p class="text-sm text-zinc-400">
+            ¿Eliminar definitivamente la factura
+            <strong class="text-zinc-200">{{ invoiceToDelete?.number }}</strong>
+            de
+            <strong class="text-zinc-200">{{ invoiceToCancel?.customer_detail?.name }}</strong
+            >?
+          </p>
+        </div>
+        <div class="dialog-footer">
+          <button class="btn-secondary" @click="cancelDialogOpen = false">Volver</button>
+          <button class="btn-danger" @click="executeCancel" :disabled="cancelling">
+            <v-progress-circular v-if="cancelling" indeterminate size="16" class="mr-2" />
+            Cancelar factura
+          </button>
+        </div>
+      </div>
+    </v-dialog>
+
+    <!-- Dialog: Confirmar eliminación (Admin) -->
+    <v-dialog v-model="deleteDialogOpen" max-width="500" class="dark-dialog">
+      <div class="dialog-card">
+        <div class="dialog-header">
+          <h3 class="text-lg font-semibold text-red-400 flex items-center">
+            <v-icon size="20" class="mr-2 text-red-400">mdi-alert-octagon</v-icon>
+            Eliminar factura (Admin)
+          </h3>
+          <button class="icon-btn" @click="deleteDialogOpen = false">
+            <v-icon size="20">mdi-close</v-icon>
+          </button>
+        </div>
+        <div class="dialog-body">
+          <div class="alert-error mb-4">
+            <v-icon size="18" class="mr-2 flex-shrink-0">mdi-alert-octagon</v-icon>
+            <span
+              ><strong>Peligro extremo:</strong> Esta acción eliminará
+              <strong>permanentemente</strong> la factura, sus líneas, los movimientos de stock
+              asociados y el vale de inventario. El stock será restaurado. Esta acción
+              <strong>no se puede deshacer</strong> y no dejará rastro histórico.</span
+            >
+          </div>
+          <p class="text-sm text-zinc-400">
+            ¿Eliminar definitivamente la factura
+            <strong class="text-zinc-200">{{ invoiceToDelete?.number }}</strong>
+            de
+            <strong class="text-zinc-200">{{ invoiceToDelete?.customer_detail?.name }}</strong
+            >?
+          </p>
+        </div>
+        <div class="dialog-footer">
+          <button class="btn-secondary" @click="deleteDialogOpen = false">Volver</button>
+          <button class="btn-danger" @click="executeDelete" :disabled="deleting">
+            <v-progress-circular v-if="deleting" indeterminate size="16" class="mr-2" />
+            Eliminar definitivamente
+          </button>
+        </div>
+      </div>
+    </v-dialog>
+
     <!-- Snackbar -->
     <v-snackbar v-model="snackbar.show" :color="snackbar.color" location="top right" timeout="3000">
       {{ snackbar.message }}
@@ -565,7 +787,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import api from '@/utils/axios'
 import { useTable } from '@/composables/useTable'
 import TablePagination from '@/components/TablePagination.vue'
@@ -573,7 +795,7 @@ import DarkSelect from '@/components/DarkSelect.vue'
 
 const API_URL = 'sales/invoices/'
 const CUSTOMERS_URL = 'sales/customers/'
-const PRODUCTS_URL = 'inventory/products/enabled/?is_service=false'
+const PRODUCTS_WITH_STOCK_URL = 'inventory/products/with-stock/'
 const WAREHOUSES_URL = 'inventory/warehouses/enabled/'
 
 // ===== Opciones de estado =====
@@ -602,6 +824,12 @@ const statusFilterOptions = [
   }))
 ]
 
+const initialStatusOptions = [
+  { value: 'DRAFT', label: 'Borrador', icon: 'mdi-file-document-edit-outline' },
+  { value: 'SENT', label: 'Enviada', icon: 'mdi-send-outline' },
+  { value: 'PAID', label: 'Pagada', icon: 'mdi-cash-check' }
+]
+
 // ===== Tabla =====
 const {
   items,
@@ -627,6 +855,7 @@ const {
 const summary = ref(null)
 const dialogOpen = ref(false)
 const saving = ref(false)
+const loadingProducts = ref(false)
 const customerOptions = ref([])
 const productOptions = ref([])
 const warehouseOptions = ref([])
@@ -638,12 +867,38 @@ const cancelDialogOpen = ref(false)
 const cancelling = ref(false)
 const invoiceToCancel = ref(null)
 
-const emptyForm = () => ({
-  customer_id: '',
-  due_date: '',
-  notes: '',
-  items: []
-})
+const deleteDialogOpen = ref(false)
+const deleting = ref(false)
+const invoiceToDelete = ref(null)
+
+// Helper para formatear fecha a YYYY-MM-DD
+const toISODate = date => {
+  const year = date.getFullYear()
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const day = String(date.getDate()).padStart(2, '0')
+  return `${year}-${month}-${day}`
+}
+
+const addDays = (date, days) => {
+  const result = new Date(date)
+  result.setDate(result.getDate() + days)
+  return result
+}
+
+const emptyForm = () => {
+  const today = new Date()
+  const dueDate = addDays(today, 30)
+
+  return {
+    customer_id: '',
+    issue_date: toISODate(today),
+    due_date: toISODate(dueDate),
+    warehouse_id: '',
+    initial_status: 'DRAFT',
+    notes: '',
+    items: []
+  }
+}
 
 const form = ref(emptyForm())
 const formErrors = ref({})
@@ -658,8 +913,7 @@ const invoiceSubtotal = computed(() => {
   return form.value.items.reduce((sum, line) => sum + (parseFloat(line.line_total) || 0), 0)
 })
 
-const invoiceTax = computed(() => 0) // TODO: impuestos cuando se implemente TaxRate
-
+const invoiceTax = computed(() => 0)
 const invoiceTotal = computed(() => invoiceSubtotal.value + invoiceTax.value)
 
 // ===== Helpers =====
@@ -691,10 +945,9 @@ const isOverdue = item => {
 // ===== Cargar opciones =====
 const loadCustomers = async () => {
   try {
-    const response = await api.get('sales/customers/', {
+    const response = await api.get(CUSTOMERS_URL, {
       params: { page_size: 1000 }
     })
-    // Manejar ambos formatos: lista plana o paginada
     const data = Array.isArray(response.data) ? response.data : response.data.results || []
     customerOptions.value = data.map(c => ({ value: c.id, label: c.name }))
   } catch (error) {
@@ -702,26 +955,36 @@ const loadCustomers = async () => {
   }
 }
 
-const loadProducts = async () => {
+const loadProducts = async warehouseId => {
+  if (!warehouseId) {
+    productOptions.value = []
+    return
+  }
+
+  loadingProducts.value = true
   try {
-    const response = await api.get('inventory/products/enabled/', {
-      params: { is_service: 'false', page_size: 1000 }
+    const response = await api.get(PRODUCTS_WITH_STOCK_URL, {
+      params: { warehouse: warehouseId, is_service: 'false', page_size: 1000 }
     })
-    // Manejar ambos formatos: lista plana o paginada
     const data = Array.isArray(response.data) ? response.data : response.data.results || []
+
     productOptions.value = data.map(p => ({
       value: p.id,
-      label: `${p.sku} - ${p.name}`
+      label: `${p.sku} - ${p.name}`,
+      presentations: p.presentations,
+      warehouse_stock: p.warehouse_stock || 0
     }))
   } catch (error) {
     console.error('Error cargando productos:', error)
+    productOptions.value = []
+  } finally {
+    loadingProducts.value = false
   }
 }
 
 const loadWarehouses = async () => {
   try {
-    const response = await api.get('inventory/warehouses/enabled/')
-    // Manejar ambos formatos: lista plana o paginada
+    const response = await api.get(WAREHOUSES_URL)
     const data = Array.isArray(response.data) ? response.data : response.data.results || []
     warehouseOptions.value = data.map(w => ({ value: w.id, label: w.name }))
   } catch (error) {
@@ -738,11 +1001,24 @@ const loadSummary = async () => {
   }
 }
 
+// Watcher: recargar productos cuando cambia el almacén
+watch(
+  () => form.value.warehouse_id,
+  newWarehouseId => {
+    form.value.items = []
+    if (newWarehouseId) {
+      loadProducts(newWarehouseId)
+    } else {
+      productOptions.value = []
+    }
+  }
+)
+
 // ===== Dialog: Crear =====
 const openDialog = () => {
   formErrors.value = {}
   form.value = emptyForm()
-  addLine() // Agregar una línea vacía por defecto
+  productOptions.value = []
   dialogOpen.value = true
 }
 
@@ -750,11 +1026,11 @@ const addLine = () => {
   form.value.items.push({
     product_id: '',
     presentation_id: '',
-    warehouse_id: '',
     quantity: '',
     unit_price: '',
     line_total: 0,
-    presentationOptions: []
+    presentationOptions: [],
+    available_stock: null
   })
 }
 
@@ -762,33 +1038,34 @@ const removeLine = index => {
   form.value.items.splice(index, 1)
 }
 
-const onLineProductChange = async index => {
+const onLineProductChange = index => {
   const line = form.value.items[index]
   line.presentation_id = ''
   line.unit_price = ''
   line.presentationOptions = []
+  line.available_stock = null
 
   if (!line.product_id) return
 
-  try {
-    const response = await api.get(`inventory/products/${line.product_id}/`)
-    const product = response.data
+  const selectedProduct = productOptions.value.find(p => p.value == line.product_id)
 
-    line.presentationOptions = product.presentations.map(p => ({
+  if (selectedProduct && selectedProduct.presentations) {
+    line.presentationOptions = selectedProduct.presentations.map(p => ({
       value: p.id,
       label: `${p.measure_unit.name} (x${p.conversion_factor})`,
       sale_price: p.sale_price
     }))
 
-    // Auto-seleccionar presentación por defecto si existe
-    const defaultPres = product.presentations.find(p => p.is_default) || product.presentations[0]
+    const defaultPres =
+      selectedProduct.presentations.find(p => p.is_default) || selectedProduct.presentations[0]
+
     if (defaultPres) {
       line.presentation_id = defaultPres.id
       line.unit_price = defaultPres.sale_price
+      line.available_stock =
+        selectedProduct.warehouse_stock !== undefined ? selectedProduct.warehouse_stock : 0
       calculateLineTotal(index)
     }
-  } catch (error) {
-    console.error('Error cargando presentaciones:', error)
   }
 }
 
@@ -818,6 +1095,11 @@ const saveInvoice = async () => {
     hasErrors = true
   }
 
+  if (!form.value.warehouse_id) {
+    showSnackbar('Debes seleccionar un almacén', 'error')
+    hasErrors = true
+  }
+
   if (form.value.items.length === 0) {
     showSnackbar('Agrega al menos una línea a la factura', 'error')
     hasErrors = true
@@ -825,8 +1107,8 @@ const saveInvoice = async () => {
 
   for (let i = 0; i < form.value.items.length; i++) {
     const line = form.value.items[i]
-    if (!line.product_id || !line.presentation_id || !line.warehouse_id) {
-      showSnackbar(`Línea ${i + 1}: completa producto, presentación y almacén`, 'error')
+    if (!line.product_id || !line.presentation_id) {
+      showSnackbar(`Línea ${i + 1}: completa producto y presentación`, 'error')
       hasErrors = true
       break
     }
@@ -843,12 +1125,14 @@ const saveInvoice = async () => {
   try {
     const payload = {
       customer_id: parseInt(form.value.customer_id),
+      issue_date: form.value.issue_date,
       due_date: form.value.due_date || null,
+      status: form.value.initial_status,
       notes: form.value.notes,
       items: form.value.items.map(line => ({
         product_id: parseInt(line.product_id),
         presentation_id: parseInt(line.presentation_id),
-        warehouse_id: parseInt(line.warehouse_id),
+        warehouse_id: parseInt(form.value.warehouse_id),
         quantity: parseFloat(line.quantity),
         unit_price: parseFloat(line.unit_price) || 0
       }))
@@ -860,7 +1144,8 @@ const saveInvoice = async () => {
     await loadData()
     await loadSummary()
   } catch (error) {
-    const msg = error.response?.data?.error || 'Error al crear factura'
+    const msg =
+      error.response?.data?.error || error.response?.data?.detail || 'Error al crear factura'
     showSnackbar(msg, 'error')
   } finally {
     saving.value = false
@@ -888,7 +1173,7 @@ const changeStatus = async (invoice, newStatus) => {
   }
 }
 
-// ===== Cancelar factura =====
+// ===== Cancelar factura (usuarios) =====
 const confirmCancel = invoice => {
   invoiceToCancel.value = invoice
   cancelDialogOpen.value = true
@@ -913,6 +1198,31 @@ const executeCancel = async () => {
   }
 }
 
+// ===== Eliminar factura (Admin) =====
+const confirmDelete = invoice => {
+  invoiceToDelete.value = invoice
+  deleteDialogOpen.value = true
+}
+
+const executeDelete = async () => {
+  deleting.value = true
+  try {
+    const response = await api.delete(`${API_URL}${invoiceToDelete.value.id}/`)
+    const msg = response.data?.message || 'Factura eliminada correctamente. Stock restaurado.'
+    showSnackbar(msg)
+    deleteDialogOpen.value = false
+    invoiceToDelete.value = null
+    await loadData()
+    await loadSummary()
+  } catch (error) {
+    const msg =
+      error.response?.data?.error || error.response?.data?.detail || 'Error al eliminar factura'
+    showSnackbar(msg, 'error')
+  } finally {
+    deleting.value = false
+  }
+}
+
 // ===== Utilidades =====
 const resetAll = () => {
   search.value = ''
@@ -927,7 +1237,6 @@ onMounted(() => {
   loadData()
   loadSummary()
   loadCustomers()
-  loadProducts()
   loadWarehouses()
 })
 </script>
@@ -940,19 +1249,16 @@ onMounted(() => {
   border-radius: var(--radius-lg);
   overflow: hidden;
 }
-
 .dialog-card-scrollable {
   display: flex;
   flex-direction: column;
   max-height: 90vh;
 }
-
 .dialog-card-scrollable .dialog-body {
   overflow-y: auto;
   flex: 1;
   min-height: 0;
 }
-
 .dialog-header {
   display: flex;
   align-items: center;
@@ -961,11 +1267,9 @@ onMounted(() => {
   border-bottom: 1px solid var(--border-subtle);
   flex-shrink: 0;
 }
-
 .dialog-body {
   padding: 24px;
 }
-
 .dialog-footer {
   display: flex;
   justify-content: flex-end;
@@ -974,20 +1278,17 @@ onMounted(() => {
   border-top: 1px solid var(--border-subtle);
   flex-shrink: 0;
 }
-
 .full-width-select {
   width: 100%;
 }
 .full-width-select :deep(.dark-select-wrapper) {
   width: 100%;
 }
-
 .field-error {
   color: var(--error);
   font-size: 12px;
   margin-top: 6px;
 }
-
 .empty-lines {
   display: flex;
   flex-direction: column;
@@ -999,7 +1300,6 @@ onMounted(() => {
   border: 1px dashed var(--border-default);
   border-radius: var(--radius-md);
 }
-
 .invoice-line {
   padding: 12px;
   border-radius: var(--radius-md);
@@ -1007,7 +1307,6 @@ onMounted(() => {
   border: 1px solid var(--border-subtle);
   margin-bottom: 12px;
 }
-
 .invoice-summary {
   background: rgba(255, 255, 255, 0.02);
   border: 1px solid var(--border-subtle);
