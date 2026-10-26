@@ -159,7 +159,6 @@
               v-model="form.name"
               placeholder="Ej: Administrador, Vendedor, Contador"
               variant="outlined"
-              density="comfortable"
               :error-messages="formErrors.name"
               class="dark-input"
               prepend-inner-icon="mdi-account-group-outline"

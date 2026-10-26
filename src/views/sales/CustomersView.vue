@@ -191,7 +191,6 @@
               v-model="form.name"
               placeholder="Ej: Juan Pérez García"
               variant="outlined"
-              density="comfortable"
               :error-messages="formErrors.name"
               class="dark-input"
               prepend-inner-icon="mdi-account-outline"
@@ -207,7 +206,6 @@
                 v-model="form.email"
                 placeholder="correo@ejemplo.com"
                 variant="outlined"
-                density="comfortable"
                 :error-messages="formErrors.email"
                 class="dark-input"
                 prepend-inner-icon="mdi-email-outline"
@@ -220,7 +218,6 @@
                 v-model="form.phone"
                 placeholder="+53 55551234"
                 variant="outlined"
-                density="comfortable"
                 :error-messages="formErrors.phone"
                 class="dark-input"
                 prepend-inner-icon="mdi-phone-outline"
@@ -236,7 +233,6 @@
               v-model="form.nit"
               placeholder="Opcional"
               variant="outlined"
-              density="comfortable"
               hide-details
               class="dark-input"
               prepend-inner-icon="mdi-card-account-details-outline"
@@ -250,7 +246,6 @@
               v-model="form.address"
               placeholder="Calle, número, municipio..."
               variant="outlined"
-              density="comfortable"
               hide-details
               class="dark-input"
               prepend-inner-icon="mdi-map-marker-outline"
@@ -264,7 +259,6 @@
               v-model="form.notes"
               placeholder="Observaciones opcionales sobre este cliente..."
               variant="outlined"
-              density="comfortable"
               hide-details
               rows="3"
               class="dark-input"

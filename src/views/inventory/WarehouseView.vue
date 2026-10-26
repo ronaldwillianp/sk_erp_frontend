@@ -209,7 +209,6 @@
                 v-model="form.code"
                 placeholder="Ej: ALM01"
                 variant="outlined"
-                density="comfortable"
                 :error-messages="formErrors.code"
                 class="dark-input uppercase-input"
                 maxlength="10"
@@ -222,7 +221,6 @@
                 v-model="form.name"
                 placeholder="Ej: Almacén Central"
                 variant="outlined"
-                density="comfortable"
                 :error-messages="formErrors.name"
                 class="dark-input"
                 @update:model-value="clearFieldError('name')"
@@ -249,7 +247,6 @@
               v-model="form.address"
               placeholder="Ej: Calle 1 #101, Reparto Centro"
               variant="outlined"
-              density="comfortable"
               class="dark-input"
               prepend-inner-icon="mdi-map-marker-outline"
             />

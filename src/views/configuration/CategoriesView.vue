@@ -199,7 +199,6 @@
               v-model="form.name"
               placeholder="Ej: Alquiler del local"
               variant="outlined"
-              density="comfortable"
               :error-messages="formErrors.name"
               class="dark-input"
               @update:model-value="clearFieldError('name')"
@@ -235,7 +234,6 @@
               v-model="form.description"
               placeholder="Ej: Gastos de alquiler del local comercial"
               variant="outlined"
-              density="comfortable"
               class="dark-input"
             />
           </div>

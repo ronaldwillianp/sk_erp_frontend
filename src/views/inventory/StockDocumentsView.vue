@@ -233,7 +233,6 @@
                 v-model="form.reference"
                 placeholder="Ej: FAC-2026-001, OC-123"
                 variant="outlined"
-                density="comfortable"
                 hide-details
                 class="dark-input"
               />
@@ -244,7 +243,6 @@
                 v-model="form.notes"
                 placeholder="Observaciones opcionales"
                 variant="outlined"
-                density="comfortable"
                 hide-details
                 class="dark-input"
               />
@@ -310,7 +308,6 @@
                     type="number"
                     placeholder="0"
                     variant="outlined"
-                    density="comfortable"
                     hide-details
                     class="dark-input"
                   />
@@ -324,7 +321,6 @@
                     type="number"
                     placeholder="0.00"
                     variant="outlined"
-                    density="comfortable"
                     hide-details
                     class="dark-input"
                   />
