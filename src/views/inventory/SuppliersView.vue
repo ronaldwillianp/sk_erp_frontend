@@ -173,7 +173,6 @@
                 v-model="form.name"
                 placeholder="Ej: Distribuidora El Sol"
                 variant="outlined"
-                density="comfortable"
                 :error-messages="formErrors.name"
                 class="dark-input"
                 prepend-inner-icon="mdi-truck-delivery-outline"
@@ -186,7 +185,6 @@
                 v-model="form.contact_person"
                 placeholder="Ej: Juan Pérez"
                 variant="outlined"
-                density="comfortable"
                 class="dark-input"
                 prepend-inner-icon="mdi-account-outline"
               />
@@ -200,7 +198,6 @@
                 v-model="form.email"
                 placeholder="contacto@proveedor.com"
                 variant="outlined"
-                density="comfortable"
                 :error-messages="formErrors.email"
                 class="dark-input"
                 prepend-inner-icon="mdi-email-outline"
@@ -213,7 +210,6 @@
                 v-model="form.phone"
                 placeholder="Ej: +53 55551234"
                 variant="outlined"
-                density="comfortable"
                 class="dark-input"
                 prepend-inner-icon="mdi-phone-outline"
               />
@@ -226,7 +222,6 @@
               v-model="form.address"
               placeholder="Ej: Calle 1 #101, Reparto Centro"
               variant="outlined"
-              density="comfortable"
               class="dark-input"
               prepend-inner-icon="mdi-map-marker-outline"
             />

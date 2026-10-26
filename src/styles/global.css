@@ -155,7 +155,7 @@ body {
     background: linear-gradient(135deg, var(--accent-start), var(--accent-end));
     color: white;
     border: none;
-    border-radius: var(--radius-md);
+    border-radius: var(--radius-sm);
     font-size: 13px;
     font-weight: 600;
     cursor: pointer;
@@ -166,7 +166,7 @@ body {
 
 .btn-primary:hover {
     box-shadow: 0 12px 32px rgba(99, 102, 241, 0.45);
-    transform: translateY(-1px);
+    /* transform: translateY(-1px); */
 }
 
 .btn-primary:disabled {
@@ -183,7 +183,7 @@ body {
     background: var(--bg-elevated);
     color: var(--text-secondary);
     border: 1px solid var(--border-default);
-    border-radius: var(--radius-md);
+    border-radius: var(--radius-sm);
     font-size: 13px;
     font-weight: 500;
     cursor: pointer;
@@ -246,7 +246,7 @@ body {
 
 .dark-input .v-field {
     background: rgba(255, 255, 255, 0.03);
-    border-radius: var(--radius-md);
+    border-radius: var(--radius-sm);
     color: var(--text-primary);
 }
 
@@ -570,7 +570,7 @@ body {
 
 /* ===== Sidebar Menu ===== */
 .sidebar-menu .v-list-item {
-    border-radius: var(--radius-md);
+    /* border-radius: var(--radius-md); */
     margin-bottom: 2px;
     transition: all 0.2s ease;
 }

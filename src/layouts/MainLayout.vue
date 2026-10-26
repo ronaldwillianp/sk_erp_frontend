@@ -6,7 +6,7 @@
     <!-- Sidebar -->
     <v-navigation-drawer v-model="drawer" :rail="rail" permanent class="sidebar" elevation="0">
       <!-- Logo -->
-      <div class="flex items-center gap-3 px-5 h-16 border-b border-white/5">
+      <div class="flex items-center gap-3 px-3 h-16 border-b border-white/5">
         <div class="sidebar-logo">
           <v-icon color="white" size="20">mdi-store-outline</v-icon>
         </div>
@@ -18,8 +18,8 @@
       </div>
 
       <!-- Menu -->
-      <div class="px-3 py-5">
-        <v-list density="compact" nav class="sidebar-menu !py-0 !bg-transparent">
+      <div class="py-5">
+        <v-list nav class="sidebar-menu py-0! bg-transparent!">
           <!-- Dashboard -->
           <v-list-item
             prepend-icon="mdi-view-dashboard-outline"
@@ -143,8 +143,8 @@
       </div>
 
       <!-- Notifications -->
-      <v-btn icon variant="text" class="!rounded-lg toggle-btn mx-1">
-        <v-badge color="error" content="3" floating offset-x="-2" offset-y="2">
+      <v-btn icon variant="text" class="rounded-lg! toggle-btn mr-4">
+        <v-badge color="error" content="3">
           <v-icon color="zinc-400">mdi-bell-outline</v-icon>
         </v-badge>
       </v-btn>
@@ -152,18 +152,9 @@
       <!-- Profile -->
       <v-menu>
         <template v-slot:activator="{ props }">
-          <v-btn v-bind="props" variant="text" class="profile-trigger !rounded-xl !px-2 ml-2">
-            <v-avatar size="32" class="avatar-gradient mr-2">
-              <span class="text-white text-xs font-semibold">{{ authStore.userInitials }}</span>
-            </v-avatar>
-            <div class="hidden sm:block text-left">
-              <div class="text-xs font-medium text-zinc-200">
-                {{ authStore.userName }}
-              </div>
-              <div class="text-[10px] text-zinc-500">{{ userRole }}</div>
-            </div>
-            <v-icon size="14" class="ml-2 text-zinc-600">mdi-chevron-down</v-icon>
-          </v-btn>
+          <v-avatar v-bind="props" size="32" class="avatar-gradient mr-6">
+            <span class="text-white text-xs font-semibold">{{ authStore.userInitials }}</span>
+          </v-avatar>
         </template>
 
         <div class="profile-dropdown">
@@ -440,9 +431,9 @@ const handleLogout = async () => {
   flex-shrink: 0;
 }
 
-.profile-trigger:hover {
+/* .profile-trigger:hover {
   background: var(--bg-elevated) !important;
-}
+} */
 
 .profile-dropdown {
   position: absolute;

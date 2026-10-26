@@ -277,7 +277,6 @@
                 placeholder="0"
                 type="number"
                 variant="outlined"
-                density="comfortable"
                 :error-messages="formErrors.quantity"
                 class="dark-input"
                 @update:model-value="clearFieldError('quantity')"
@@ -290,7 +289,6 @@
                 placeholder="0.00"
                 type="number"
                 variant="outlined"
-                density="comfortable"
                 :error-messages="formErrors.unit_cost"
                 class="dark-input"
                 @update:model-value="clearFieldError('unit_cost')"
@@ -306,7 +304,6 @@
                 v-model="form.reference"
                 placeholder="Ej: FAC-001, OC-2026-01"
                 variant="outlined"
-                density="comfortable"
                 hide-details
                 class="dark-input"
               />
@@ -317,7 +314,6 @@
                 v-model="form.notes"
                 placeholder="Observaciones opcionales"
                 variant="outlined"
-                density="comfortable"
                 hide-details
                 class="dark-input"
               />

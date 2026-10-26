@@ -64,7 +64,6 @@
                   v-model="form.first_name"
                   placeholder="Ej: Juan"
                   variant="outlined"
-                  density="comfortable"
                   hide-details
                   :error-messages="formErrors.first_name"
                   class="dark-input"
@@ -77,7 +76,6 @@
                   v-model="form.last_name"
                   placeholder="Ej: Pérez Rodríguez"
                   variant="outlined"
-                  density="comfortable"
                   hide-details
                   :error-messages="formErrors.last_name"
                   class="dark-input"
@@ -93,7 +91,6 @@
                   v-model="form.email"
                   placeholder="usuario@ejemplo.com"
                   variant="outlined"
-                  density="comfortable"
                   hide-details
                   :error-messages="formErrors.email"
                   class="dark-input"
@@ -107,7 +104,6 @@
                   v-model="form.ci"
                   placeholder="Ej: 90010112345"
                   variant="outlined"
-                  density="comfortable"
                   hide-details
                   :error-messages="formErrors.ci"
                   class="dark-input"
@@ -124,7 +120,6 @@
                   v-model="form.contact"
                   placeholder="Ej: 55551234"
                   variant="outlined"
-                  density="comfortable"
                   hide-details
                   class="dark-input"
                 />
@@ -135,7 +130,6 @@
                   v-model="form.address"
                   placeholder="Ej: Calle 1 #101"
                   variant="outlined"
-                  density="comfortable"
                   hide-details
                   class="dark-input"
                 />
@@ -201,7 +195,6 @@
                 v-model="passwordForm.current_password"
                 placeholder="••••••••"
                 variant="outlined"
-                density="comfortable"
                 hide-details
                 :type="showPasswords ? 'text' : 'password'"
                 :append-inner-icon="showPasswords ? 'mdi-eye-off-outline' : 'mdi-eye-outline'"
@@ -219,7 +212,6 @@
                 v-model="passwordForm.new_password"
                 placeholder="••••••••"
                 variant="outlined"
-                density="comfortable"
                 hide-details
                 :type="showPasswords ? 'text' : 'password'"
                 :error-messages="passwordErrors.new_password"
@@ -235,7 +227,6 @@
                 v-model="passwordForm.confirm_password"
                 placeholder="••••••••"
                 variant="outlined"
-                density="comfortable"
                 hide-details
                 :type="showPasswords ? 'text' : 'password'"
                 :error-messages="passwordErrors.confirm_password"
@@ -277,8 +268,8 @@ import DarkSelect from '@/components/DarkSelect.vue'
 
 const authStore = useAuthStore()
 
-const ME_URL = 'administration/users/me/'
-const CHANGE_PASSWORD_URL = 'administration/change-password/'
+const ME_URL = 'v1.0/administration/users/me/'
+const CHANGE_PASSWORD_URL = 'v1.0/administration/change-password/'
 const PROVINCES_URL = 'configuration/provinces/enabled/'
 
 // ===== Estado =====

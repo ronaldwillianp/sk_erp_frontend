@@ -291,7 +291,6 @@
                   v-model="form.name"
                   placeholder="Ej: Cerveza Bucanero"
                   variant="outlined"
-                  density="comfortable"
                   :error-messages="formErrors.name"
                   class="dark-input"
                   prepend-inner-icon="mdi-package-variant-outline"
@@ -304,7 +303,6 @@
                   v-model="form.sku"
                   placeholder="Ej: BEB-001"
                   variant="outlined"
-                  density="comfortable"
                   :error-messages="formErrors.sku"
                   class="dark-input uppercase-input"
                   prepend-inner-icon="mdi-barcode-scan"
@@ -319,7 +317,6 @@
                 v-model="form.barcode"
                 placeholder="Opcional"
                 variant="outlined"
-                density="comfortable"
                 class="dark-input"
                 prepend-inner-icon="mdi-barcode"
               />
@@ -351,7 +348,6 @@
                   placeholder="0.00"
                   type="number"
                   variant="outlined"
-                  density="comfortable"
                   :error-messages="formErrors.cost_price"
                   class="dark-input"
                   prepend-inner-icon="mdi-cash-minus"
@@ -365,7 +361,6 @@
                   placeholder="0.00"
                   type="number"
                   variant="outlined"
-                  density="comfortable"
                   :error-messages="formErrors.sale_price"
                   class="dark-input"
                   prepend-inner-icon="mdi-cash-plus"
@@ -379,7 +374,6 @@
                   placeholder="0"
                   type="number"
                   variant="outlined"
-                  density="comfortable"
                   class="dark-input"
                   prepend-inner-icon="mdi-alert-circle-outline"
                 />
@@ -448,7 +442,6 @@
                       placeholder="20"
                       type="number"
                       variant="outlined"
-                      density="comfortable"
                       class="dark-input"
                       @update:model-value="onPresentationFactorChange(index)"
                     />
@@ -460,7 +453,6 @@
                       placeholder="0.00"
                       type="number"
                       variant="outlined"
-                      density="comfortable"
                       class="dark-input"
                     />
                   </div>

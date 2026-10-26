@@ -13,6 +13,11 @@ export default createVuetify({
     defaultTheme: 'system',
     utilities: false,
   },
+  defaults: {
+    global: {
+      density: 'compact',
+    },
+  },
   display: {
     mobileBreakpoint: 'md',
     thresholds: {
@@ -24,4 +29,5 @@ export default createVuetify({
       xxl: 2138,
     },
   },
+
 })
