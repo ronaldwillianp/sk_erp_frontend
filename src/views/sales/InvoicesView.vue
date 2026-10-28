@@ -4,7 +4,7 @@
     <div class="page-header">
       <div class="page-header-row">
         <div>
-          <h1 class="page-title">Facturas</h1>
+          <h1 class="page-title">Facturass</h1>
           <p class="page-subtitle">Gestiona las facturas de venta y su cobro</p>
         </div>
         <div class="flex gap-3">
