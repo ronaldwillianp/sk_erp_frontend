@@ -12,11 +12,7 @@
             <v-icon size="18" class="mr-2">mdi-refresh</v-icon>
             Actualizar
           </button>
-          <button 
-            class="btn-danger" 
-            @click="confirmPurge" 
-            :disabled="!items.length || purging"
-          >
+          <button class="btn-danger" @click="confirmPurge" :disabled="!items.length || purging">
             <v-progress-circular v-if="purging" indeterminate size="16" class="mr-2" />
             <v-icon v-else size="18" class="mr-2">mdi-delete-sweep</v-icon>
             {{ purgeButtonText }}
@@ -461,13 +457,16 @@
             <tbody>
               <tr v-for="line in selectedDocument.lines" :key="line.id">
                 <td class="text-sm text-zinc-200">
-                  <div>{{ line.product_detail?.product_name_snapshot || line.product_detail?.name }}</div>
+                  <div>{{ line.product_name_snapshot || line.product_detail?.name }}</div>
                   <div class="text-xs text-zinc-500 font-mono">
                     {{ line.product_detail?.sku }}
                   </div>
                 </td>
                 <td class="text-sm text-zinc-400">
-                  {{ line.presentation_detail?.presentation_name_snapshot || line.presentation_detail?.measure_unit?.short_name }}
+                  {{
+                    line.presentation_name_snapshot ||
+                    line.presentation_detail?.measure_unit?.short_name
+                  }}
                 </td>
                 <td class="text-right text-sm font-mono">
                   {{ line.quantity }}
@@ -510,9 +509,10 @@
           <div class="alert-error mb-4">
             <v-icon size="18" class="mr-2 flex-shrink-0">mdi-alert-octagon</v-icon>
             <span
-              ><strong>Peligro:</strong> Esta acción eliminará <strong>TODOS</strong> los vales de inventario y reiniciará los IDs desde 1. 
-              <br><br>
-              <strong>Nota:</strong> Esto NO restaura el stock ni borra los movimientos asociados, solo limpia los documentos padre.</span
+              ><strong>Peligro:</strong> Esta acción eliminará <strong>TODOS</strong> los vales de
+              inventario y reiniciará los IDs desde 1. <br /><br />
+              <strong>Nota:</strong> Esto NO restaura el stock ni borra los movimientos asociados,
+              solo limpia los documentos padre.</span
             >
           </div>
           <p class="text-sm text-zinc-400 mb-2">
@@ -793,6 +793,10 @@ const openDialog = () => {
 const viewDocument = doc => {
   selectedDocument.value = doc
   detailDialogOpen.value = true
+  // DEBUG: Verifica qué hay dentro de la primera línea
+  if (doc.lines && doc.lines.length > 0) {
+    console.log('Primera línea del vale:', doc.lines[0])
+  }
 }
 
 // ===== Guardar =====

@@ -117,14 +117,18 @@
                 </td>
                 <td>
                   <div class="text-sm font-medium text-zinc-200">
-                    {{ item.product.product_name_snapshot || item.product.name }}
+                    {{ item.product_name_snapshot || item.product?.name }}
                   </div>
                   <div class="text-xs text-zinc-500 font-mono">
-                    {{ item.product.sku }}
+                    {{ item.product?.sku }}
                   </div>
                 </td>
                 <td class="text-sm text-zinc-400">
-                  {{ item.presentation_name_snapshot || item.presentation?.measure_unit?.short_name || '—' }}
+                  {{
+                    item.presentation_name_snapshot ||
+                    item.presentation?.measure_unit?.short_name ||
+                    '—'
+                  }}
                   <template
                     v-if="item.movement_type === 'TRANSFER' && item.destination_presentation"
                   >
