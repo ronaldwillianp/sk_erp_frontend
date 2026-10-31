@@ -41,7 +41,7 @@
           </button>
         </div>
 
-        <div class="flex gap-3">
+        <div class="flex gap-3 flex-wrap">
           <DarkSelect
             v-model="filters.movement_type"
             :options="typeFilterOptions"
@@ -50,6 +50,11 @@
           <DarkSelect
             v-model="filters.warehouse"
             :options="warehouseFilterOptions"
+            @change="onSearch"
+          />
+          <DarkSelect
+            v-model="filters.source"
+            :options="SOURCE_OPTIONS"
             @change="onSearch"
           />
         </div>
@@ -94,6 +99,7 @@
               <tr>
                 <th>Fecha</th>
                 <th>Tipo</th>
+                <th>Origen</th>
                 <th>Producto</th>
                 <th>Presentación</th>
                 <th>Almacén</th>
@@ -113,6 +119,12 @@
                   <span :class="['badge', getTypeBadge(item.movement_type)]">
                     <v-icon size="12" class="mr-1">{{ getTypeIcon(item.movement_type) }}</v-icon>
                     {{ getTypeLabel(item.movement_type) }}
+                  </span>
+                </td>
+                <td>
+                  <span :class="['badge', getSourceBadge(item.source)]">
+                    <v-icon size="12" class="mr-1">{{ getSourceIcon(item.source) }}</v-icon>
+                    {{ getSourceLabel(item.source) }}
                   </span>
                 </td>
                 <td>
@@ -252,10 +264,6 @@
                 class="full-width-select"
                 :error-messages="formErrors.warehouse_id"
               />
-
-              <!-- <p v-if="formErrors.warehouse_id?.length" class="field-error">
-                {{ formErrors.warehouse_id[0] }}
-              </p> -->
             </div>
             <div v-if="form.movement_type === 'TRANSFER'">
               <label class="input-label">Almacén destino</label>
@@ -266,9 +274,6 @@
                 class="full-width-select"
                 :error-messages="formErrors.destination_warehouse_id"
               />
-              <!-- <p v-if="formErrors.destination_warehouse_id?.length" class="field-error">
-                {{ formErrors.destination_warehouse_id[0] }}
-              </p> -->
             </div>
           </div>
 
@@ -429,6 +434,7 @@ import api from '@/utils/axios'
 import { useTable } from '@/composables/useTable'
 import TablePagination from '@/components/TablePagination.vue'
 import DarkSelect from '@/components/DarkSelect.vue'
+import { SOURCE_OPTIONS, getSourceLabel, getSourceBadge, getSourceIcon } from '@/utils/constants'
 
 const route = useRoute()
 const API_URL = 'inventory/movements/'
@@ -466,7 +472,7 @@ const {
 } = useTable({
   apiUrl: API_URL,
   defaultOrdering: '-created_at',
-  defaultFilters: { movement_type: '', warehouse: '' }
+  defaultFilters: { movement_type: '', warehouse: '', source: '' }
 })
 
 // ===== Estado =====
@@ -507,7 +513,8 @@ const hasActiveFilters = computed(() => {
   return (
     search.value.trim() !== '' ||
     filters.value.movement_type !== '' ||
-    filters.value.warehouse !== ''
+    filters.value.warehouse !== '' ||
+    filters.value.source !== ''
   )
 })
 
@@ -818,7 +825,6 @@ onMounted(() => {
   loadWarehouses()
   loadData()
 
-  // ← NUEVO: Si viene desde una alerta, abrir dialog con entrada pre-llenada
   if (route.query.new_entry === 'true' && route.query.product_id) {
     openDialogWithProduct(
       parseInt(route.query.product_id),
@@ -827,7 +833,6 @@ onMounted(() => {
   }
 })
 
-// ← NUEVO: Función para abrir dialog con producto pre-llenado
 const openDialogWithProduct = async (productId, suggestedQuantity) => {
   formErrors.value = {}
   form.value = emptyForm()
@@ -836,10 +841,8 @@ const openDialogWithProduct = async (productId, suggestedQuantity) => {
   form.value.quantity = suggestedQuantity || ''
   presentationOptions.value = []
 
-  // Cargar presentaciones del producto
   await loadPresentations(productId)
 
-  // Seleccionar la primera presentación automáticamente si solo hay una
   if (presentationOptions.value.length === 1) {
     form.value.presentation_id = presentationOptions.value[0].value
   }
@@ -860,35 +863,23 @@ onUnmounted(() => {
   overflow: hidden;
 }
 
-/* Estado inicial al entrar / Estado final al salir */
 .vuetify-error-enter-from,
 .vuetify-error-leave-to {
   opacity: 0;
-  transform: translateY(-8px); /* Se desliza desde arriba hacia abajo */
+  transform: translateY(-8px);
   max-height: 0;
   margin-top: 0;
   margin-bottom: 0;
 }
 
-/* Estado final al entrar / Estado inicial al salir */
 .vuetify-error-enter-to,
 .vuetify-error-leave-from {
   opacity: 1;
   transform: translateY(0);
-  max-height: 40px; /* Altura suficiente para una línea de error */
+  max-height: 40px;
   margin-top: 4px;
   margin-bottom: 4px;
 }
-
-/* ===== Estilo del texto de error ===== */
-/* .field-error {
-  color: #ff5252; 
-  font-size: 12px;
-  font-weight: 400;
-  line-height: 1.5;
-  margin-left: 14px; 
-  margin-right: 14px;
-} */
 
 .dialog-card {
   background: rgba(24, 24, 27, 0.98);
@@ -898,7 +889,6 @@ onUnmounted(() => {
   overflow: hidden;
 }
 
-/* Variante con scroll para dialogs largos */
 .dialog-card-scrollable {
   display: flex;
   flex-direction: column;
@@ -933,7 +923,6 @@ onUnmounted(() => {
   flex-shrink: 0;
 }
 
-/* Selector de tipo de movimiento */
 .movement-type-selector {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -972,10 +961,4 @@ onUnmounted(() => {
 .full-width-select :deep(.dark-select-wrapper) {
   width: 100%;
 }
-
-/* .field-error {
-  color: var(--error);
-  font-size: 12px;
-  margin-top: 6px;
-} */
 </style>

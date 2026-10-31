@@ -76,8 +76,9 @@
             <v-icon size="14">mdi-close</v-icon>
           </button>
         </div>
-        <div class="flex gap-3">
+        <div class="flex gap-3 flex-wrap">
           <DarkSelect v-model="filters.status" :options="statusFilterOptions" @change="onSearch" />
+          <DarkSelect v-model="filters.source" :options="SOURCE_OPTIONS" @change="onSearch" />
         </div>
       </div>
     </div>
@@ -121,6 +122,7 @@
                 <th>Fecha</th>
                 <th>Vence</th>
                 <th>Estado</th>
+                <th>Origen</th>
                 <th class="text-right">Total</th>
                 <th>Usuario</th>
                 <th class="text-right">Acciones</th>
@@ -154,6 +156,12 @@
                   <span :class="['badge', getStatusBadge(item.status)]">
                     <v-icon size="12" class="mr-1">{{ getStatusIcon(item.status) }}</v-icon>
                     {{ getStatusLabel(item.status) }}
+                  </span>
+                </td>
+                <td>
+                  <span :class="['badge', getSourceBadge(item.source)]">
+                    <v-icon size="12" class="mr-1">{{ getSourceIcon(item.source) }}</v-icon>
+                    {{ getSourceLabel(item.source) }}
                   </span>
                 </td>
                 <td class="text-right">
@@ -295,17 +303,6 @@
             <div>
               <label class="input-label">Fecha de vencimiento</label>
               <v-text-field
-                v-model="form.issue_date"
-                type="date"
-                variant="outlined"
-                density="comfortable"
-                hide-details
-                class="dark-input"
-              />
-            </div>
-            <div>
-              <label class="input-label">Fecha de vencimiento</label>
-              <v-text-field
                 v-model="form.due_date"
                 type="date"
                 variant="outlined"
@@ -313,48 +310,6 @@
                 class="dark-input"
               />
             </div>
-          </div>
-
-          <!-- Estado inicial de la factura -->
-          <div class="mb-5">
-            <label class="input-label">Estado inicial</label>
-            <div class="flex gap-2">
-              <button
-                v-for="opt in initialStatusOptions"
-                :key="opt.value"
-                :class="[
-                  'px-3 py-1.5 rounded-md text-sm border transition-colors flex items-center gap-1.5',
-                  form.initial_status === opt.value
-                    ? 'bg-indigo-500/20 border-indigo-500 text-indigo-300'
-                    : 'bg-zinc-900/50 border-zinc-700 text-zinc-400 hover:bg-zinc-800'
-                ]"
-                @click="form.initial_status = opt.value"
-                type="button"
-              >
-                <v-icon size="14">{{ opt.icon }}</v-icon>
-                {{ opt.label }}
-              </button>
-            </div>
-            <p class="text-xs text-zinc-500 mt-2">
-              <v-icon size="12" class="mr-1">mdi-information-outline</v-icon>
-              El stock se descontará inmediatamente al crear la factura, sin importar el estado
-              inicial.
-            </p>
-          </div>
-
-          <!-- Selección de Almacén / PV (principal) -->
-          <div class="mb-5">
-            <label class="input-label">Almacén / Punto de Venta</label>
-            <DarkSelect
-              v-model="form.warehouse_id"
-              :options="warehouseOptions"
-              placeholder="Seleccionar almacén para filtrar productos..."
-              class="full-width-select"
-            />
-            <p v-if="!form.warehouse_id" class="text-xs text-yellow-400 mt-1 flex items-center">
-              <v-icon size="12" class="mr-1">mdi-alert</v-icon>
-              Selecciona un almacén para ver solo los productos con existencias.
-            </p>
           </div>
 
           <!-- Estado inicial de la factura -->
@@ -584,7 +539,7 @@
           </button>
         </div>
         <div class="dialog-body">
-          <div class="grid grid-cols-2 gap-4 mb-5">
+          <div class="grid grid-cols-3 gap-4 mb-5">
             <div>
               <div class="text-xs text-zinc-500 mb-1">Cliente</div>
               <div class="text-sm font-medium text-zinc-200">
@@ -597,10 +552,17 @@
                 {{ selectedInvoice.customer_detail.phone }}
               </div>
             </div>
-            <div class="text-right">
+            <div>
               <div class="text-xs text-zinc-500 mb-1">Estado</div>
               <span :class="['badge', getStatusBadge(selectedInvoice.status)]">
                 {{ getStatusLabel(selectedInvoice.status) }}
+              </span>
+            </div>
+            <div>
+              <div class="text-xs text-zinc-500 mb-1">Origen</div>
+              <span :class="['badge', getSourceBadge(selectedInvoice.source)]">
+                <v-icon size="12" class="mr-1">{{ getSourceIcon(selectedInvoice.source) }}</v-icon>
+                {{ getSourceLabel(selectedInvoice.source) }}
               </span>
             </div>
           </div>
@@ -616,9 +578,9 @@
             </thead>
             <tbody>
               <tr v-for="line in selectedInvoice.items" :key="line.id">
-                <td class="text-sm text-zinc-200">{{ line.product.name }}</td>
+                <td class="text-sm text-zinc-200">{{ line.product_name_snapshot || line.product.name }}</td>
                 <td class="text-sm text-zinc-400">
-                  {{ line.presentation.measure_unit.short_name }}
+                  {{ line.presentation_name_snapshot || line.presentation.measure_unit.short_name }}
                 </td>
                 <td class="text-right text-sm font-mono">
                   {{ line.quantity }}
@@ -725,46 +687,6 @@
             ¿Eliminar definitivamente la factura
             <strong class="text-zinc-200">{{ invoiceToDelete?.number }}</strong>
             de
-            <strong class="text-zinc-200">{{ invoiceToCancel?.customer_detail?.name }}</strong
-            >?
-          </p>
-        </div>
-        <div class="dialog-footer">
-          <button class="btn-secondary" @click="cancelDialogOpen = false">Volver</button>
-          <button class="btn-danger" @click="executeCancel" :disabled="cancelling">
-            <v-progress-circular v-if="cancelling" indeterminate size="16" class="mr-2" />
-            Cancelar factura
-          </button>
-        </div>
-      </div>
-    </v-dialog>
-
-    <!-- Dialog: Confirmar eliminación (Admin) -->
-    <v-dialog v-model="deleteDialogOpen" max-width="500" class="dark-dialog">
-      <div class="dialog-card">
-        <div class="dialog-header">
-          <h3 class="text-lg font-semibold text-red-400 flex items-center">
-            <v-icon size="20" class="mr-2 text-red-400">mdi-alert-octagon</v-icon>
-            Eliminar factura (Admin)
-          </h3>
-          <button class="icon-btn" @click="deleteDialogOpen = false">
-            <v-icon size="20">mdi-close</v-icon>
-          </button>
-        </div>
-        <div class="dialog-body">
-          <div class="alert-error mb-4">
-            <v-icon size="18" class="mr-2 flex-shrink-0">mdi-alert-octagon</v-icon>
-            <span
-              ><strong>Peligro extremo:</strong> Esta acción eliminará
-              <strong>permanentemente</strong> la factura, sus líneas, los movimientos de stock
-              asociados y el vale de inventario. El stock será restaurado. Esta acción
-              <strong>no se puede deshacer</strong> y no dejará rastro histórico.</span
-            >
-          </div>
-          <p class="text-sm text-zinc-400">
-            ¿Eliminar definitivamente la factura
-            <strong class="text-zinc-200">{{ invoiceToDelete?.number }}</strong>
-            de
             <strong class="text-zinc-200">{{ invoiceToDelete?.customer_detail?.name }}</strong
             >?
           </p>
@@ -792,6 +714,7 @@ import api from '@/utils/axios'
 import { useTable } from '@/composables/useTable'
 import TablePagination from '@/components/TablePagination.vue'
 import DarkSelect from '@/components/DarkSelect.vue'
+import { SOURCE_OPTIONS, getSourceLabel, getSourceBadge, getSourceIcon } from '@/utils/constants'
 
 const API_URL = 'sales/invoices/'
 const CUSTOMERS_URL = 'sales/customers/'
@@ -848,7 +771,7 @@ const {
 } = useTable({
   apiUrl: API_URL,
   defaultOrdering: '-created_at',
-  defaultFilters: { status: '' }
+  defaultFilters: { status: '', customer: '', source: '' },
 })
 
 // ===== Estado =====
@@ -906,7 +829,12 @@ const snackbar = ref({ show: false, message: '', color: 'success' })
 
 // ===== Computed =====
 const hasActiveFilters = computed(() => {
-  return search.value.trim() !== '' || filters.value.status !== ''
+  return (
+    search.value.trim() !== '' ||
+    filters.value.status !== '' ||
+    filters.value.customer !== '' ||
+    filters.value.source !== ''
+  )
 })
 
 const invoiceSubtotal = computed(() => {

@@ -41,7 +41,7 @@
           </button>
         </div>
 
-        <div class="flex gap-3">
+        <div class="flex gap-3 flex-wrap">
           <DarkSelect
             v-model="filters.document_type"
             :options="typeFilterOptions"
@@ -50,6 +50,11 @@
           <DarkSelect
             v-model="filters.warehouse"
             :options="warehouseFilterOptions"
+            @change="onSearch"
+          />
+          <DarkSelect
+            v-model="filters.source"
+            :options="SOURCE_OPTIONS"
             @change="onSearch"
           />
         </div>
@@ -90,6 +95,7 @@
               <tr>
                 <th>Número</th>
                 <th>Tipo</th>
+                <th>Origen</th>
                 <th>Almacén</th>
                 <th>Proveedor / Destino</th>
                 <th class="text-right">Líneas</th>
@@ -110,6 +116,12 @@
                   <span :class="['badge', getTypeBadge(item.document_type)]">
                     <v-icon size="12" class="mr-1">{{ getTypeIcon(item.document_type) }}</v-icon>
                     {{ getTypeLabel(item.document_type) }}
+                  </span>
+                </td>
+                <td>
+                  <span :class="['badge', getSourceBadge(item.source)]">
+                    <v-icon size="12" class="mr-1">{{ getSourceIcon(item.source) }}</v-icon>
+                    {{ getSourceLabel(item.source) }}
                   </span>
                 </td>
                 <td class="text-sm text-zinc-400">
@@ -235,6 +247,7 @@
                 v-model="form.reference"
                 placeholder="Ej: FAC-2026-001, OC-123"
                 variant="outlined"
+                density="comfortable"
                 hide-details
                 class="dark-input"
               />
@@ -245,6 +258,7 @@
                 v-model="form.notes"
                 placeholder="Observaciones opcionales"
                 variant="outlined"
+                density="comfortable"
                 hide-details
                 class="dark-input"
               />
@@ -310,6 +324,7 @@
                     type="number"
                     placeholder="0"
                     variant="outlined"
+                    density="comfortable"
                     hide-details
                     class="dark-input"
                   />
@@ -323,6 +338,7 @@
                     type="number"
                     placeholder="0.00"
                     variant="outlined"
+                    density="comfortable"
                     hide-details
                     class="dark-input"
                   />
@@ -395,6 +411,13 @@
               </span>
             </div>
             <div>
+              <div class="text-xs text-zinc-500 mb-1">Origen</div>
+              <span :class="['badge', getSourceBadge(selectedDocument.source)]">
+                <v-icon size="12" class="mr-1">{{ getSourceIcon(selectedDocument.source) }}</v-icon>
+                {{ getSourceLabel(selectedDocument.source) }}
+              </span>
+            </div>
+            <div>
               <div class="text-xs text-zinc-500 mb-1">Almacén</div>
               <div class="text-sm text-zinc-200">
                 {{ selectedDocument.warehouse_detail?.name || '—' }}
@@ -411,12 +434,6 @@
                 <template v-else>
                   {{ selectedDocument.supplier_detail?.name || '—' }}
                 </template>
-              </div>
-            </div>
-            <div>
-              <div class="text-xs text-zinc-500 mb-1">Usuario</div>
-              <div class="text-sm text-zinc-200">
-                {{ selectedDocument.created_by_name }}
               </div>
             </div>
           </div>
@@ -550,6 +567,7 @@ import api from '@/utils/axios'
 import { useTable } from '@/composables/useTable'
 import TablePagination from '@/components/TablePagination.vue'
 import DarkSelect from '@/components/DarkSelect.vue'
+import { SOURCE_OPTIONS, getSourceLabel, getSourceBadge, getSourceIcon } from '@/utils/constants'
 
 const API_URL = 'inventory/stock-documents/'
 const PRODUCTS_URL = 'inventory/products/enabled/?is_service=false'
@@ -586,7 +604,7 @@ const {
 } = useTable({
   apiUrl: API_URL,
   defaultOrdering: '-created_at',
-  defaultFilters: { document_type: '', warehouse: '' }
+  defaultFilters: { document_type: '', warehouse: '', source: '' }
 })
 
 // ===== Estado =====
@@ -624,7 +642,8 @@ const hasActiveFilters = computed(() => {
   return (
     search.value.trim() !== '' ||
     filters.value.document_type !== '' ||
-    filters.value.warehouse !== ''
+    filters.value.warehouse !== '' ||
+    filters.value.source !== ''
   )
 })
 
@@ -793,10 +812,6 @@ const openDialog = () => {
 const viewDocument = doc => {
   selectedDocument.value = doc
   detailDialogOpen.value = true
-  // DEBUG: Verifica qué hay dentro de la primera línea
-  if (doc.lines && doc.lines.length > 0) {
-    console.log('Primera línea del vale:', doc.lines[0])
-  }
 }
 
 // ===== Guardar =====
